@@ -8,5 +8,6 @@ type ComponentInfo struct {
 	Version         string
 	Description     string
 	InstallSteps    steps.ComponentInstallStepRunner
+	UninstallSteps  steps.ComponentInstallStepRunner
 	Dependencies    []ComponentInfo
 }
