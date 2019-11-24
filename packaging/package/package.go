@@ -1,8 +1,10 @@
 package packaging
 
-import "github.com/stevengt/mppm/packaging/package/components"
+import (
+	"github.com/stevengt/mppm/packaging/package/components"
+)
 
 type PackageInfo struct {
-	Components   []*components.ComponentBase
-	Dependencies []*PackageInfo
+	Components   []components.ComponentInfo
+	Dependencies []PackageInfo
 }

@@ -3,7 +3,6 @@ package components
 type ComponentType string
 
 const (
-	Collection  ComponentType = "Collection"
 	DAWSpecific ComponentType = "DAWSpecific"
 	Driver      ComponentType = "Driver"
 	Patch       ComponentType = "Patch"
@@ -15,8 +14,6 @@ const (
 
 func GetComponentTypeFromString(typeName string) (componentType ComponentType) {
 	switch typeName {
-	case "Collection":
-		componentType = Collection
 	case "DAWSpecific":
 		componentType = DAWSpecific
 	case "Driver":
