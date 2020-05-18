@@ -28,6 +28,11 @@ func (v *AbletonVersioner) Init() (err error) {
 		return
 	}
 
+	err = util.CreateFoldersIfNotExists(config.GitAnnexFolders...)
+	if err != nil {
+		return
+	}
+
 	err = util.ExecuteShellCommand("git", "init")
 	if err != nil {
 		return
@@ -101,14 +106,14 @@ func copyAllAlsFilesToUncompressedXmlFiles() (err error) {
 
 	for i := 0; i < len(fileNames); i++ {
 		originalFileName := fileNames[i]
-		newFileName := originalFileName + ".xml.gz"
+		newFileName := fileNames[i] + ".xml.gz"
 
-		err = util.ExecuteShellCommand("cp", originalFileName, newFileName)
+		err = util.CopyFile(originalFileName, newFileName)
 		if err != nil {
 			return
 		}
 
-		err = util.ExecuteShellCommand("gunzip", newFileName)
+		err = util.GunzipFile(newFileName)
 		if err != nil {
 			return
 		}
@@ -118,9 +123,18 @@ func copyAllAlsFilesToUncompressedXmlFiles() (err error) {
 }
 
 func getAllAlsFileNamesInProject() (fileNames []string, err error) {
+	fileNames = make([]string, 0)
 	stdout, err := util.ExecuteShellCommandAndReturnOutput("find", ".", "-name", "*.als")
 	if err == nil {
-		fileNames = strings.Split(stdout, "\n")
+		stdoutLines := strings.Split(stdout, "\n")
+		for i := 0; i < len(stdoutLines); i++ {
+			line := stdoutLines[i]
+			line = strings.Trim(line, " \n")
+			line = strings.TrimPrefix(line, "./")
+			if len(line) > 0 {
+				fileNames = append(fileNames, line)
+			}
+		}
 	}
 	return
 }
