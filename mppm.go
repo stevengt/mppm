@@ -47,7 +47,7 @@ func main() {
 			switch config.ProjectType {
 			case project.Ableton:
 				versioner := &versioning.AbletonVersioner{}
-				err = versioner.Git(gitArgs)
+				err = versioner.Git(gitArgs...)
 			default:
 				err = errors.New("A valid project type was not found in the config file '" + project.ConfigFileName + "'.")
 			}

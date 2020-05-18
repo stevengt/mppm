@@ -18,3 +18,10 @@ func ExecuteShellCommand(commandName string, args ...string) (err error) {
 
 	return
 }
+
+func ExecuteShellCommandAndReturnOutput(commandName string, args ...string) (stdout string, err error) {
+	cmd := exec.Command(commandName, args...)
+	stdoutAsByteArray, err := cmd.Output()
+	stdout = string(stdoutAsByteArray)
+	return
+}
