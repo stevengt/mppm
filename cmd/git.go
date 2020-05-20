@@ -17,11 +17,10 @@ func init() {
 
 var gitCmd = &cobra.Command{
 	Use:   "git",
-	Short: "Run any 'git' command with automated management of binary files.",
-	Long: `Run any 'git' command with automated management of binary files.
+	Short: "Run any 'git' command with automated management of binary files using 'git-lfs'.",
+	Long: `Run any 'git' command with automated management of binary files using 'git-lfs'.
 			Before the command is executed, '.als' files will be extracted into readable
-			'.xml' files, and binary audio files stored in the 'Samples' folder will be
-			replaced with symlinks to files managed by 'git-annex'.`,
+			'.xml' files.`,
 	DisableFlagParsing: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		runGitCommand(args)

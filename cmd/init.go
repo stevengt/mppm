@@ -17,8 +17,8 @@ func init() {
 
 var initCmd = &cobra.Command{
 	Use:   "init",
-	Short: "Initializes version control settings for a project using git and git-annex.",
-	Long:  "Initializes version control settings for a project using git and git-annex.",
+	Short: "Initializes version control settings for a project using git and git-lfs.",
+	Long:  "Initializes version control settings for a project using git and git-lfs.",
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		initProject(args[0])

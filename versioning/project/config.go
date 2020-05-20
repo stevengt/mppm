@@ -9,8 +9,8 @@ import (
 const ConfigFileName string = ".mppm-config.json"
 
 type MppmConfig struct {
-	ProjectType     ProjectType `json:"project-type"`
-	GitAnnexFolders []string    `json:"git-annex-folders"`
+	ProjectType         ProjectType `json:"project-type"`
+	GitLfsTrackPatterns []string    `json:"git-lfs-track-patterns"`
 }
 
 func LoadMppmConfig() (config *MppmConfig, err error) {
@@ -32,12 +32,12 @@ func (config *MppmConfig) Save() (err error) {
 	return
 }
 
-func AddGitAnnexFoldersToMppmConfig(folderNames ...string) (err error) {
+func AddGitLfsTrackPatternsToMppmConfig(trackPatterns ...string) (err error) {
 	config, err := LoadMppmConfig()
 	if err != nil {
 		return
 	}
-	config.GitAnnexFolders = append(config.GitAnnexFolders, folderNames...)
+	config.GitLfsTrackPatterns = append(config.GitLfsTrackPatterns, trackPatterns...)
 	err = config.Save()
 	return
 }

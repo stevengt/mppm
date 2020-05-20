@@ -14,8 +14,8 @@ type AbletonVersioner struct{}
 func (v *AbletonVersioner) Init() (err error) {
 
 	config := &project.MppmConfig{
-		ProjectType:     project.Ableton,
-		GitAnnexFolders: []string{"Samples"},
+		ProjectType:         project.Ableton,
+		GitLfsTrackPatterns: []string{"Samples/**"},
 	}
 
 	err = config.Save()
@@ -28,17 +28,22 @@ func (v *AbletonVersioner) Init() (err error) {
 		return
 	}
 
-	err = util.CreateFoldersIfNotExists(config.GitAnnexFolders...)
-	if err != nil {
-		return
-	}
-
 	err = util.ExecuteShellCommand("git", "init")
 	if err != nil {
 		return
 	}
 
-	err = util.ExecuteShellCommand("git", "annex", "init")
+	err = util.ExecuteShellCommand("git", "lfs", "install")
+	if err != nil {
+		return
+	}
+
+	err = runGitLfsTrack(config.GitLfsTrackPatterns...)
+	if err != nil {
+		return
+	}
+
+	err = util.ExecuteShellCommand("git", "add", ".gitattributes")
 	if err != nil {
 		return
 	}
@@ -74,27 +79,11 @@ func runPreGitHook() (err error) {
 		return
 	}
 
-	err = runGitAnnexAdd()
-	if err != nil {
-		return
-	}
-
 	return
 }
 
 // Code to execute after invoking any "git" command.
 func runPostGitHook() (err error) {
-
-	// err = dropUnusedGitAnnexFiles()
-	// if err != nil {
-	// 	return
-	// }
-
-	return
-}
-
-func dropUnusedGitAnnexFiles() (err error) {
-	err = util.ExecuteShellCommand("git", "annex", "dropunused", "1-1000")
 	return
 }
 
@@ -139,20 +128,14 @@ func getAllAlsFileNamesInProject() (fileNames []string, err error) {
 	return
 }
 
-func runGitAnnexAdd() (err error) {
-	config, err := project.LoadMppmConfig()
-	if err != nil {
-		return
-	}
-
-	for i := 0; i < len(config.GitAnnexFolders); i++ {
-		gitAnnexFolder := config.GitAnnexFolders[i]
-		err = util.ExecuteShellCommand("git", "annex", "add", gitAnnexFolder)
+func runGitLfsTrack(trackPatterns ...string) (err error) {
+	for i := 0; i < len(trackPatterns); i++ {
+		trackPattern := trackPatterns[i]
+		err = util.ExecuteShellCommand("git", "lfs", "track", trackPattern)
 		if err != nil {
 			return
 		}
 	}
-
 	return
 }
 
