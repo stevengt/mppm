@@ -5,8 +5,25 @@ import (
 )
 
 func init() {
+
+	cobra.OnInitialize(
+		func() {
+			isPreviewCommand, _ = projectCmd.PersistentFlags().GetBool("preview")
+		},
+	)
+
+	projectCmd.PersistentFlags().BoolVar(
+		&isPreviewCommand,
+		"preview",
+		false,
+		"Shows what files will be affected without actually making changes.",
+	)
+
 	rootCmd.AddCommand(projectCmd)
+
 }
+
+var isPreviewCommand bool
 
 var projectCmd = &cobra.Command{
 

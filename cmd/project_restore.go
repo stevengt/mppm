@@ -70,23 +70,33 @@ func restoreAllGzippedXmlFilesWithExtension(fileExtension string) (err error) {
 		originalFileName := fileNames[i]
 		newFileName := strings.TrimSuffix(originalFileName, ".xml")
 
-		err = util.CopyFile(originalFileName, newFileName)
-		if err != nil {
-			return
-		}
+		if isPreviewCommand {
+			printRestorePreviewMessage(originalFileName, newFileName)
+		} else {
 
-		err = util.GzipFile(newFileName)
-		if err != nil {
-			return
-		}
+			err = util.CopyFile(originalFileName, newFileName)
+			if err != nil {
+				return
+			}
 
-		err = os.Rename(newFileName+".gz", newFileName)
-		if err != nil {
-			return
+			err = util.GzipFile(newFileName)
+			if err != nil {
+				return
+			}
+
+			err = os.Rename(newFileName+".gz", newFileName)
+			if err != nil {
+				return
+			}
+
 		}
 
 	}
 
 	return
 
+}
+
+func printRestorePreviewMessage(originalFileName string, newFileName string) {
+	fmt.Println(newFileName + " will be restored from " + originalFileName)
 }

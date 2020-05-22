@@ -66,19 +66,31 @@ func extractAllGzippedXmlFilesWithExtension(fileExtension string) (err error) {
 
 	for i := 0; i < len(fileNames); i++ {
 		originalFileName := fileNames[i]
-		newFileName := fileNames[i] + ".xml.gz"
+		gzippedFileName := fileNames[i] + ".xml.gz"
+		newFileName := fileNames[i] + ".xml"
 
-		err = util.CopyFile(originalFileName, newFileName)
-		if err != nil {
-			return
+		if isPreviewCommand {
+			printExtractPreviewMessage(originalFileName, newFileName)
+		} else {
+
+			err = util.CopyFile(originalFileName, gzippedFileName)
+			if err != nil {
+				return
+			}
+
+			err = util.GunzipFile(gzippedFileName)
+			if err != nil {
+				return
+			}
+
 		}
 
-		err = util.GunzipFile(newFileName)
-		if err != nil {
-			return
-		}
 	}
 
 	return
 
+}
+
+func printExtractPreviewMessage(originalFileName string, newFileName string) {
+	fmt.Println(originalFileName + " will be extracted to " + newFileName)
 }
