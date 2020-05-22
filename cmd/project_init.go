@@ -80,12 +80,11 @@ func createGitIgnore(filePatterns ...string) (err error) {
 }
 
 func runGitLfsTrack(filePatterns ...string) (err error) {
-	for i := 0; i < len(filePatterns); i++ {
-		filePattern := filePatterns[i]
-		err = util.ExecuteShellCommand("git", "lfs", "track", filePattern)
-		if err != nil {
-			return
-		}
+	commandName := "git"
+	commandArgs := append([]string{"lfs", "track"}, filePatterns...)
+	err = util.ExecuteShellCommand(commandName, commandArgs...)
+	if err != nil {
+		return
 	}
 	return
 }
