@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/stevengt/mppm/config"
 	"github.com/stevengt/mppm/util"
 )
 
@@ -21,16 +22,38 @@ var extractCmd = &cobra.Command{
 			Note that no '.als' files are stored in git directly. To restore the original files from XML, run 'mppm project restore'.`,
 	Args: cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
-		if err := copyAllAlsFilesToUncompressedXmlFiles(); err != nil {
+		if err := extractAllCompressedFiles(); err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
 	},
 }
 
-func copyAllAlsFilesToUncompressedXmlFiles() (err error) {
+func extractAllCompressedFiles() (err error) {
 
-	fileNames, err := util.GetAllFileNamesWithExtension("als")
+	err = extractAllGzippedXmlFiles()
+	if err != nil {
+		return
+	}
+
+	return
+}
+
+func extractAllGzippedXmlFiles() (err error) {
+	gzippedXmlFileExtensions := config.GetAllFilePatternsConfig().GzippedXmlFileExtensions
+	for i := 0; i < len(gzippedXmlFileExtensions); i++ {
+		fileExtension := gzippedXmlFileExtensions[i]
+		err = extractAllGzippedXmlFilesWithExtension(fileExtension)
+		if err != nil {
+			return
+		}
+	}
+	return
+}
+
+func extractAllGzippedXmlFilesWithExtension(fileExtension string) (err error) {
+
+	fileNames, err := util.GetAllFileNamesWithExtension(fileExtension)
 	if err != nil {
 		return
 	}

@@ -1,42 +1,50 @@
 package config
 
 type FilePatternsConfig struct {
-	GitIgnorePatterns   []string
-	GitLfsTrackPatterns []string
+	GitIgnorePatterns        []string
+	GitLfsTrackPatterns      []string
+	GzippedXmlFileExtensions []string // List of file extensions that represent Gzipped XML files.
+}
+
+func newFilePatternsConfig() (filePatternsConfig *FilePatternsConfig) {
+	return &FilePatternsConfig{
+		GitIgnorePatterns:        make([]string, 0),
+		GitLfsTrackPatterns:      make([]string, 0),
+		GzippedXmlFileExtensions: make([]string, 0),
+	}
+}
+
+func (config1 *FilePatternsConfig) appendAll(config2 *FilePatternsConfig) (filePatternsConfig *FilePatternsConfig) {
+	config1.GitIgnorePatterns = append(config1.GitIgnorePatterns, config2.GitIgnorePatterns...)
+	config1.GitLfsTrackPatterns = append(config1.GitLfsTrackPatterns, config2.GitLfsTrackPatterns...)
+	config1.GzippedXmlFileExtensions = append(config1.GzippedXmlFileExtensions, config2.GzippedXmlFileExtensions...)
+	filePatternsConfig = config1
+	return
 }
 
 func GetAllFilePatternsConfig() (allFilePatternsConfig *FilePatternsConfig) {
 
 	allFilePatternsConfig = newFilePatternsConfig()
 
-	filePatternsConfigGetters := []func() *FilePatternsConfig{
-		getAudioFilePatternsConfig,
-		getAbletonFilePatternsConfig,
+	filePatternsConfigList := []*FilePatternsConfig{
+		AudioFilePatternsConfig,
+		AbletonFilePatternsConfig,
 	}
 
-	for i := 0; i < len(filePatternsConfigGetters); i++ {
-		filePatternsConfigGetter := filePatternsConfigGetters[i]
-		filePatternsConfig := filePatternsConfigGetter()
-		allFilePatternsConfig.GitIgnorePatterns = append(allFilePatternsConfig.GitIgnorePatterns, filePatternsConfig.GitIgnorePatterns...)
-		allFilePatternsConfig.GitLfsTrackPatterns = append(allFilePatternsConfig.GitLfsTrackPatterns, filePatternsConfig.GitLfsTrackPatterns...)
+	for i := 0; i < len(filePatternsConfigList); i++ {
+		filePatternsConfig := filePatternsConfigList[i]
+		allFilePatternsConfig = allFilePatternsConfig.appendAll(filePatternsConfig)
 	}
 
 	return
 
 }
 
-func newFilePatternsConfig() (filePatternsConfig *FilePatternsConfig) {
-	return &FilePatternsConfig{
-		GitIgnorePatterns:   make([]string, 0),
-		GitLfsTrackPatterns: make([]string, 0),
-	}
-}
+var AudioFilePatternsConfig *FilePatternsConfig = &FilePatternsConfig{
 
-func getAudioFilePatternsConfig() (filePatternsConfig *FilePatternsConfig) {
+	GitIgnorePatterns: []string{},
 
-	gitIgnorePatterns := []string{}
-
-	gitLfsTrackPatterns := []string{
+	GitLfsTrackPatterns: []string{
 		".3gp",
 		".aa",
 		".aac",
@@ -82,23 +90,19 @@ func getAudioFilePatternsConfig() (filePatternsConfig *FilePatternsConfig) {
 		".webm",
 		".8svx",
 		".cda",
-	}
+	},
 
-	return &FilePatternsConfig{
-		GitIgnorePatterns:   gitIgnorePatterns,
-		GitLfsTrackPatterns: gitLfsTrackPatterns,
-	}
-
+	GzippedXmlFileExtensions: []string{},
 }
 
-func getAbletonFilePatternsConfig() (filePatternsConfig *FilePatternsConfig) {
+var AbletonFilePatternsConfig *FilePatternsConfig = &FilePatternsConfig{
 
-	gitIgnorePatterns := []string{
+	GitIgnorePatterns: []string{
 		"Backup/",
 		"*.als",
-	}
+	},
 
-	gitLfsTrackPatterns := []string{
+	GitLfsTrackPatterns: []string{
 		"*.alp",
 		"*.asd",
 		"*.ask",
@@ -108,11 +112,9 @@ func getAbletonFilePatternsConfig() (filePatternsConfig *FilePatternsConfig) {
 		"*.agr",
 		"*.ams",
 		"*.amxd",
-	}
+	},
 
-	return &FilePatternsConfig{
-		GitIgnorePatterns:   gitIgnorePatterns,
-		GitLfsTrackPatterns: gitLfsTrackPatterns,
-	}
-
+	GzippedXmlFileExtensions: []string{
+		"als",
+	},
 }
