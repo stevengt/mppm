@@ -10,6 +10,7 @@ func GetAllGitConfigFilePatterns() (allFilePatterns *GitConfigFilePatterns) {
 	allFilePatterns = newGitConfigFilePatterns()
 
 	filePatternGetters := []func() *GitConfigFilePatterns{
+		getAudioGitConfigFilePatterns,
 		getAbletonGitConfigFilePatterns,
 	}
 
@@ -31,7 +32,67 @@ func newGitConfigFilePatterns() (filePatterns *GitConfigFilePatterns) {
 	}
 }
 
+func getAudioGitConfigFilePatterns() (filePatterns *GitConfigFilePatterns) {
+
+	gitIgnorePatterns := []string{}
+
+	gitLfsTrackPatterns := []string{
+		".3gp",
+		".aa",
+		".aac",
+		".aax",
+		".act",
+		".aiff",
+		".alac",
+		".amr",
+		".ape",
+		".au",
+		".awb",
+		".dct",
+		".dss",
+		".dvf",
+		".flac",
+		".gsm",
+		".iklax",
+		".ivs",
+		".m4a",
+		".m4b",
+		".m4p",
+		".mmf",
+		".mp3",
+		".mpc",
+		".msv",
+		".nmf",
+		".nsf",
+		".ogg",
+		".oga",
+		".mogg",
+		".opus",
+		".ra",
+		".rm",
+		".raw",
+		".rf64",
+		".sln",
+		".tta",
+		".voc",
+		".vox",
+		".wav",
+		".wma",
+		".wv",
+		".webm",
+		".8svx",
+		".cda",
+	}
+
+	return &GitConfigFilePatterns{
+		GitIgnorePatterns:   gitIgnorePatterns,
+		GitLfsTrackPatterns: gitLfsTrackPatterns,
+	}
+
+}
+
 func getAbletonGitConfigFilePatterns() (filePatterns *GitConfigFilePatterns) {
+
 	gitIgnorePatterns := []string{
 		"Backup/",
 		"*.als",
@@ -53,4 +114,5 @@ func getAbletonGitConfigFilePatterns() (filePatterns *GitConfigFilePatterns) {
 		GitIgnorePatterns:   gitIgnorePatterns,
 		GitLfsTrackPatterns: gitLfsTrackPatterns,
 	}
+
 }
