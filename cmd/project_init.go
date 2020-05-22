@@ -40,14 +40,14 @@ func initProject() (err error) {
 		return
 	}
 
-	gitConfigFilePatterns := config.GetAllGitConfigFilePatterns()
+	filePatternsConfig := config.GetAllFilePatternsConfig()
 
-	err = createGitIgnore(gitConfigFilePatterns.GitIgnorePatterns...)
+	err = createGitIgnore(filePatternsConfig.GitIgnorePatterns...)
 	if err != nil {
 		return
 	}
 
-	err = runGitLfsTrack(gitConfigFilePatterns.GitLfsTrackPatterns...)
+	err = runGitLfsTrack(filePatternsConfig.GitLfsTrackPatterns...)
 	if err != nil {
 		return
 	}

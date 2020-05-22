@@ -1,38 +1,38 @@
 package config
 
-type GitConfigFilePatterns struct {
+type FilePatternsConfig struct {
 	GitIgnorePatterns   []string
 	GitLfsTrackPatterns []string
 }
 
-func GetAllGitConfigFilePatterns() (allFilePatterns *GitConfigFilePatterns) {
+func GetAllFilePatternsConfig() (allFilePatternsConfig *FilePatternsConfig) {
 
-	allFilePatterns = newGitConfigFilePatterns()
+	allFilePatternsConfig = newFilePatternsConfig()
 
-	filePatternGetters := []func() *GitConfigFilePatterns{
-		getAudioGitConfigFilePatterns,
-		getAbletonGitConfigFilePatterns,
+	filePatternsConfigGetters := []func() *FilePatternsConfig{
+		getAudioFilePatternsConfig,
+		getAbletonFilePatternsConfig,
 	}
 
-	for i := 0; i < len(filePatternGetters); i++ {
-		filePatternGetter := filePatternGetters[i]
-		filePatterns := filePatternGetter()
-		allFilePatterns.GitIgnorePatterns = append(allFilePatterns.GitIgnorePatterns, filePatterns.GitIgnorePatterns...)
-		allFilePatterns.GitLfsTrackPatterns = append(allFilePatterns.GitLfsTrackPatterns, filePatterns.GitLfsTrackPatterns...)
+	for i := 0; i < len(filePatternsConfigGetters); i++ {
+		filePatternsConfigGetter := filePatternsConfigGetters[i]
+		filePatternsConfig := filePatternsConfigGetter()
+		allFilePatternsConfig.GitIgnorePatterns = append(allFilePatternsConfig.GitIgnorePatterns, filePatternsConfig.GitIgnorePatterns...)
+		allFilePatternsConfig.GitLfsTrackPatterns = append(allFilePatternsConfig.GitLfsTrackPatterns, filePatternsConfig.GitLfsTrackPatterns...)
 	}
 
 	return
 
 }
 
-func newGitConfigFilePatterns() (filePatterns *GitConfigFilePatterns) {
-	return &GitConfigFilePatterns{
+func newFilePatternsConfig() (filePatternsConfig *FilePatternsConfig) {
+	return &FilePatternsConfig{
 		GitIgnorePatterns:   make([]string, 0),
 		GitLfsTrackPatterns: make([]string, 0),
 	}
 }
 
-func getAudioGitConfigFilePatterns() (filePatterns *GitConfigFilePatterns) {
+func getAudioFilePatternsConfig() (filePatternsConfig *FilePatternsConfig) {
 
 	gitIgnorePatterns := []string{}
 
@@ -84,14 +84,14 @@ func getAudioGitConfigFilePatterns() (filePatterns *GitConfigFilePatterns) {
 		".cda",
 	}
 
-	return &GitConfigFilePatterns{
+	return &FilePatternsConfig{
 		GitIgnorePatterns:   gitIgnorePatterns,
 		GitLfsTrackPatterns: gitLfsTrackPatterns,
 	}
 
 }
 
-func getAbletonGitConfigFilePatterns() (filePatterns *GitConfigFilePatterns) {
+func getAbletonFilePatternsConfig() (filePatternsConfig *FilePatternsConfig) {
 
 	gitIgnorePatterns := []string{
 		"Backup/",
@@ -110,7 +110,7 @@ func getAbletonGitConfigFilePatterns() (filePatterns *GitConfigFilePatterns) {
 		"*.amxd",
 	}
 
-	return &GitConfigFilePatterns{
+	return &FilePatternsConfig{
 		GitIgnorePatterns:   gitIgnorePatterns,
 		GitLfsTrackPatterns: gitLfsTrackPatterns,
 	}
