@@ -100,6 +100,7 @@ var AbletonFilePatternsConfig *FilePatternsConfig = &FilePatternsConfig{
 	GitIgnorePatterns: []string{
 		"Backup/",
 		"*.als",
+		"*.alc",
 	},
 
 	GitLfsTrackPatterns: []string{
@@ -108,7 +109,6 @@ var AbletonFilePatternsConfig *FilePatternsConfig = &FilePatternsConfig{
 		"*.ask",
 		"*.adg",
 		"*.adv",
-		"*.alc",
 		"*.agr",
 		"*.ams",
 		"*.amxd",
@@ -116,5 +116,6 @@ var AbletonFilePatternsConfig *FilePatternsConfig = &FilePatternsConfig{
 
 	GzippedXmlFileExtensions: []string{
 		"als",
+		"alc",
 	},
 }
