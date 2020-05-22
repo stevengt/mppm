@@ -17,10 +17,10 @@ func init() {
 
 var restoreCmd = &cobra.Command{
 	Use:   "restore",
-	Short: "Restores all 'Ableton Live Set' XML files to their original '.als' files.",
-	Long: `Restores all 'Ableton Live Set' XML files to their original '.als' files.
+	Short: "Restores all plain-text files of supported types to their original binary files.",
+	Long: `Restores all plain-text files of supported types to their original binary files.
 			
-			Note that no '.als' files are stored in git directly. To extract them into XML files for use in git, run 'mppm project extract'.`,
+			Note that the original files are not stored in git directly. To extract them into plain-text files for use in git, run 'mppm project extract'.`,
 	Args: cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		if err := restoreAllUncompressedFilesToOriginalCompressedFiles(); err != nil {
