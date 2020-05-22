@@ -43,6 +43,22 @@ func CopyFile(sourceFileName string, targetFileName string) (err error) {
 	return
 }
 
+func GzipFile(fileName string) (err error) {
+
+	compressedFileName := fileName + ".gz"
+	err = os.RemoveAll(compressedFileName)
+	if err != nil {
+		return
+	}
+
+	err = ExecuteShellCommand("gzip", fileName)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
 func GunzipFile(fileName string) (err error) {
 
 	uncompressedFileName := strings.TrimSuffix(fileName, ".gz")
@@ -59,13 +75,18 @@ func GunzipFile(fileName string) (err error) {
 	return
 }
 
-func CreateFoldersIfNotExists(folderNames ...string) (err error) {
-	filePermissionsCode := os.FileMode(0755)
-	for i := 0; i < len(folderNames); i++ {
-		folderName := folderNames[i]
-		err = os.MkdirAll(folderName, filePermissionsCode)
-		if err != nil {
-			return
+func GetAllFileNamesWithExtension(extension string) (fileNames []string, err error) {
+	fileNames = make([]string, 0)
+	stdout, err := ExecuteShellCommandAndReturnOutput("find", ".", "-name", "*."+extension)
+	if err == nil {
+		stdoutLines := strings.Split(stdout, "\n")
+		for i := 0; i < len(stdoutLines); i++ {
+			line := stdoutLines[i]
+			line = strings.Trim(line, " \n")
+			line = strings.TrimPrefix(line, "./")
+			if len(line) > 0 {
+				fileNames = append(fileNames, line)
+			}
 		}
 	}
 	return
