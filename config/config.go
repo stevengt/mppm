@@ -101,14 +101,13 @@ var AbletonFilePatternsConfig *FilePatternsConfig = &FilePatternsConfig{
 		"Backup/",
 		"*.als",
 		"*.alc",
+		"*.adv",
+		"*.adg",
 	},
 
 	GitLfsTrackPatterns: []string{
 		"*.alp",
 		"*.asd",
-		"*.ask",
-		"*.adg",
-		"*.adv",
 		"*.agr",
 		"*.ams",
 		"*.amxd",
@@ -117,5 +116,7 @@ var AbletonFilePatternsConfig *FilePatternsConfig = &FilePatternsConfig{
 	GzippedXmlFileExtensions: []string{
 		"als",
 		"alc",
+		"adv",
+		"adg",
 	},
 }
