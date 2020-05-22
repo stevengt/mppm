@@ -16,12 +16,18 @@ func init() {
 }
 
 var restoreCmd = &cobra.Command{
-	Use:   "restore",
+
+	Use: "restore",
+
 	Short: "Restores all plain-text files of supported types to their original binary files.",
+
 	Long: `Restores all plain-text files of supported types to their original binary files.
 			
-			Note that the original files are not stored in git directly. To extract them into plain-text files for use in git, run 'mppm project extract'.`,
+Note that the original files are not stored in git directly.
+To extract them into plain-text files for use in git, run 'mppm project extract'.`,
+
 	Args: cobra.NoArgs,
+
 	Run: func(cmd *cobra.Command, args []string) {
 		if err := restoreAllUncompressedFilesToOriginalCompressedFiles(); err != nil {
 			fmt.Println(err)

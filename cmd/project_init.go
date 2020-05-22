@@ -16,10 +16,15 @@ func init() {
 }
 
 var initCmd = &cobra.Command{
-	Use:   "init",
+
+	Use: "init",
+
 	Short: "Initializes version control settings for a project using git and git-lfs.",
-	Long:  "Initializes version control settings for a project using git and git-lfs.",
-	Args:  cobra.NoArgs,
+
+	Long: "Initializes version control settings for a project using git and git-lfs.",
+
+	Args: cobra.NoArgs,
+
 	Run: func(cmd *cobra.Command, args []string) {
 		if err := initProject(); err != nil {
 			fmt.Println(err)

@@ -8,11 +8,16 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "mppm",
+
+	Use: "mppm",
+
 	Short: "Short for 'Music Production Project Manager', mppm provides utilities for managing music production projects.",
-	Long: `Short for 'Music Production Project Manager', mppm provides utilities for managing music production projects, including:
-			- Simplified version control using 'git' and 'git-lfs'.
-			- Extraction of 'Ableton Live Set' files to/from raw XML files.`,
+
+	Long: `Short for 'Music Production Project Manager', mppm provides utilities for managing music production projects, such as:
+
+	- Simplified version control using 'git' and 'git-lfs'.
+	- Extraction of 'Ableton Live Set' files to/from raw XML files.`,
+
 	Args: cobra.MinimumNArgs(1),
 }
 

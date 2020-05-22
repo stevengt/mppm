@@ -9,8 +9,12 @@ func init() {
 }
 
 var projectCmd = &cobra.Command{
-	Use:   "project",
+
+	Use: "project",
+
 	Short: "Provides utilities for managing a specific project.",
-	Long:  "Provides utilities for managing a specific project.",
-	Args:  cobra.MinimumNArgs(1),
+
+	Long: "Provides utilities for managing a specific project.",
+
+	Args: cobra.MinimumNArgs(1),
 }

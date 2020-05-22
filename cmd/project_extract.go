@@ -14,13 +14,19 @@ func init() {
 }
 
 var extractCmd = &cobra.Command{
-	Use:   "extract",
+
+	Use: "extract",
+
 	Short: "Extracts all binary files of supported types into plain-text files, such as XML.",
+
 	Long: `Extracts all binary files of supported types into plain-text files, such as XML.
-			This saves space within the git repository, and enables easier side-by-side comparison of different versions of the files.
+This saves space within the git repository, and enables easier side-by-side comparison of different versions of the files.
 			
-			Note that the original files are not stored in git directly. To restore the original files, run 'mppm project restore'.`,
+Note that the original files are not stored in git directly.
+To restore the original files, run 'mppm project restore'.`,
+
 	Args: cobra.NoArgs,
+
 	Run: func(cmd *cobra.Command, args []string) {
 		if err := extractAllCompressedFiles(); err != nil {
 			fmt.Println(err)
