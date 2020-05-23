@@ -47,8 +47,7 @@ func extractAllCompressedFiles() (err error) {
 
 func extractAllGzippedXmlFiles() (err error) {
 	gzippedXmlFileExtensions := config.GetAllFilePatternsConfig().GzippedXmlFileExtensions
-	for i := 0; i < len(gzippedXmlFileExtensions); i++ {
-		fileExtension := gzippedXmlFileExtensions[i]
+	for _, fileExtension := range gzippedXmlFileExtensions {
 		err = extractAllGzippedXmlFilesWithExtension(fileExtension)
 		if err != nil {
 			return
@@ -64,10 +63,9 @@ func extractAllGzippedXmlFilesWithExtension(fileExtension string) (err error) {
 		return
 	}
 
-	for i := 0; i < len(fileNames); i++ {
-		originalFileName := fileNames[i]
-		gzippedFileName := fileNames[i] + ".xml.gz"
-		newFileName := fileNames[i] + ".xml"
+	for _, originalFileName := range fileNames {
+		gzippedFileName := originalFileName + ".xml.gz"
+		newFileName := originalFileName + ".xml"
 
 		if isPreviewCommand {
 			printExtractPreviewMessage(originalFileName, newFileName)

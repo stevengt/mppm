@@ -48,8 +48,7 @@ func restoreAllUncompressedFilesToOriginalCompressedFiles() (err error) {
 
 func restoreAllGzippedXmlFiles() (err error) {
 	gzippedXmlFileExtensions := config.GetAllFilePatternsConfig().GzippedXmlFileExtensions
-	for i := 0; i < len(gzippedXmlFileExtensions); i++ {
-		fileExtension := gzippedXmlFileExtensions[i]
+	for _, fileExtension := range gzippedXmlFileExtensions {
 		err = restoreAllGzippedXmlFilesWithExtension(fileExtension)
 		if err != nil {
 			return
@@ -65,9 +64,8 @@ func restoreAllGzippedXmlFilesWithExtension(fileExtension string) (err error) {
 		return
 	}
 
-	for i := 0; i < len(fileNames); i++ {
+	for _, originalFileName := range fileNames {
 
-		originalFileName := fileNames[i]
 		newFileName := strings.TrimSuffix(originalFileName, ".xml")
 
 		if isPreviewCommand {

@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-var Version = "1.0.1"
+var Version = "1.1.0"
 var MppmProjectConfigFileName = ".mppm.json"
 var MppmProjectConfig *MppmProjectConfigInfo
 
@@ -102,92 +102,10 @@ func GetAllFilePatternsConfig() (allFilePatternsConfig *FilePatternsConfig) {
 		AbletonFilePatternsConfig,
 	}
 
-	for i := 0; i < len(filePatternsConfigList); i++ {
-		filePatternsConfig := filePatternsConfigList[i]
+	for _, filePatternsConfig := range filePatternsConfigList {
 		allFilePatternsConfig = allFilePatternsConfig.appendAll(filePatternsConfig)
 	}
 
 	return
 
-}
-
-var AudioFilePatternsConfig *FilePatternsConfig = &FilePatternsConfig{
-
-	GitIgnorePatterns: []string{},
-
-	GitLfsTrackPatterns: []string{
-		"*.3gp",
-		"*.aa",
-		"*.aac",
-		"*.aax",
-		"*.act",
-		"*.aiff",
-		"*.alac",
-		"*.amr",
-		"*.ape",
-		"*.au",
-		"*.awb",
-		"*.dct",
-		"*.dss",
-		"*.dvf",
-		"*.flac",
-		"*.gsm",
-		"*.iklax",
-		"*.ivs",
-		"*.m4a",
-		"*.m4b",
-		"*.m4p",
-		"*.mmf",
-		"*.mp3",
-		"*.mpc",
-		"*.msv",
-		"*.nmf",
-		"*.nsf",
-		"*.ogg",
-		"*.oga",
-		"*.mogg",
-		"*.opus",
-		"*.ra",
-		"*.rm",
-		"*.raw",
-		"*.rf64",
-		"*.sln",
-		"*.tta",
-		"*.voc",
-		"*.vox",
-		"*.wav",
-		"*.wma",
-		"*.wv",
-		"*.webm",
-		"*.8svx",
-		"*.cda",
-	},
-
-	GzippedXmlFileExtensions: []string{},
-}
-
-var AbletonFilePatternsConfig *FilePatternsConfig = &FilePatternsConfig{
-
-	GitIgnorePatterns: []string{
-		"Backup/",
-		"*.als",
-		"*.alc",
-		"*.adv",
-		"*.adg",
-	},
-
-	GitLfsTrackPatterns: []string{
-		"*.alp",
-		"*.asd",
-		"*.agr",
-		"*.ams",
-		"*.amxd",
-	},
-
-	GzippedXmlFileExtensions: []string{
-		"als",
-		"alc",
-		"adv",
-		"adg",
-	},
 }
