@@ -12,9 +12,10 @@ func init() {
 		},
 	)
 
-	projectCmd.PersistentFlags().BoolVar(
+	projectCmd.PersistentFlags().BoolVarP(
 		&isPreviewCommand,
 		"preview",
+		"p",
 		false,
 		"Shows what files will be affected without actually making changes.",
 	)
