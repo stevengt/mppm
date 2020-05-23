@@ -19,8 +19,7 @@ func ExecuteShellCommand(commandName string, args ...string) (err error) {
 }
 
 func ExecuteShellCommandAndReturnOutput(commandName string, args ...string) (stdout string, err error) {
-	cmdArgsArray := append([]string{commandName}, args...)
-	stdoutAsByteArray, err := exec.Command("/usr/bin/env", cmdArgsArray...).CombinedOutput()
+	stdoutAsByteArray, err := exec.Command(commandName, args...).CombinedOutput()
 	if stdoutAsByteArray != nil && len(stdoutAsByteArray) > 0 {
 		stdout = string(stdoutAsByteArray)
 	}

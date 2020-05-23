@@ -3,6 +3,10 @@
 ### Music Production Project Manager
 
 
+## Requirements
+- [git](https://git-scm.com)
+- [git-lfs](https://git-lfs.github.com)
+
 ## Installation
 `go get -u github.com/stevengt/mppm`
 
