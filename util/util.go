@@ -1,10 +1,12 @@
 package util
 
 import (
+	"compress/gzip"
 	"fmt"
 	"io"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 )
 
@@ -45,13 +47,23 @@ func CopyFile(sourceFileName string, targetFileName string) (err error) {
 
 func GzipFile(fileName string) (err error) {
 
-	compressedFileName := fileName + ".gz"
-	err = os.RemoveAll(compressedFileName)
+	uncompressedFile, err := os.Open(fileName)
 	if err != nil {
 		return
 	}
+	defer uncompressedFile.Close()
 
-	err = ExecuteShellCommand("gzip", fileName)
+	compressedFileName := fileName + ".gz"
+	compressedFile, err := CreateFile(compressedFileName)
+	if err != nil {
+		return
+	}
+	defer compressedFile.Close()
+
+	gzipWriter := gzip.NewWriter(compressedFile)
+	defer gzipWriter.Close()
+
+	_, err = io.Copy(gzipWriter, uncompressedFile)
 	if err != nil {
 		return
 	}
@@ -59,15 +71,46 @@ func GzipFile(fileName string) (err error) {
 	return
 }
 
-func GunzipFile(fileName string) (err error) {
+func GunzipFile(compressedFileName string) (err error) {
 
-	uncompressedFileName := strings.TrimSuffix(fileName, ".gz")
-	err = os.RemoveAll(uncompressedFileName)
+	compressedFile, err := os.Open(compressedFileName)
+	if err != nil {
+		return
+	}
+	defer func() {
+		compressedFile.Close()
+		err = os.RemoveAll(compressedFileName)
+	}()
+
+	gzipReader, err := gzip.NewReader(compressedFile)
+	if err != nil {
+		return
+	}
+	defer gzipReader.Close()
+
+	uncompressedFileName := strings.TrimSuffix(compressedFileName, ".gz")
+	uncompressedFile, err := CreateFile(uncompressedFileName)
+	if err != nil {
+		return
+	}
+	defer uncompressedFile.Close()
+
+	_, err = io.Copy(uncompressedFile, gzipReader)
 	if err != nil {
 		return
 	}
 
-	err = ExecuteShellCommand("gunzip", fileName)
+	return
+}
+
+func CreateFile(fileName string) (file *os.File, err error) {
+
+	err = os.RemoveAll(fileName)
+	if err != nil {
+		return
+	}
+
+	file, err = os.Create(fileName)
 	if err != nil {
 		return
 	}
@@ -76,18 +119,23 @@ func GunzipFile(fileName string) (err error) {
 }
 
 func GetAllFileNamesWithExtension(extension string) (fileNames []string, err error) {
+
 	fileNames = make([]string, 0)
-	stdout, err := ExecuteShellCommandAndReturnOutput("find", ".", "-name", "*."+extension)
-	if err == nil {
-		stdoutLines := strings.Split(stdout, "\n")
-		for i := 0; i < len(stdoutLines); i++ {
-			line := stdoutLines[i]
-			line = strings.Trim(line, " \n")
-			line = strings.TrimPrefix(line, "./")
-			if len(line) > 0 {
-				fileNames = append(fileNames, line)
-			}
+
+	err = filepath.Walk(".", func(fileName string, fileInfo os.FileInfo, err error) error {
+		if err != nil {
+			return err
 		}
+		if strings.HasSuffix(fileName, "."+extension) {
+			fileNames = append(fileNames, fileName)
+		}
+		return nil
+	})
+
+	if err != nil {
+		return
 	}
+
 	return
+
 }
