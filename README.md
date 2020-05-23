@@ -18,6 +18,7 @@ Short for 'Music Production Project Manager', mppm provides utilities for managi
 	- Extraction of 'Ableton Live Set' files to/from raw XML files.
 
 Usage:
+  mppm [flags]
   mppm [command]
 
 Available Commands:
@@ -25,8 +26,9 @@ Available Commands:
   project     Provides utilities for managing a specific project.
 
 Flags:
-  -h, --help      help for mppm
-  -v, --version   version for mppm
+  -h, --help             help for mppm
+  -s, --show-supported   Shows what file types are supported by mppm.
+  -v, --version          version for mppm
 
 Use "mppm [command] --help" for more information about a command.
 ```
