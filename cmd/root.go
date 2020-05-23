@@ -8,6 +8,24 @@ import (
 	"github.com/stevengt/mppm/config"
 )
 
+func init() {
+
+	cobra.OnInitialize(
+		func() {
+			isShowSupportedFileTypesCommand, _ = rootCmd.Flags().GetBool("show-supported")
+		},
+	)
+
+	rootCmd.Flags().BoolVarP(
+		&isShowSupportedFileTypesCommand,
+		"show-supported",
+		"s",
+		false,
+		"Shows what file types are supported by mppm.",
+	)
+
+}
+
 var rootCmd = &cobra.Command{
 
 	Version: config.Version,
@@ -21,8 +39,18 @@ var rootCmd = &cobra.Command{
 	- Simplified version control using 'git' and 'git-lfs'.
 	- Extraction of 'Ableton Live Set' files to/from raw XML files.`,
 
-	Args: cobra.MinimumNArgs(1),
+	Args: cobra.OnlyValidArgs,
+
+	Run: func(cmd *cobra.Command, args []string) {
+		if isShowSupportedFileTypesCommand {
+			config.GetAllFilePatternsConfig().Print()
+		} else {
+			cmd.Help()
+		}
+	},
 }
+
+var isShowSupportedFileTypesCommand bool
 
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {

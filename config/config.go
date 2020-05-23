@@ -84,6 +84,15 @@ func (config1 *FilePatternsConfig) appendAll(config2 *FilePatternsConfig) (fileP
 	return
 }
 
+func (config *FilePatternsConfig) Print() {
+	fmt.Println("Git Ignore Patterns    ---------------------------------")
+	fmt.Println(strings.Join(config.GitIgnorePatterns, "\n"))
+	fmt.Println("Git LFS Track Patterns ---------------------------------")
+	fmt.Println(strings.Join(config.GitLfsTrackPatterns, "\n"))
+	fmt.Println("Gzipped XML File Types ---------------------------------")
+	fmt.Println(strings.Join(config.GzippedXmlFileExtensions, "\n"))
+}
+
 func GetAllFilePatternsConfig() (allFilePatternsConfig *FilePatternsConfig) {
 
 	allFilePatternsConfig = newFilePatternsConfig()
