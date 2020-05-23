@@ -5,9 +5,12 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/stevengt/mppm/config"
 )
 
 var rootCmd = &cobra.Command{
+
+	Version: config.Version,
 
 	Use: "mppm",
 

@@ -1,10 +1,24 @@
 package cmd
 
 import (
+	"fmt"
+	"os"
+
 	"github.com/spf13/cobra"
+	"github.com/stevengt/mppm/config"
 )
 
 func init() {
+
+	existingMppmProjectConfig := config.MppmProjectConfig
+	if existingMppmProjectConfig != nil {
+		isCompatible, installedVersion, configVersion := existingMppmProjectConfig.IsCompatibleWithInstalledMppmVersion()
+		if !isCompatible {
+			fmt.Println("ERROR: Installed mppm version " + installedVersion +
+				" is not compatible with this project's configured version " + configVersion)
+			os.Exit(1)
+		}
+	}
 
 	cobra.OnInitialize(
 		func() {

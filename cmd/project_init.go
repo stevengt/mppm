@@ -35,7 +35,7 @@ var initCmd = &cobra.Command{
 
 func initProject() (err error) {
 
-	err = createReadmeFile()
+	err = createMppmProjectConfigFile()
 	if err != nil {
 		return
 	}
@@ -62,7 +62,7 @@ func initProject() (err error) {
 		return
 	}
 
-	err = util.ExecuteShellCommand("git", "add", ".gitignore", ".gitattributes", "README-mppm.txt")
+	err = util.ExecuteShellCommand("git", "add", ".gitignore", ".gitattributes", config.MppmProjectConfigFileName)
 	if err != nil {
 		return
 	}
@@ -94,10 +94,10 @@ func runGitLfsTrack(filePatterns ...string) (err error) {
 	return
 }
 
-func createReadmeFile() (err error) {
-	fileName := "README-mppm.txt"
-	filePermissionsCode := os.FileMode(0644)
-	fileContents := "The files in this project are managed with 'mppm', which is available at: https://github.com/stevengt/mppm"
-	err = ioutil.WriteFile(fileName, []byte(fileContents), filePermissionsCode)
+func createMppmProjectConfigFile() (err error) {
+	mppmProjectConfig := &config.MppmProjectConfigInfo{
+		Version: config.Version,
+	}
+	err = mppmProjectConfig.Save()
 	return
 }
