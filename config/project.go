@@ -13,7 +13,8 @@ var MppmProjectConfig *MppmProjectConfigInfo
 var MppmProjectConfigFileName = ".mppm.json"
 
 type MppmProjectConfigInfo struct {
-	Version string `json:"version"`
+	Version      string               `json:"version"`
+	Applications []*ApplicationConfig `json:"applications"`
 }
 
 func (config *MppmProjectConfigInfo) Save() (err error) {
