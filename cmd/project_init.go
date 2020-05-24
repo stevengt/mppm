@@ -95,22 +95,7 @@ func runGitLfsTrack(filePatterns ...string) (err error) {
 }
 
 func createMppmProjectConfigFile() (err error) {
-
-	applicationConfigList := make([]*config.ApplicationConfig, 0)
-
-	for _, supportedApplication := range config.SupportedApplications {
-		applicationConfig := &config.ApplicationConfig{
-			Name:    supportedApplication.Name,
-			Version: supportedApplication.DefaultVersion,
-		}
-		applicationConfigList = append(applicationConfigList, applicationConfig)
-	}
-
-	mppmProjectConfig := &config.MppmProjectConfigInfo{
-		Version:      config.Version,
-		Applications: applicationConfigList,
-	}
-
+	mppmProjectConfig := config.GetDefaultMppmProjectConfig()
 	err = mppmProjectConfig.Save()
 	return
 }

@@ -105,7 +105,7 @@ func LoadMppmProjectConfig() {
 
 	err = jsonDecoder.Decode(MppmProjectConfig)
 	if err != nil {
-		errorMessage := invalidMppmProjectConfigFileErrorMessage + err.Error()
+		errorMessage := getInvalidMppmProjectConfigFileErrorMessage(err)
 		util.ExitWithErrorMessage(errorMessage)
 	}
 
@@ -118,5 +118,26 @@ func LoadMppmProjectConfig() {
 	if err != nil {
 		util.ExitWithError(err)
 	}
+
+}
+
+func GetDefaultMppmProjectConfig() (mppmProjectConfig *MppmProjectConfigInfo) {
+
+	applicationConfigList := make([]*ApplicationConfig, 0)
+
+	for _, supportedApplication := range SupportedApplications {
+		applicationConfig := &ApplicationConfig{
+			Name:    supportedApplication.Name,
+			Version: supportedApplication.DefaultVersion,
+		}
+		applicationConfigList = append(applicationConfigList, applicationConfig)
+	}
+
+	mppmProjectConfig = &MppmProjectConfigInfo{
+		Version:      Version,
+		Applications: applicationConfigList,
+	}
+
+	return
 
 }
