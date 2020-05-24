@@ -93,9 +93,7 @@ func LoadMppmProjectConfig() {
 
 	configFile, err := os.Open(MppmProjectConfigFileName)
 	if err != nil {
-		errorMessage := "There was a problem while opening the mppm config file. " +
-			"If the file doesn't exist, try running 'mppm project init' first.\n" +
-			err.Error()
+		errorMessage := openingMppmProjectConfigFileErrorMessage + err.Error()
 		util.ExitWithErrorMessage(errorMessage)
 	}
 	defer configFile.Close()
@@ -107,7 +105,7 @@ func LoadMppmProjectConfig() {
 
 	err = jsonDecoder.Decode(MppmProjectConfig)
 	if err != nil {
-		errorMessage := "The mppm config file " + MppmProjectConfigFileName + " is invalid.\n" + err.Error()
+		errorMessage := invalidMppmProjectConfigFileErrorMessage + err.Error()
 		util.ExitWithErrorMessage(errorMessage)
 	}
 
