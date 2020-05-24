@@ -1,6 +1,8 @@
 package config
 
-var AbletonFilePatternsConfig *FilePatternsConfig = &FilePatternsConfig{
+var Ableton10FilePatternsConfig *FilePatternsConfig = &FilePatternsConfig{
+
+	Name: "Ableton 10",
 
 	GitIgnorePatterns: []string{
 		"Backup/",

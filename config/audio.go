@@ -2,6 +2,8 @@ package config
 
 var AudioFilePatternsConfig *FilePatternsConfig = &FilePatternsConfig{
 
+	Name: "Audio",
+
 	GitIgnorePatterns: []string{},
 
 	GitLfsTrackPatterns: []string{
