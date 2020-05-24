@@ -138,3 +138,12 @@ func GetAllFileNamesWithExtension(extension string) (fileNames []string, err err
 	return
 
 }
+
+func ExitWithError(err error) {
+	ExitWithErrorMessage(err.Error())
+}
+
+func ExitWithErrorMessage(errorMessage string) {
+	fmt.Println("ERROR: " + errorMessage)
+	os.Exit(1)
+}

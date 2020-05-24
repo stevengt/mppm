@@ -2,10 +2,13 @@ package config
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"strings"
+
+	"github.com/stevengt/mppm/util"
 )
 
 var MppmProjectConfig *MppmProjectConfigInfo
@@ -34,31 +37,88 @@ func (config *MppmProjectConfigInfo) Save() (err error) {
 
 }
 
-func (config *MppmProjectConfigInfo) IsCompatibleWithInstalledMppmVersion() (isCompatible bool, installedVersion string, configVersion string) {
+func (config *MppmProjectConfigInfo) CheckIfCompatibleWithInstalledMppmVersion() (err error) {
 
-	installedVersion = Version
-	configVersion = config.Version
+	installedVersion := Version
+	configVersion := config.Version
+
 	installedMajorVersion := strings.Split(installedVersion, ".")[0]
 	configMajorVersion := strings.Split(configVersion, ".")[0]
 
-	isCompatible = installedMajorVersion == configMajorVersion
+	isCompatible := installedMajorVersion == configMajorVersion
+
+	if !isCompatible {
+		err = errors.New("Installed mppm version " + installedVersion +
+			" is not compatible with this project's configured version " + configVersion)
+	}
 
 	return
 }
 
-func init() {
+func (config *MppmProjectConfigInfo) CheckIfCompatibleWithSupportedApplications() (err error) {
 
-	configAsJson, err := ioutil.ReadFile(MppmProjectConfigFileName)
-	if err != nil {
-		return
+	for _, application := range config.Applications {
+
+		isApplicationSupported := false
+		for _, supportedApplication := range SupportedApplications {
+			if application.Name == supportedApplication.Name {
+
+				isVersionSupported := false
+				for _, supportedVersion := range supportedApplication.SupportedVersions {
+					if application.Version == supportedVersion {
+						isVersionSupported = true
+						break
+					}
+				}
+				if isVersionSupported {
+					isApplicationSupported = true
+					break
+				}
+			}
+
+		}
+		if !isApplicationSupported {
+			errorMessage := fmt.Sprintf("Found unsupported application %s %s in %s", application.Name, application.Version, MppmProjectConfigFileName)
+			err = errors.New(errorMessage)
+			return
+		}
+
 	}
+
+	return
+
+}
+
+func LoadMppmProjectConfig() {
+
+	configFile, err := os.Open(MppmProjectConfigFileName)
+	if err != nil {
+		errorMessage := "There was a problem while opening the mppm config file. " +
+			"If the file doesn't exist, try running 'mppm project init' first.\n" +
+			err.Error()
+		util.ExitWithErrorMessage(errorMessage)
+	}
+	defer configFile.Close()
 
 	MppmProjectConfig = &MppmProjectConfigInfo{}
 
-	err = json.Unmarshal(configAsJson, MppmProjectConfig)
+	jsonDecoder := json.NewDecoder(configFile)
+	jsonDecoder.DisallowUnknownFields()
+
+	err = jsonDecoder.Decode(MppmProjectConfig)
 	if err != nil {
-		MppmProjectConfig = nil
-		fmt.Println("WARN: Invalid config file detected in " + MppmProjectConfigFileName)
+		errorMessage := "The mppm config file " + MppmProjectConfigFileName + " is invalid.\n" + err.Error()
+		util.ExitWithErrorMessage(errorMessage)
+	}
+
+	err = MppmProjectConfig.CheckIfCompatibleWithInstalledMppmVersion()
+	if err != nil {
+		util.ExitWithError(err)
+	}
+
+	err = MppmProjectConfig.CheckIfCompatibleWithSupportedApplications()
+	if err != nil {
+		util.ExitWithError(err)
 	}
 
 }
