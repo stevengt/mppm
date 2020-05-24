@@ -3,7 +3,6 @@ package config
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -48,8 +47,8 @@ func (config *MppmProjectConfigInfo) CheckIfCompatibleWithInstalledMppmVersion()
 	isCompatible := installedMajorVersion == configMajorVersion
 
 	if !isCompatible {
-		err = errors.New("Installed mppm version " + installedVersion +
-			" is not compatible with this project's configured version " + configVersion)
+		errorMessage := getIncompatibleMppmVersionErrorMessage(installedVersion, configVersion)
+		err = errors.New(errorMessage)
 	}
 
 	return
@@ -78,7 +77,7 @@ func (config *MppmProjectConfigInfo) CheckIfCompatibleWithSupportedApplications(
 
 		}
 		if !isApplicationSupported {
-			errorMessage := fmt.Sprintf("Found unsupported application %s %s in %s", application.Name, application.Version, MppmProjectConfigFileName)
+			errorMessage := getUnsupportedApplicationErrorMessage(application)
 			err = errors.New(errorMessage)
 			return
 		}
@@ -93,7 +92,7 @@ func LoadMppmProjectConfig() {
 
 	configFile, err := os.Open(MppmProjectConfigFileName)
 	if err != nil {
-		errorMessage := openingMppmProjectConfigFileErrorMessage + err.Error()
+		errorMessage := getOpeningMppmProjectConfigFileErrorMessage(err)
 		util.ExitWithErrorMessage(errorMessage)
 	}
 	defer configFile.Close()
