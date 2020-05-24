@@ -60,7 +60,7 @@ func Execute() {
 }
 
 func showSupportedFileTypes() {
-	for _, filePatternsConfig := range config.FilePatternsConfigList {
+	for _, filePatternsConfig := range config.GetFilePatternsConfigList() {
 		filePatternsConfig.Print()
 	}
 }

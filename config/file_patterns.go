@@ -12,14 +12,23 @@ type FilePatternsConfig struct {
 	GzippedXmlFileExtensions []string // List of file extensions that represent Gzipped XML files.
 }
 
-var FilePatternsConfigList = []*FilePatternsConfig{
-	AudioFilePatternsConfig,
-	Ableton10FilePatternsConfig,
+// Returns a list of *FilePatternsConfig, including all supported application version configs.
+func GetFilePatternsConfigList() (filePatternsConfigList []*FilePatternsConfig) {
+	filePatternsConfigList = []*FilePatternsConfig{
+		AudioFilePatternsConfig,
+	}
+	for _, supprtedApplication := range SupportedApplications {
+		for _, supportedVersionConfig := range supprtedApplication.FilePatternConfigs {
+			filePatternsConfigList = append(filePatternsConfigList, supportedVersionConfig)
+		}
+	}
+	return
 }
 
+// Returns a single *FilePatternsConfig containing the aggregate of all supported file patterns.
 func GetAllFilePatternsConfig() (allFilePatternsConfig *FilePatternsConfig) {
 	allFilePatternsConfig = newFilePatternsConfig()
-	for _, filePatternsConfig := range FilePatternsConfigList {
+	for _, filePatternsConfig := range GetFilePatternsConfigList() {
 		allFilePatternsConfig = allFilePatternsConfig.appendAll(filePatternsConfig)
 	}
 	return
