@@ -37,16 +37,32 @@ To restore the original files, run 'mppm project restore'.`,
 
 func extractAllCompressedFiles() (err error) {
 
-	err = extractAllGzippedXmlFiles()
-	if err != nil {
-		return
+	filePatternsConfigList := make([]*config.FilePatternsConfig, 0)
+
+	projectApplicationConfigs := config.MppmProjectConfig.Applications
+	for _, projectApplicationConfig := range projectApplicationConfigs {
+		applicationName := projectApplicationConfig.Name
+		applicationVersion := projectApplicationConfig.Version
+		for _, supportedApplication := range config.SupportedApplications {
+			if supportedApplication.Name == applicationName {
+				filePatternsConfig := supportedApplication.FilePatternConfigs[applicationVersion]
+				filePatternsConfigList = append(filePatternsConfigList, filePatternsConfig)
+			}
+		}
+	}
+
+	for _, filePatternsConfig := range filePatternsConfigList {
+		err = extractAllGzippedXmlFiles(filePatternsConfig)
+		if err != nil {
+			return
+		}
 	}
 
 	return
 }
 
-func extractAllGzippedXmlFiles() (err error) {
-	gzippedXmlFileExtensions := config.GetAllFilePatternsConfig().GzippedXmlFileExtensions
+func extractAllGzippedXmlFiles(filePatternsConfig *config.FilePatternsConfig) (err error) {
+	gzippedXmlFileExtensions := filePatternsConfig.GzippedXmlFileExtensions
 	for _, fileExtension := range gzippedXmlFileExtensions {
 		err = extractAllGzippedXmlFilesWithExtension(fileExtension)
 		if err != nil {

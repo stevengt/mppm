@@ -15,6 +15,6 @@ type ApplicationConfig struct {
 type ApplicationName string
 type ApplicationVersion string
 
-var SupportedApplications = []*ApplicationInfo{
-	AbletonInfo,
+var SupportedApplications = map[string]*ApplicationInfo{
+	"Ableton": AbletonInfo,
 }
