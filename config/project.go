@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/stevengt/mppm/util"
@@ -20,7 +21,29 @@ type MppmConfigInfo struct {
 	Libraries    []*LibraryConfig     `json:"libraries"`
 }
 
-func (config *MppmConfigInfo) Save() (err error) {
+func (config *MppmConfigInfo) SaveAsProjectConfig() (err error) {
+	err = config.save(MppmConfigFileName)
+	return
+}
+
+func (config *MppmConfigInfo) SaveAsGlobalConfig() (err error) {
+
+	homeDirectoryPath, err := os.UserHomeDir()
+	if err != nil {
+		return
+	}
+
+	configFilePath := filepath.Join(homeDirectoryPath, MppmConfigFileName)
+	err = config.save(configFilePath)
+	if err != nil {
+		return
+	}
+
+	return
+
+}
+
+func (config *MppmConfigInfo) save(filePath string) (err error) {
 
 	configAsJson, err := json.Marshal(config)
 	if err != nil {
@@ -28,7 +51,7 @@ func (config *MppmConfigInfo) Save() (err error) {
 	}
 
 	filePermissionsCode := os.FileMode(0644)
-	err = ioutil.WriteFile(MppmConfigFileName, configAsJson, filePermissionsCode)
+	err = ioutil.WriteFile(filePath, configAsJson, filePermissionsCode)
 	if err != nil {
 		return
 	}
