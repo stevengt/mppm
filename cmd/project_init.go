@@ -62,7 +62,7 @@ func initProject() (err error) {
 		return
 	}
 
-	err = util.ExecuteShellCommand("git", "add", ".gitignore", ".gitattributes", config.MppmProjectConfigFileName)
+	err = util.ExecuteShellCommand("git", "add", ".gitignore", ".gitattributes", config.MppmConfigFileName)
 	if err != nil {
 		return
 	}

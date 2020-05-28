@@ -34,7 +34,7 @@ An example valid config file is formatted like this:
 
 	errorMessage = fmt.Sprintf(
 		errorMessageTemplate,
-		MppmProjectConfigFileName,
+		MppmConfigFileName,
 		jsonUnmarshalError.Error(),
 		string(defaultMppmProjectConfigAsJson),
 	)
@@ -61,7 +61,7 @@ To see what applications are supported, please run 'mppm --show-supported'.
 		errorMessageTemplate,
 		application.Name,
 		application.Version,
-		MppmProjectConfigFileName,
+		MppmConfigFileName,
 	)
 	return
 }

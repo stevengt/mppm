@@ -10,16 +10,16 @@ import (
 	"github.com/stevengt/mppm/util"
 )
 
-var MppmProjectConfig *MppmProjectConfigInfo
+var MppmProjectConfig *MppmConfigInfo
 
-var MppmProjectConfigFileName = ".mppm.json"
+var MppmConfigFileName = ".mppm.json"
 
-type MppmProjectConfigInfo struct {
+type MppmConfigInfo struct {
 	Version      string               `json:"version"`
 	Applications []*ApplicationConfig `json:"applications"`
 }
 
-func (config *MppmProjectConfigInfo) Save() (err error) {
+func (config *MppmConfigInfo) Save() (err error) {
 
 	configAsJson, err := json.Marshal(config)
 	if err != nil {
@@ -27,7 +27,7 @@ func (config *MppmProjectConfigInfo) Save() (err error) {
 	}
 
 	filePermissionsCode := os.FileMode(0644)
-	err = ioutil.WriteFile(MppmProjectConfigFileName, configAsJson, filePermissionsCode)
+	err = ioutil.WriteFile(MppmConfigFileName, configAsJson, filePermissionsCode)
 	if err != nil {
 		return
 	}
@@ -36,7 +36,7 @@ func (config *MppmProjectConfigInfo) Save() (err error) {
 
 }
 
-func (config *MppmProjectConfigInfo) CheckIfCompatibleWithInstalledMppmVersion() (err error) {
+func (config *MppmConfigInfo) CheckIfCompatibleWithInstalledMppmVersion() (err error) {
 
 	installedVersion := Version
 	configVersion := config.Version
@@ -54,7 +54,7 @@ func (config *MppmProjectConfigInfo) CheckIfCompatibleWithInstalledMppmVersion()
 	return
 }
 
-func (config *MppmProjectConfigInfo) CheckIfCompatibleWithSupportedApplications() (err error) {
+func (config *MppmConfigInfo) CheckIfCompatibleWithSupportedApplications() (err error) {
 
 	for _, application := range config.Applications {
 
@@ -90,14 +90,14 @@ func (config *MppmProjectConfigInfo) CheckIfCompatibleWithSupportedApplications(
 
 func LoadMppmProjectConfig() {
 
-	configFile, err := os.Open(MppmProjectConfigFileName)
+	configFile, err := os.Open(MppmConfigFileName)
 	if err != nil {
 		errorMessage := getOpeningMppmProjectConfigFileErrorMessage(err)
 		util.ExitWithErrorMessage(errorMessage)
 	}
 	defer configFile.Close()
 
-	MppmProjectConfig = &MppmProjectConfigInfo{}
+	MppmProjectConfig = &MppmConfigInfo{}
 
 	jsonDecoder := json.NewDecoder(configFile)
 	jsonDecoder.DisallowUnknownFields()
@@ -120,7 +120,7 @@ func LoadMppmProjectConfig() {
 
 }
 
-func GetDefaultMppmProjectConfig() (mppmProjectConfig *MppmProjectConfigInfo) {
+func GetDefaultMppmProjectConfig() (mppmProjectConfig *MppmConfigInfo) {
 
 	applicationConfigList := make([]*ApplicationConfig, 0)
 
@@ -132,7 +132,7 @@ func GetDefaultMppmProjectConfig() (mppmProjectConfig *MppmProjectConfigInfo) {
 		applicationConfigList = append(applicationConfigList, applicationConfig)
 	}
 
-	mppmProjectConfig = &MppmProjectConfigInfo{
+	mppmProjectConfig = &MppmConfigInfo{
 		Version:      Version,
 		Applications: applicationConfigList,
 	}
