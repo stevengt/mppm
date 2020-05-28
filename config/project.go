@@ -17,6 +17,7 @@ var MppmConfigFileName = ".mppm.json"
 type MppmConfigInfo struct {
 	Version      string               `json:"version"`
 	Applications []*ApplicationConfig `json:"applications"`
+	Libraries    []*LibraryConfig     `json:"libraries"`
 }
 
 func (config *MppmConfigInfo) Save() (err error) {
@@ -123,6 +124,7 @@ func LoadMppmProjectConfig() {
 func GetDefaultMppmProjectConfig() (mppmProjectConfig *MppmConfigInfo) {
 
 	applicationConfigList := make([]*ApplicationConfig, 0)
+	libraryConfigList := make([]*LibraryConfig, 0)
 
 	for _, supportedApplication := range SupportedApplications {
 		applicationConfig := &ApplicationConfig{
@@ -135,6 +137,7 @@ func GetDefaultMppmProjectConfig() (mppmProjectConfig *MppmConfigInfo) {
 	mppmProjectConfig = &MppmConfigInfo{
 		Version:      Version,
 		Applications: applicationConfigList,
+		Libraries:    libraryConfigList,
 	}
 
 	return
