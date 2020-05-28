@@ -34,6 +34,35 @@ func GetAllFilePatternsConfig() (allFilePatternsConfig *FilePatternsConfig) {
 	return
 }
 
+// Returns a list of *FilePatternsConfig, including only the applications specified in the project config file.
+func GetFilePatternsConfigListFromProjectConfig() (filePatternsConfigList []*FilePatternsConfig) {
+
+	filePatternsConfigList = make([]*FilePatternsConfig, 0)
+	projectApplicationConfigs := MppmProjectConfig.Applications
+
+	for _, projectApplicationConfig := range projectApplicationConfigs {
+		for _, supportedApplication := range SupportedApplications {
+			if supportedApplication.Name == projectApplicationConfig.Name {
+				filePatternsConfig := supportedApplication.FilePatternConfigs[projectApplicationConfig.Version]
+				filePatternsConfigList = append(filePatternsConfigList, filePatternsConfig)
+			}
+		}
+	}
+
+	return
+
+}
+
+// Returns a single *FilePatternsConfig containing the aggregate of all file patterns, including only
+// the applications specified in the project config file.
+func GetAllFilePatternsConfigFromProjectConfig() (allFilePatternsConfig *FilePatternsConfig) {
+	allFilePatternsConfig = newFilePatternsConfig()
+	for _, filePatternsConfig := range GetFilePatternsConfigListFromProjectConfig() {
+		allFilePatternsConfig = allFilePatternsConfig.appendAll(filePatternsConfig)
+	}
+	return
+}
+
 func (config *FilePatternsConfig) Print() {
 	fmt.Print(config.Name + "\n\n")
 	fmt.Print("\tGit Ignore Patterns \n\t\t")

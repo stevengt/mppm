@@ -38,25 +38,11 @@ To extract them into plain-text files for use in git, run 'mppm project extract'
 
 func restoreAllUncompressedFilesToOriginalCompressedFiles() (err error) {
 
-	filePatternsConfigList := make([]*config.FilePatternsConfig, 0)
+	filePatternsConfig := config.GetAllFilePatternsConfigFromProjectConfig()
 
-	projectApplicationConfigs := config.MppmProjectConfig.Applications
-	for _, projectApplicationConfig := range projectApplicationConfigs {
-		applicationName := projectApplicationConfig.Name
-		applicationVersion := projectApplicationConfig.Version
-		for _, supportedApplication := range config.SupportedApplications {
-			if supportedApplication.Name == applicationName {
-				filePatternsConfig := supportedApplication.FilePatternConfigs[applicationVersion]
-				filePatternsConfigList = append(filePatternsConfigList, filePatternsConfig)
-			}
-		}
-	}
-
-	for _, filePatternsConfig := range filePatternsConfigList {
-		err = restoreAllGzippedXmlFiles(filePatternsConfig)
-		if err != nil {
-			return
-		}
+	err = restoreAllGzippedXmlFiles(filePatternsConfig)
+	if err != nil {
+		return
 	}
 
 	return
