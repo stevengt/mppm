@@ -95,7 +95,7 @@ func runGitLfsTrack(filePatterns ...string) (err error) {
 }
 
 func createMppmProjectConfigFile() (err error) {
-	mppmProjectConfig := config.GetDefaultMppmProjectConfig()
+	mppmProjectConfig := config.GetDefaultMppmConfig()
 	err = mppmProjectConfig.SaveAsProjectConfig()
 	return
 }
