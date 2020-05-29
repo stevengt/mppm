@@ -12,6 +12,7 @@ func init() {
 		func() {
 			isPreviewCommand, _ = projectCmd.PersistentFlags().GetBool("preview")
 			isCommitAllCommand, _ = projectCmd.Flags().GetBool("commit-all")
+			shouldUpdateLibraries, _ = projectCmd.Flags().GetBool("update-libraries")
 		},
 	)
 
@@ -31,12 +32,23 @@ func init() {
 		"Equivalent to running 'mppm project extract; git add . -A; git commit -m '<commit message>'.",
 	)
 
+	projectCmd.Flags().BoolVarP(
+		&shouldUpdateLibraries,
+		"update-libraries",
+		"u",
+		false,
+		`Updates the library versions in the project config file to match the
+current versions in the global config file.
+To see the global current versions, run 'mppm library --list'.`,
+	)
+
 	rootCmd.AddCommand(projectCmd)
 
 }
 
 var isPreviewCommand bool
 var isCommitAllCommand bool
+var shouldUpdateLibraries bool
 
 var projectCmd = &cobra.Command{
 
@@ -46,38 +58,61 @@ var projectCmd = &cobra.Command{
 
 	Long: "Provides utilities for managing a specific project.",
 
-	Args: cobra.MinimumNArgs(1),
+	Args: cobra.OnlyValidArgs,
 
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		if cmd.Use != "init" {
+		shouldLoadMppmProjectConfig := cmd.Use != "init" && (cmd.Use != "project" || isCommitAllCommand || shouldUpdateLibraries)
+		if shouldLoadMppmProjectConfig {
 			config.LoadMppmProjectConfig()
+		}
+		if shouldUpdateLibraries {
+			err := updateProjectLibraryGitCommitIds()
+			if err != nil {
+				util.ExitWithError(err)
+			}
 		}
 	},
 
 	Run: func(cmd *cobra.Command, args []string) {
-		if isCommitAllCommand {
-			commitAll(args[0])
-		} else {
+		isCommandValid := isCommitAllCommand || shouldUpdateLibraries
+		if !isCommandValid {
 			cmd.Help()
+		} else if isCommitAllCommand {
+			if len(args) == 0 {
+				util.ExitWithErrorMessage("Please provide a commit message.")
+			}
+			err := commitAll(args[0])
+			if err != nil {
+				util.ExitWithError(err)
+			}
 		}
 	},
 }
 
-func commitAll(commitMessage string) {
+func commitAll(commitMessage string) (err error) {
 
-	err := extractAllCompressedFiles()
+	err = extractAllCompressedFiles()
 	if err != nil {
-		util.ExitWithError(err)
+		return
 	}
 
 	err = util.ExecuteShellCommand("git", "add", ".", "-A")
 	if err != nil {
-		util.ExitWithError(err)
+		return
 	}
 
 	err = util.ExecuteShellCommand("git", "commit", "-m", commitMessage)
 	if err != nil {
-		util.ExitWithError(err)
+		return
 	}
 
+	return
+
+}
+
+func updateProjectLibraryGitCommitIds() (err error) {
+	config.LoadMppmGlobalConfig()
+	config.MppmProjectConfig.Libraries = config.MppmGlobalConfig.Libraries
+	err = config.MppmProjectConfig.SaveAsProjectConfig()
+	return
 }
