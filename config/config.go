@@ -111,10 +111,12 @@ func (config *MppmConfigInfo) CheckIfCompatibleWithSupportedApplications() (err 
 
 // TODO Override global config settings with project config settings.
 func LoadMppmProjectConfig() {
+	MppmProjectConfig = &MppmConfigInfo{}
 	loadMppmConfig(MppmProjectConfig, MppmConfigFileName)
 }
 
 func LoadMppmGlobalConfig() {
+	MppmGlobalConfig = &MppmConfigInfo{}
 	createMppmGlobalConfigFileIfNotExists()
 	loadMppmConfig(MppmGlobalConfig, GetMppmGlobalConfigFilePath())
 }
@@ -127,8 +129,6 @@ func loadMppmConfig(config *MppmConfigInfo, configFilePath string) {
 		util.ExitWithErrorMessage(errorMessage)
 	}
 	defer configFile.Close()
-
-	config = &MppmConfigInfo{}
 
 	jsonDecoder := json.NewDecoder(configFile)
 	jsonDecoder.DisallowUnknownFields()
