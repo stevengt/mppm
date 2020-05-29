@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"strings"
-
 	"github.com/spf13/cobra"
 	"github.com/stevengt/mppm/config"
 	"github.com/stevengt/mppm/util"
@@ -49,27 +47,20 @@ func addLibrary(libraryFilePath string) (err error) {
 		return
 	}
 
-	err = util.ExecuteGitCommandInDirectory(libraryFilePath, "add", "-A", ".")
+	err = addAllAndCommit(libraryFilePath)
 	if err != nil {
 		return
 	}
-
-	err = util.ExecuteGitCommandInDirectory(libraryFilePath, "commit", "-m", "Initial commit.")
-	if err != nil {
-		return
-	}
-
-	libraryGitCommitId, err := util.ExecuteShellCommandAndReturnOutput("git", "-C", libraryFilePath, "rev-parse", "HEAD")
-	if err != nil {
-		return
-	}
-	libraryGitCommitId = strings.Trim(libraryGitCommitId, " \n")
 
 	libraryConfig := &config.LibraryConfig{
-		FilePath:              libraryFilePath,
-		MostRecentGitCommitId: libraryGitCommitId,
-		CurrentGitCommitId:    libraryGitCommitId,
+		FilePath: libraryFilePath,
 	}
+
+	err = libraryConfig.UpdateCurrentGitCommitId()
+	if err != nil {
+		return
+	}
+	libraryConfig.MostRecentGitCommitId = libraryConfig.CurrentGitCommitId
 
 	config.MppmGlobalConfig.Libraries = append(config.MppmGlobalConfig.Libraries, libraryConfig)
 	err = config.MppmGlobalConfig.SaveAsGlobalConfig()

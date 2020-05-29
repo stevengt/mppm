@@ -1,6 +1,11 @@
 package config
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+
+	"github.com/stevengt/mppm/util"
+)
 
 type LibraryConfig struct {
 	FilePath              string `json:"location"`
@@ -22,4 +27,15 @@ func (libraryConfig *LibraryConfig) Print() {
 	)
 
 	fmt.Println(libraryConfigAsString)
+}
+
+func (libraryConfig *LibraryConfig) UpdateCurrentGitCommitId() (err error) {
+	libraryFilePath := libraryConfig.FilePath
+	libraryGitCommitId, err := util.ExecuteShellCommandAndReturnOutput("git", "-C", libraryFilePath, "rev-parse", "HEAD")
+	if err != nil {
+		return
+	}
+	libraryGitCommitId = strings.Trim(libraryGitCommitId, " \n")
+	libraryConfig.CurrentGitCommitId = libraryGitCommitId
+	return
 }
