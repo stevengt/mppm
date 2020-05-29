@@ -69,7 +69,7 @@ func checkoutMostRecentLibraries() (err error) {
 
 	for _, libraryConfig := range libraryConfigList {
 
-		err = util.ExecuteGitCommandInDirectory(libraryConfig.FilePath, "checkout", libraryConfig.MostRecentGitCommitId)
+		err = util.ExecuteGitCommandInDirectory(libraryConfig.FilePath, "checkout", "master")
 		if err != nil {
 			return
 		}

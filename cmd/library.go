@@ -107,6 +107,7 @@ func commitLibrary(libraryConfig *config.LibraryConfig) (err error) {
 	if err != nil {
 		return
 	}
+	libraryConfig.MostRecentGitCommitId = libraryConfig.CurrentGitCommitId
 
 	err = config.MppmGlobalConfig.SaveAsGlobalConfig()
 	if err != nil {
