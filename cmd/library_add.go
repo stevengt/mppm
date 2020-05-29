@@ -34,27 +34,27 @@ var libraryAddCmd = &cobra.Command{
 
 func addLibrary(libraryFilePath string) (err error) {
 
-	err = util.ExecuteShellCommand("git", "-C", libraryFilePath, "init")
+	err = util.ExecuteGitCommandInDirectory(libraryFilePath, "init")
 	if err != nil {
 		return
 	}
 
-	err = util.ExecuteShellCommand("git", "-C", libraryFilePath, "lfs", "install")
+	err = util.ExecuteGitCommandInDirectory(libraryFilePath, "lfs", "install")
 	if err != nil {
 		return
 	}
 
-	err = util.ExecuteShellCommand("git", "-C", libraryFilePath, "lfs", "track", "*")
+	err = util.ExecuteGitCommandInDirectory(libraryFilePath, "lfs", "track", "*")
 	if err != nil {
 		return
 	}
 
-	err = util.ExecuteShellCommand("git", "-C", libraryFilePath, "add", "-A", ".")
+	err = util.ExecuteGitCommandInDirectory(libraryFilePath, "add", "-A", ".")
 	if err != nil {
 		return
 	}
 
-	err = util.ExecuteShellCommand("git", "-C", libraryFilePath, "commit", "-m", "Initial commit.")
+	err = util.ExecuteGitCommandInDirectory(libraryFilePath, "commit", "-m", "Initial commit.")
 	if err != nil {
 		return
 	}
