@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
+	"github.com/stevengt/mppm/config"
 )
 
 func init() {
@@ -33,4 +34,8 @@ Libraries can be any collection of audio samples, plugins, presets, etc. that:
 `,
 
 	Args: cobra.MinimumNArgs(1),
+
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		config.LoadMppmGlobalConfig()
+	},
 }

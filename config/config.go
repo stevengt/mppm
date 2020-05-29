@@ -30,7 +30,7 @@ func (config *MppmConfigInfo) SaveAsProjectConfig() (err error) {
 
 func (config *MppmConfigInfo) SaveAsGlobalConfig() (err error) {
 
-	configFilePath := getMppmGlobalConfigFilePath()
+	configFilePath := GetMppmGlobalConfigFilePath()
 	err = config.save(configFilePath)
 	if err != nil {
 		return
@@ -109,12 +109,14 @@ func (config *MppmConfigInfo) CheckIfCompatibleWithSupportedApplications() (err 
 
 }
 
+// TODO Override global config settings with project config settings.
 func LoadMppmProjectConfig() {
 	loadMppmConfig(MppmProjectConfig, MppmConfigFileName)
 }
 
 func LoadMppmGlobalConfig() {
-	loadMppmConfig(MppmGlobalConfig, getMppmGlobalConfigFilePath())
+	createMppmGlobalConfigFileIfNotExists()
+	loadMppmConfig(MppmGlobalConfig, GetMppmGlobalConfigFilePath())
 }
 
 func loadMppmConfig(config *MppmConfigInfo, configFilePath string) {
@@ -172,8 +174,20 @@ func GetDefaultMppmConfig() (mppmConfig *MppmConfigInfo) {
 
 }
 
-func getMppmGlobalConfigFilePath() (filePath string) {
+func GetMppmGlobalConfigFilePath() (filePath string) {
 	homeDirectoryPath, _ := os.UserHomeDir()
 	filePath = filepath.Join(homeDirectoryPath, MppmConfigFileName)
 	return
+}
+
+func createMppmGlobalConfigFileIfNotExists() {
+	mppmGlobalConfigFilePath := GetMppmGlobalConfigFilePath()
+	defaultMppmGlobalConfig := GetDefaultMppmConfig()
+
+	if _, err := os.Stat(mppmGlobalConfigFilePath); os.IsNotExist(err) {
+		err = defaultMppmGlobalConfig.SaveAsGlobalConfig()
+		if err != nil {
+			util.ExitWithError(err)
+		}
+	}
 }
