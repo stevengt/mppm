@@ -32,24 +32,28 @@ var libraryAddCmd = &cobra.Command{
 
 func addLibrary(libraryFilePath string) (err error) {
 
-	err = util.ExecuteGitCommandInDirectory(libraryFilePath, "init")
-	if err != nil {
-		return
-	}
+	if !isGitRepository(libraryFilePath) {
 
-	err = util.ExecuteGitCommandInDirectory(libraryFilePath, "lfs", "install")
-	if err != nil {
-		return
-	}
+		err = util.ExecuteGitCommandInDirectory(libraryFilePath, "init")
+		if err != nil {
+			return
+		}
 
-	err = util.ExecuteGitCommandInDirectory(libraryFilePath, "lfs", "track", "*")
-	if err != nil {
-		return
-	}
+		err = util.ExecuteGitCommandInDirectory(libraryFilePath, "lfs", "install")
+		if err != nil {
+			return
+		}
 
-	err = addAllAndCommit(libraryFilePath)
-	if err != nil {
-		return
+		err = util.ExecuteGitCommandInDirectory(libraryFilePath, "lfs", "track", "*")
+		if err != nil {
+			return
+		}
+
+		err = addAllAndCommit(libraryFilePath)
+		if err != nil {
+			return
+		}
+
 	}
 
 	libraryConfig := &config.LibraryConfig{
@@ -70,4 +74,9 @@ func addLibrary(libraryFilePath string) (err error) {
 
 	return
 
+}
+
+func isGitRepository(libraryFilePath string) bool {
+	err := util.ExecuteGitCommandInDirectory(libraryFilePath, "rev-parse")
+	return err == nil
 }
