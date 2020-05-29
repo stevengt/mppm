@@ -32,6 +32,10 @@ var libraryAddCmd = &cobra.Command{
 
 func addLibrary(libraryFilePath string) (err error) {
 
+	if isLibraryPreviouslyAdded(libraryFilePath) {
+		return
+	}
+
 	if !isGitRepository(libraryFilePath) {
 
 		err = util.ExecuteGitCommandInDirectory(libraryFilePath, "init")
@@ -79,4 +83,13 @@ func addLibrary(libraryFilePath string) (err error) {
 func isGitRepository(libraryFilePath string) bool {
 	err := util.ExecuteGitCommandInDirectory(libraryFilePath, "rev-parse")
 	return err == nil
+}
+
+func isLibraryPreviouslyAdded(libraryFilePath string) bool {
+	for _, libraryConfig := range config.MppmGlobalConfig.Libraries {
+		if libraryConfig.FilePath == libraryFilePath {
+			return true
+		}
+	}
+	return false
 }
