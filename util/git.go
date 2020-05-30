@@ -22,8 +22,11 @@ type GitManager interface {
 	Init() (err error)
 	Add(args ...string) (err error)
 	Commit(args ...string) (err error)
+	Checkout(args ...string) (err error)
+	RevParse(args ...string) (stdout string, err error)
 	LfsInstall() (err error)
 	LfsTrack(args ...string) (err error)
+	AddAllAndCommit(commitMessage string) (err error)
 }
 
 type GitShellCommandManager struct {
@@ -59,6 +62,25 @@ func (gitShellCommandManager *GitShellCommandManager) Commit(args ...string) (er
 	return
 }
 
+func (gitShellCommandManager *GitShellCommandManager) Checkout(args ...string) (err error) {
+	err = gitShellCommandManager.executeGitShellCommand("checkout", args...)
+	return
+}
+
+func (gitShellCommandManager *GitShellCommandManager) RevParse(args ...string) (stdout string, err error) {
+	commandName := "git"
+	commandArgs := append(
+		[]string{
+			"-C",
+			gitShellCommandManager.RepositoryDirectoryPath,
+			"rev-parse",
+		},
+		args...,
+	)
+	stdout, err = ExecuteShellCommandAndReturnOutput(commandName, commandArgs...)
+	return
+}
+
 func (gitShellCommandManager *GitShellCommandManager) LfsInstall() (err error) {
 	err = gitShellCommandManager.executeGitShellCommand("lfs", "install")
 	return
@@ -76,12 +98,18 @@ func (gitShellCommandManager *GitShellCommandManager) LfsTrack(args ...string) (
 	return
 }
 
-func ExecuteGitCommandInDirectory(directoryPath string, gitArgs ...string) (err error) {
-	commandName := "git"
-	commandArgs := append([]string{"-C", directoryPath}, gitArgs...)
-	err = ExecuteShellCommand(commandName, commandArgs...)
+func (gitShellCommandManager *GitShellCommandManager) AddAllAndCommit(commitMessage string) (err error) {
+
+	err = gitShellCommandManager.Add("-A", ".")
 	if err != nil {
 		return
 	}
+
+	err = gitShellCommandManager.Commit("-m", commitMessage)
+	if err != nil {
+		return
+	}
+
 	return
+
 }

@@ -69,7 +69,9 @@ func checkoutMostRecentLibraries() (err error) {
 
 	for _, libraryConfig := range libraryConfigList {
 
-		err = util.ExecuteGitCommandInDirectory(libraryConfig.FilePath, "checkout", "master")
+		gitManager := util.NewGitManager(libraryConfig.FilePath)
+
+		err = gitManager.Checkout("master")
 		if err != nil {
 			return
 		}
@@ -101,7 +103,9 @@ func checkoutProjectSpecifiedLibraries() (err error) {
 				libraryProjectConfig.MostRecentGitCommitId = libraryGlobalConfig.MostRecentGitCommitId
 				libraryGlobalConfig.CurrentGitCommitId = libraryProjectConfig.CurrentGitCommitId
 
-				err = util.ExecuteGitCommandInDirectory(libraryProjectConfig.FilePath, "checkout", libraryProjectConfig.CurrentGitCommitId)
+				gitManager := util.NewGitManager(libraryProjectConfig.FilePath)
+
+				err = gitManager.Checkout(libraryProjectConfig.CurrentGitCommitId)
 				if err != nil {
 					return
 				}

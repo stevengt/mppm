@@ -38,22 +38,24 @@ func addLibrary(libraryFilePath string) (err error) {
 
 	if !isGitRepository(libraryFilePath) {
 
-		err = util.ExecuteGitCommandInDirectory(libraryFilePath, "init")
+		gitManager := util.NewGitManager(libraryFilePath)
+
+		err = gitManager.Init()
 		if err != nil {
 			return
 		}
 
-		err = util.ExecuteGitCommandInDirectory(libraryFilePath, "lfs", "install")
+		err = gitManager.LfsInstall()
 		if err != nil {
 			return
 		}
 
-		err = util.ExecuteGitCommandInDirectory(libraryFilePath, "lfs", "track", "*")
+		err = gitManager.LfsTrack("*")
 		if err != nil {
 			return
 		}
 
-		err = addAllAndCommit(libraryFilePath)
+		err = gitManager.AddAllAndCommit("Initial commit.")
 		if err != nil {
 			return
 		}
@@ -81,7 +83,8 @@ func addLibrary(libraryFilePath string) (err error) {
 }
 
 func isGitRepository(libraryFilePath string) bool {
-	err := util.ExecuteGitCommandInDirectory(libraryFilePath, "rev-parse")
+	gitManager := util.NewGitManager(libraryFilePath)
+	_, err := gitManager.RevParse()
 	return err == nil
 }
 

@@ -98,7 +98,9 @@ func commitAllLibraries() (err error) {
 
 func commitLibrary(libraryConfig *config.LibraryConfig) (err error) {
 
-	err = addAllAndCommit(libraryConfig.FilePath)
+	gitManager := util.NewGitManager(libraryConfig.FilePath)
+
+	err = gitManager.AddAllAndCommit("Committed all changes.")
 	if err != nil {
 		return
 	}
@@ -110,22 +112,6 @@ func commitLibrary(libraryConfig *config.LibraryConfig) (err error) {
 	libraryConfig.MostRecentGitCommitId = libraryConfig.CurrentGitCommitId
 
 	err = config.MppmGlobalConfig.SaveAsGlobalConfig()
-	if err != nil {
-		return
-	}
-
-	return
-
-}
-
-func addAllAndCommit(gitRepoFilePath string) (err error) {
-
-	err = util.ExecuteGitCommandInDirectory(gitRepoFilePath, "add", "-A", ".")
-	if err != nil {
-		return
-	}
-
-	err = util.ExecuteGitCommandInDirectory(gitRepoFilePath, "commit", "-m", "Committed all changes.")
 	if err != nil {
 		return
 	}

@@ -30,8 +30,8 @@ func (libraryConfig *LibraryConfig) Print() {
 }
 
 func (libraryConfig *LibraryConfig) UpdateCurrentGitCommitId() (err error) {
-	libraryFilePath := libraryConfig.FilePath
-	libraryGitCommitId, err := util.ExecuteShellCommandAndReturnOutput("git", "-C", libraryFilePath, "rev-parse", "HEAD")
+	gitManager := util.NewGitManager(libraryConfig.FilePath)
+	libraryGitCommitId, err := gitManager.RevParse("HEAD")
 	if err != nil {
 		return
 	}
