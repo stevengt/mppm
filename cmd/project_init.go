@@ -35,17 +35,19 @@ var initCmd = &cobra.Command{
 
 func initProject() (err error) {
 
+	gitManager := util.CurrentDirectoryGitManager
+
 	err = createMppmProjectConfigFile()
 	if err != nil {
 		return
 	}
 
-	err = util.ExecuteShellCommand("git", "init")
+	err = gitManager.Init()
 	if err != nil {
 		return
 	}
 
-	err = util.ExecuteShellCommand("git", "lfs", "install")
+	err = gitManager.LfsInstall()
 	if err != nil {
 		return
 	}
@@ -57,17 +59,17 @@ func initProject() (err error) {
 		return
 	}
 
-	err = runGitLfsTrack(filePatternsConfig.GitLfsTrackPatterns...)
+	err = gitManager.LfsTrack(filePatternsConfig.GitLfsTrackPatterns...)
 	if err != nil {
 		return
 	}
 
-	err = util.ExecuteShellCommand("git", "add", ".gitignore", ".gitattributes", config.MppmConfigFileName)
+	err = gitManager.Add(".gitignore", ".gitattributes", config.MppmConfigFileName)
 	if err != nil {
 		return
 	}
 
-	err = util.ExecuteShellCommand("git", "commit", "-m", "Initial commit.")
+	err = gitManager.Commit("-m", "Initial commit.")
 	if err != nil {
 		return
 	}
@@ -81,16 +83,6 @@ func createGitIgnoreFile(filePatterns ...string) (err error) {
 	filePermissionsCode := os.FileMode(0644)
 	fileContents := strings.Join(filePatterns, "\n")
 	err = ioutil.WriteFile(fileName, []byte(fileContents), filePermissionsCode)
-	return
-}
-
-func runGitLfsTrack(filePatterns ...string) (err error) {
-	commandName := "git"
-	commandArgs := append([]string{"lfs", "track"}, filePatterns...)
-	err = util.ExecuteShellCommand(commandName, commandArgs...)
-	if err != nil {
-		return
-	}
 	return
 }
 

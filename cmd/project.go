@@ -91,17 +91,19 @@ var projectCmd = &cobra.Command{
 
 func commitAll(commitMessage string) (err error) {
 
+	gitManager := util.CurrentDirectoryGitManager
+
 	err = extractAllCompressedFiles()
 	if err != nil {
 		return
 	}
 
-	err = util.ExecuteShellCommand("git", "add", ".", "-A")
+	err = gitManager.Add(".", "-A")
 	if err != nil {
 		return
 	}
 
-	err = util.ExecuteShellCommand("git", "commit", "-m", commitMessage)
+	err = gitManager.Commit("-m", commitMessage)
 	if err != nil {
 		return
 	}
