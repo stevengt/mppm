@@ -1,19 +1,19 @@
 package util
 
-var gitManagerFactory GitManagerCreator = &GitShellCommandManagerCreator{}
+var GitManagerFactory GitManagerCreator = &gitShellCommandProxyCreator{}
 
 func NewGitManager(repoFilePath string) GitManager {
-	return gitManagerFactory.NewGitManager(repoFilePath)
+	return GitManagerFactory.NewGitManager(repoFilePath)
 }
 
 type GitManagerCreator interface {
 	NewGitManager(repoFilePath string) GitManager
 }
 
-type GitShellCommandManagerCreator struct{}
+type gitShellCommandProxyCreator struct{}
 
-func (gitShellCommandManagerCreator *GitShellCommandManagerCreator) NewGitManager(repoFilePath string) GitManager {
-	return &GitShellCommandManager{
+func (proxyCreator *gitShellCommandProxyCreator) NewGitManager(repoFilePath string) GitManager {
+	return &gitShellCommandProxy{
 		RepositoryDirectoryPath: repoFilePath,
 	}
 }
@@ -29,50 +29,36 @@ type GitManager interface {
 	AddAllAndCommit(commitMessage string) (err error)
 }
 
-type GitShellCommandManager struct {
+type gitShellCommandProxy struct {
 	RepositoryDirectoryPath string
 }
 
-func (gitShellCommandManager *GitShellCommandManager) executeGitShellCommand(gitCommandName string, args ...string) (err error) {
+func (proxy *gitShellCommandProxy) Init() (err error) {
+	err = proxy.executeGitShellCommand("init")
+	return
+}
+
+func (proxy *gitShellCommandProxy) Add(args ...string) (err error) {
+	err = proxy.executeGitShellCommand("add", args...)
+	return
+}
+
+func (proxy *gitShellCommandProxy) Commit(args ...string) (err error) {
+	err = proxy.executeGitShellCommand("commit", args...)
+	return
+}
+
+func (proxy *gitShellCommandProxy) Checkout(args ...string) (err error) {
+	err = proxy.executeGitShellCommand("checkout", args...)
+	return
+}
+
+func (proxy *gitShellCommandProxy) RevParse(args ...string) (stdout string, err error) {
 	commandName := "git"
 	commandArgs := append(
 		[]string{
 			"-C",
-			gitShellCommandManager.RepositoryDirectoryPath,
-			gitCommandName,
-		},
-		args...,
-	)
-	err = ExecuteShellCommand(commandName, commandArgs...)
-	return
-}
-
-func (gitShellCommandManager *GitShellCommandManager) Init() (err error) {
-	err = gitShellCommandManager.executeGitShellCommand("init")
-	return
-}
-
-func (gitShellCommandManager *GitShellCommandManager) Add(args ...string) (err error) {
-	err = gitShellCommandManager.executeGitShellCommand("add", args...)
-	return
-}
-
-func (gitShellCommandManager *GitShellCommandManager) Commit(args ...string) (err error) {
-	err = gitShellCommandManager.executeGitShellCommand("commit", args...)
-	return
-}
-
-func (gitShellCommandManager *GitShellCommandManager) Checkout(args ...string) (err error) {
-	err = gitShellCommandManager.executeGitShellCommand("checkout", args...)
-	return
-}
-
-func (gitShellCommandManager *GitShellCommandManager) RevParse(args ...string) (stdout string, err error) {
-	commandName := "git"
-	commandArgs := append(
-		[]string{
-			"-C",
-			gitShellCommandManager.RepositoryDirectoryPath,
+			proxy.RepositoryDirectoryPath,
 			"rev-parse",
 		},
 		args...,
@@ -81,12 +67,12 @@ func (gitShellCommandManager *GitShellCommandManager) RevParse(args ...string) (
 	return
 }
 
-func (gitShellCommandManager *GitShellCommandManager) LfsInstall() (err error) {
-	err = gitShellCommandManager.executeGitShellCommand("lfs", "install")
+func (proxy *gitShellCommandProxy) LfsInstall() (err error) {
+	err = proxy.executeGitShellCommand("lfs", "install")
 	return
 }
 
-func (gitShellCommandManager *GitShellCommandManager) LfsTrack(args ...string) (err error) {
+func (proxy *gitShellCommandProxy) LfsTrack(args ...string) (err error) {
 	gitCommandName := "lfs"
 	gitCommandArgs := append(
 		[]string{
@@ -94,22 +80,36 @@ func (gitShellCommandManager *GitShellCommandManager) LfsTrack(args ...string) (
 		},
 		args...,
 	)
-	err = gitShellCommandManager.executeGitShellCommand(gitCommandName, gitCommandArgs...)
+	err = proxy.executeGitShellCommand(gitCommandName, gitCommandArgs...)
 	return
 }
 
-func (gitShellCommandManager *GitShellCommandManager) AddAllAndCommit(commitMessage string) (err error) {
+func (proxy *gitShellCommandProxy) AddAllAndCommit(commitMessage string) (err error) {
 
-	err = gitShellCommandManager.Add("-A", ".")
+	err = proxy.Add("-A", ".")
 	if err != nil {
 		return
 	}
 
-	err = gitShellCommandManager.Commit("-m", commitMessage)
+	err = proxy.Commit("-m", commitMessage)
 	if err != nil {
 		return
 	}
 
 	return
 
+}
+
+func (proxy *gitShellCommandProxy) executeGitShellCommand(gitCommandName string, args ...string) (err error) {
+	commandName := "git"
+	commandArgs := append(
+		[]string{
+			"-C",
+			proxy.RepositoryDirectoryPath,
+			gitCommandName,
+		},
+		args...,
+	)
+	err = ExecuteShellCommand(commandName, commandArgs...)
+	return
 }
