@@ -35,7 +35,8 @@ var initCmd = &cobra.Command{
 
 func initProject() (err error) {
 
-	gitManager := util.CurrentDirectoryGitManager
+	gitRepoFilePath := "."
+	gitManager := util.NewGitManager(gitRepoFilePath)
 
 	err = createMppmProjectConfigFile()
 	if err != nil {

@@ -91,7 +91,8 @@ var projectCmd = &cobra.Command{
 
 func commitAll(commitMessage string) (err error) {
 
-	gitManager := util.CurrentDirectoryGitManager
+	gitRepoFilePath := "."
+	gitManager := util.NewGitManager(gitRepoFilePath)
 
 	err = extractAllCompressedFiles()
 	if err != nil {

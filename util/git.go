@@ -1,7 +1,21 @@
 package util
 
-var CurrentDirectoryGitManager GitManager = &GitShellCommandManager{
-	RepositoryDirectoryPath: ".",
+var gitManagerFactory GitManagerCreator = &GitShellCommandManagerCreator{}
+
+func NewGitManager(repoFilePath string) GitManager {
+	return gitManagerFactory.NewGitManager(repoFilePath)
+}
+
+type GitManagerCreator interface {
+	NewGitManager(repoFilePath string) GitManager
+}
+
+type GitShellCommandManagerCreator struct{}
+
+func (gitShellCommandManagerCreator *GitShellCommandManagerCreator) NewGitManager(repoFilePath string) GitManager {
+	return &GitShellCommandManager{
+		RepositoryDirectoryPath: repoFilePath,
+	}
 }
 
 type GitManager interface {
