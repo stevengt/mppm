@@ -17,6 +17,49 @@ var MppmProjectConfig, MppmGlobalConfig *MppmConfigInfo
 
 var MppmConfigFileName = ".mppm.json"
 
+var mppmConfigManagerFactory MppmConfigManagerCreator = &MppmConfigFileManagerCreator{}
+
+func NewMppmConfigManager() MppmConfigManager {
+	return mppmConfigManagerFactory.NewMppmConfigManager()
+}
+
+type MppmConfigManagerCreator interface {
+	NewMppmConfigManager() MppmConfigManager
+}
+
+type MppmConfigFileManagerCreator struct{}
+
+func (mppmConfigFileManagerCreator *MppmConfigFileManagerCreator) NewMppmConfigManager() MppmConfigManager {
+	return &MppmConfigFileManager{}
+}
+
+type MppmConfigManager interface {
+	GetProjectConfig() *MppmConfigInfo
+	GetGlobalConfig() *MppmConfigInfo
+}
+
+type MppmConfigFileManager struct {
+	projectConfig *MppmConfigInfo
+	globalConfig  *MppmConfigInfo
+}
+
+func (configFileManager *MppmConfigFileManager) GetProjectConfig() *MppmConfigInfo {
+	if configFileManager.projectConfig == nil {
+		configFileManager.projectConfig = &MppmConfigInfo{}
+		loadMppmConfig(configFileManager.projectConfig, MppmConfigFileName)
+	}
+	return configFileManager.projectConfig
+}
+
+func (configFileManager *MppmConfigFileManager) GetGlobalConfig() *MppmConfigInfo {
+	if configFileManager.globalConfig == nil {
+		configFileManager.globalConfig = &MppmConfigInfo{}
+		createMppmGlobalConfigFileIfNotExists()
+		loadMppmConfig(configFileManager.globalConfig, GetMppmGlobalConfigFilePath())
+	}
+	return configFileManager.globalConfig
+}
+
 type MppmConfigInfo struct {
 	Version      string               `json:"version"`
 	Applications []*ApplicationConfig `json:"applications"`
