@@ -26,16 +26,6 @@ func ExecuteShellCommandAndReturnOutput(commandName string, args ...string) (std
 	return
 }
 
-func ExecuteGitCommandInDirectory(directoryPath string, gitArgs ...string) (err error) {
-	commandName := "git"
-	commandArgs := append([]string{"-C", directoryPath}, gitArgs...)
-	err = ExecuteShellCommand(commandName, commandArgs...)
-	if err != nil {
-		return
-	}
-	return
-}
-
 func CopyFile(sourceFileName string, targetFileName string) (err error) {
 
 	source, err := os.Open(sourceFileName)
