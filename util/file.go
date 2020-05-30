@@ -8,47 +8,29 @@ import (
 	"strings"
 )
 
+var FileSystemProxy FileSystemDelegater = &fileSystemProxy{}
+
 func CreateFile(fileName string) (file *os.File, err error) {
-	return getFileManager().CreateFile(fileName)
+	return FileSystemProxy.CreateFile(fileName)
 }
 
 func CopyFile(sourceFileName string, targetFileName string) (err error) {
-	return getFileManager().CopyFile(sourceFileName, targetFileName)
+	return FileSystemProxy.CopyFile(sourceFileName, targetFileName)
 }
 
 func GzipFile(fileName string) (err error) {
-	return getFileManager().GzipFile(fileName)
+	return FileSystemProxy.GzipFile(fileName)
 }
 
 func GunzipFile(compressedFileName string) (err error) {
-	return getFileManager().GunzipFile(compressedFileName)
+	return FileSystemProxy.GunzipFile(compressedFileName)
 }
 
 func GetAllFileNamesWithExtension(extension string) (fileNames []string, err error) {
-	return getFileManager().GetAllFileNamesWithExtension(extension)
+	return FileSystemProxy.GetAllFileNamesWithExtension(extension)
 }
 
-var fileManagerFactory FileManagerCreator = &LocalFileSystemManagerCreator{}
-var fileManager FileManager
-
-func getFileManager() FileManager {
-	if fileManager == nil {
-		fileManager = fileManagerFactory.NewFileManager()
-	}
-	return fileManager
-}
-
-type FileManagerCreator interface {
-	NewFileManager() FileManager
-}
-
-type LocalFileSystemManagerCreator struct{}
-
-func (localFileSystemManagerCreator *LocalFileSystemManagerCreator) NewFileManager() FileManager {
-	return &LocalFileSystemManager{}
-}
-
-type FileManager interface {
+type FileSystemDelegater interface {
 	CreateFile(fileName string) (file *os.File, err error)
 	CopyFile(sourceFileName string, targetFileName string) (err error)
 	GzipFile(fileName string) (err error)
@@ -56,9 +38,9 @@ type FileManager interface {
 	GetAllFileNamesWithExtension(extension string) (fileNames []string, err error)
 }
 
-type LocalFileSystemManager struct{}
+type fileSystemProxy struct{}
 
-func (localFileSystemManager *LocalFileSystemManager) CreateFile(fileName string) (file *os.File, err error) {
+func (proxy *fileSystemProxy) CreateFile(fileName string) (file *os.File, err error) {
 
 	err = os.RemoveAll(fileName)
 	if err != nil {
@@ -73,7 +55,7 @@ func (localFileSystemManager *LocalFileSystemManager) CreateFile(fileName string
 	return
 }
 
-func (localFileSystemManager *LocalFileSystemManager) CopyFile(sourceFileName string, targetFileName string) (err error) {
+func (proxy *fileSystemProxy) CopyFile(sourceFileName string, targetFileName string) (err error) {
 
 	source, err := os.Open(sourceFileName)
 	if err != nil {
@@ -91,7 +73,7 @@ func (localFileSystemManager *LocalFileSystemManager) CopyFile(sourceFileName st
 	return
 }
 
-func (localFileSystemManager *LocalFileSystemManager) GzipFile(fileName string) (err error) {
+func (proxy *fileSystemProxy) GzipFile(fileName string) (err error) {
 
 	uncompressedFile, err := os.Open(fileName)
 	if err != nil {
@@ -100,7 +82,7 @@ func (localFileSystemManager *LocalFileSystemManager) GzipFile(fileName string) 
 	defer uncompressedFile.Close()
 
 	compressedFileName := fileName + ".gz"
-	compressedFile, err := localFileSystemManager.CreateFile(compressedFileName)
+	compressedFile, err := proxy.CreateFile(compressedFileName)
 	if err != nil {
 		return
 	}
@@ -117,7 +99,7 @@ func (localFileSystemManager *LocalFileSystemManager) GzipFile(fileName string) 
 	return
 }
 
-func (localFileSystemManager *LocalFileSystemManager) GunzipFile(compressedFileName string) (err error) {
+func (proxy *fileSystemProxy) GunzipFile(compressedFileName string) (err error) {
 
 	compressedFile, err := os.Open(compressedFileName)
 	if err != nil {
@@ -135,7 +117,7 @@ func (localFileSystemManager *LocalFileSystemManager) GunzipFile(compressedFileN
 	defer gzipReader.Close()
 
 	uncompressedFileName := strings.TrimSuffix(compressedFileName, ".gz")
-	uncompressedFile, err := localFileSystemManager.CreateFile(uncompressedFileName)
+	uncompressedFile, err := proxy.CreateFile(uncompressedFileName)
 	if err != nil {
 		return
 	}
@@ -149,7 +131,7 @@ func (localFileSystemManager *LocalFileSystemManager) GunzipFile(compressedFileN
 	return
 }
 
-func (localFileSystemManager *LocalFileSystemManager) GetAllFileNamesWithExtension(extension string) (fileNames []string, err error) {
+func (proxy *fileSystemProxy) GetAllFileNamesWithExtension(extension string) (fileNames []string, err error) {
 
 	fileNames = make([]string, 0)
 

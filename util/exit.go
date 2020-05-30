@@ -5,32 +5,14 @@ import (
 	"os"
 )
 
+var CurrentProcessExiter Exiter = &currentProcessExiter{}
+
 func ExitWithError(err error) {
-	getExiter().ExitWithError(err)
+	CurrentProcessExiter.ExitWithError(err)
 }
 
 func ExitWithErrorMessage(errorMessage string) {
-	getExiter().ExitWithErrorMessage(errorMessage)
-}
-
-var exiterFactory ExiterCreator = &CurrentProcessExiterCreator{}
-var exiter Exiter
-
-func getExiter() Exiter {
-	if exiter == nil {
-		exiter = exiterFactory.NewExiter()
-	}
-	return exiter
-}
-
-type ExiterCreator interface {
-	NewExiter() Exiter
-}
-
-type CurrentProcessExiterCreator struct{}
-
-func (currentProcessExiterCreator *CurrentProcessExiterCreator) NewExiter() Exiter {
-	return &CurrentProcessExiter{}
+	CurrentProcessExiter.ExitWithErrorMessage(errorMessage)
 }
 
 type Exiter interface {
@@ -38,13 +20,13 @@ type Exiter interface {
 	ExitWithErrorMessage(errorMessage string)
 }
 
-type CurrentProcessExiter struct{}
+type currentProcessExiter struct{}
 
-func (currentProcessExiter *CurrentProcessExiter) ExitWithError(err error) {
-	currentProcessExiter.ExitWithErrorMessage(err.Error())
+func (exiter *currentProcessExiter) ExitWithError(err error) {
+	exiter.ExitWithErrorMessage(err.Error())
 }
 
-func (currentProcessExiter *CurrentProcessExiter) ExitWithErrorMessage(errorMessage string) {
+func (exiter *currentProcessExiter) ExitWithErrorMessage(errorMessage string) {
 	fmt.Println("ERROR: " + errorMessage)
 	os.Exit(1)
 }
