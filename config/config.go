@@ -13,14 +13,16 @@ import (
 
 var Version = "1.2.1"
 
-var MppmProjectConfig, MppmGlobalConfig *MppmConfigInfo
-
 var MppmConfigFileName = ".mppm.json"
 
 var mppmConfigManagerFactory MppmConfigManagerCreator = &MppmConfigFileManagerCreator{}
+var mppmConfigManager MppmConfigManager
 
-func NewMppmConfigManager() MppmConfigManager {
-	return mppmConfigManagerFactory.NewMppmConfigManager()
+func GetMppmConfigManager() MppmConfigManager {
+	if mppmConfigManager == nil {
+		mppmConfigManager = mppmConfigManagerFactory.NewMppmConfigManager()
+	}
+	return mppmConfigManager
 }
 
 type MppmConfigManagerCreator interface {
@@ -36,6 +38,11 @@ func (mppmConfigFileManagerCreator *MppmConfigFileManagerCreator) NewMppmConfigM
 type MppmConfigManager interface {
 	GetProjectConfig() *MppmConfigInfo
 	GetGlobalConfig() *MppmConfigInfo
+	GetDefaultMppmConfig() (mppmConfig *MppmConfigInfo)
+	GetMppmGlobalConfigFilePath() (filePath string)
+	SaveProjectConfig() (err error)
+	SaveGlobalConfig() (err error)
+	SaveDefaultProjectConfig() (err error)
 }
 
 type MppmConfigFileManager struct {
@@ -46,7 +53,10 @@ type MppmConfigFileManager struct {
 func (configFileManager *MppmConfigFileManager) GetProjectConfig() *MppmConfigInfo {
 	if configFileManager.projectConfig == nil {
 		configFileManager.projectConfig = &MppmConfigInfo{}
-		loadMppmConfig(configFileManager.projectConfig, MppmConfigFileName)
+		configFileManager.loadMppmConfig(
+			configFileManager.projectConfig,
+			MppmConfigFileName,
+		)
 	}
 	return configFileManager.projectConfig
 }
@@ -54,33 +64,111 @@ func (configFileManager *MppmConfigFileManager) GetProjectConfig() *MppmConfigIn
 func (configFileManager *MppmConfigFileManager) GetGlobalConfig() *MppmConfigInfo {
 	if configFileManager.globalConfig == nil {
 		configFileManager.globalConfig = &MppmConfigInfo{}
-		createMppmGlobalConfigFileIfNotExists()
-		loadMppmConfig(configFileManager.globalConfig, GetMppmGlobalConfigFilePath())
+		configFileManager.createMppmGlobalConfigFileIfNotExists()
+		configFileManager.loadMppmConfig(
+			configFileManager.globalConfig,
+			configFileManager.GetMppmGlobalConfigFilePath(),
+		)
 	}
 	return configFileManager.globalConfig
 }
 
-type MppmConfigInfo struct {
-	Version      string               `json:"version"`
-	Applications []*ApplicationConfig `json:"applications"`
-	Libraries    []*LibraryConfig     `json:"libraries"`
+func (configFileManager *MppmConfigFileManager) GetDefaultMppmConfig() (mppmConfig *MppmConfigInfo) {
+
+	applicationConfigList := make([]*ApplicationConfig, 0)
+	libraryConfigList := make([]*LibraryConfig, 0)
+
+	for _, supportedApplication := range SupportedApplications {
+		applicationConfig := &ApplicationConfig{
+			Name:    supportedApplication.Name,
+			Version: supportedApplication.DefaultVersion,
+		}
+		applicationConfigList = append(applicationConfigList, applicationConfig)
+	}
+
+	mppmConfig = &MppmConfigInfo{
+		Version:      Version,
+		Applications: applicationConfigList,
+		Libraries:    libraryConfigList,
+	}
+
+	return
+
 }
 
-func (config *MppmConfigInfo) SaveAsProjectConfig() (err error) {
-	err = config.save(MppmConfigFileName)
+func (configFileManager *MppmConfigFileManager) GetMppmGlobalConfigFilePath() (filePath string) {
+	homeDirectoryPath, _ := os.UserHomeDir()
+	filePath = filepath.Join(homeDirectoryPath, MppmConfigFileName)
 	return
 }
 
-func (config *MppmConfigInfo) SaveAsGlobalConfig() (err error) {
+func (configFileManager *MppmConfigFileManager) SaveProjectConfig() (err error) {
+	err = configFileManager.GetProjectConfig().save(MppmConfigFileName)
+	return
+}
 
-	configFilePath := GetMppmGlobalConfigFilePath()
-	err = config.save(configFilePath)
+func (configFileManager *MppmConfigFileManager) SaveGlobalConfig() (err error) {
+
+	configFilePath := configFileManager.GetMppmGlobalConfigFilePath()
+	err = configFileManager.GetGlobalConfig().save(configFilePath)
 	if err != nil {
 		return
 	}
 
 	return
 
+}
+
+func (configFileManager *MppmConfigFileManager) SaveDefaultProjectConfig() (err error) {
+	err = configFileManager.GetDefaultMppmConfig().save(MppmConfigFileName)
+	return
+}
+
+func (configFileManager *MppmConfigFileManager) loadMppmConfig(config *MppmConfigInfo, configFilePath string) {
+
+	configFile, err := os.Open(configFilePath)
+	if err != nil {
+		errorMessage := getOpeningMppmProjectConfigFileErrorMessage(err)
+		util.ExitWithErrorMessage(errorMessage)
+	}
+	defer configFile.Close()
+
+	jsonDecoder := json.NewDecoder(configFile)
+	jsonDecoder.DisallowUnknownFields()
+
+	err = jsonDecoder.Decode(config)
+	if err != nil {
+		errorMessage := getInvalidMppmProjectConfigFileErrorMessage(err)
+		util.ExitWithErrorMessage(errorMessage)
+	}
+
+	err = config.CheckIfCompatibleWithInstalledMppmVersion()
+	if err != nil {
+		util.ExitWithError(err)
+	}
+
+	err = config.CheckIfCompatibleWithSupportedApplications()
+	if err != nil {
+		util.ExitWithError(err)
+	}
+
+}
+
+func (configFileManager *MppmConfigFileManager) createMppmGlobalConfigFileIfNotExists() {
+	mppmGlobalConfigFilePath := configFileManager.GetMppmGlobalConfigFilePath()
+	if _, err := os.Stat(mppmGlobalConfigFilePath); os.IsNotExist(err) {
+		configFileManager.globalConfig = configFileManager.GetDefaultMppmConfig()
+		err = configFileManager.SaveGlobalConfig()
+		if err != nil {
+			util.ExitWithError(err)
+		}
+	}
+}
+
+type MppmConfigInfo struct {
+	Version      string               `json:"version"`
+	Applications []*ApplicationConfig `json:"applications"`
+	Libraries    []*LibraryConfig     `json:"libraries"`
 }
 
 func (config *MppmConfigInfo) save(filePath string) (err error) {
@@ -150,87 +238,4 @@ func (config *MppmConfigInfo) CheckIfCompatibleWithSupportedApplications() (err 
 
 	return
 
-}
-
-// TODO Override global config settings with project config settings.
-func LoadMppmProjectConfig() {
-	MppmProjectConfig = &MppmConfigInfo{}
-	loadMppmConfig(MppmProjectConfig, MppmConfigFileName)
-}
-
-func LoadMppmGlobalConfig() {
-	MppmGlobalConfig = &MppmConfigInfo{}
-	createMppmGlobalConfigFileIfNotExists()
-	loadMppmConfig(MppmGlobalConfig, GetMppmGlobalConfigFilePath())
-}
-
-func loadMppmConfig(config *MppmConfigInfo, configFilePath string) {
-
-	configFile, err := os.Open(configFilePath)
-	if err != nil {
-		errorMessage := getOpeningMppmProjectConfigFileErrorMessage(err)
-		util.ExitWithErrorMessage(errorMessage)
-	}
-	defer configFile.Close()
-
-	jsonDecoder := json.NewDecoder(configFile)
-	jsonDecoder.DisallowUnknownFields()
-
-	err = jsonDecoder.Decode(config)
-	if err != nil {
-		errorMessage := getInvalidMppmProjectConfigFileErrorMessage(err)
-		util.ExitWithErrorMessage(errorMessage)
-	}
-
-	err = config.CheckIfCompatibleWithInstalledMppmVersion()
-	if err != nil {
-		util.ExitWithError(err)
-	}
-
-	err = config.CheckIfCompatibleWithSupportedApplications()
-	if err != nil {
-		util.ExitWithError(err)
-	}
-
-}
-
-func GetDefaultMppmConfig() (mppmConfig *MppmConfigInfo) {
-
-	applicationConfigList := make([]*ApplicationConfig, 0)
-	libraryConfigList := make([]*LibraryConfig, 0)
-
-	for _, supportedApplication := range SupportedApplications {
-		applicationConfig := &ApplicationConfig{
-			Name:    supportedApplication.Name,
-			Version: supportedApplication.DefaultVersion,
-		}
-		applicationConfigList = append(applicationConfigList, applicationConfig)
-	}
-
-	mppmConfig = &MppmConfigInfo{
-		Version:      Version,
-		Applications: applicationConfigList,
-		Libraries:    libraryConfigList,
-	}
-
-	return
-
-}
-
-func GetMppmGlobalConfigFilePath() (filePath string) {
-	homeDirectoryPath, _ := os.UserHomeDir()
-	filePath = filepath.Join(homeDirectoryPath, MppmConfigFileName)
-	return
-}
-
-func createMppmGlobalConfigFileIfNotExists() {
-	mppmGlobalConfigFilePath := GetMppmGlobalConfigFilePath()
-	defaultMppmGlobalConfig := GetDefaultMppmConfig()
-
-	if _, err := os.Stat(mppmGlobalConfigFilePath); os.IsNotExist(err) {
-		err = defaultMppmGlobalConfig.SaveAsGlobalConfig()
-		if err != nil {
-			util.ExitWithError(err)
-		}
-	}
 }

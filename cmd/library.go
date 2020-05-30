@@ -59,10 +59,6 @@ Libraries can be any collection of audio samples, plugins, presets, etc. that:
 
 	Args: cobra.OnlyValidArgs,
 
-	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		config.LoadMppmGlobalConfig()
-	},
-
 	Run: func(cmd *cobra.Command, args []string) {
 		if isListAllLibrariesCommand {
 			listAllLibraries()
@@ -81,13 +77,13 @@ var isListAllLibrariesCommand bool
 var isCommitAllLibrariesCommand bool
 
 func listAllLibraries() {
-	for _, libraryConfig := range config.MppmGlobalConfig.Libraries {
+	for _, libraryConfig := range configManager.GetGlobalConfig().Libraries {
 		libraryConfig.Print()
 	}
 }
 
 func commitAllLibraries() (err error) {
-	for _, libraryConfig := range config.MppmGlobalConfig.Libraries {
+	for _, libraryConfig := range configManager.GetGlobalConfig().Libraries {
 		err = commitLibrary(libraryConfig)
 		if err != nil {
 			return
@@ -111,7 +107,7 @@ func commitLibrary(libraryConfig *config.LibraryConfig) (err error) {
 	}
 	libraryConfig.MostRecentGitCommitId = libraryConfig.CurrentGitCommitId
 
-	err = config.MppmGlobalConfig.SaveAsGlobalConfig()
+	err = configManager.SaveGlobalConfig()
 	if err != nil {
 		return
 	}

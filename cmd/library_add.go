@@ -72,8 +72,8 @@ func addLibrary(libraryFilePath string) (err error) {
 	}
 	libraryConfig.MostRecentGitCommitId = libraryConfig.CurrentGitCommitId
 
-	config.MppmGlobalConfig.Libraries = append(config.MppmGlobalConfig.Libraries, libraryConfig)
-	err = config.MppmGlobalConfig.SaveAsGlobalConfig()
+	configManager.GetGlobalConfig().Libraries = append(configManager.GetGlobalConfig().Libraries, libraryConfig)
+	err = configManager.SaveGlobalConfig()
 	if err != nil {
 		return
 	}
@@ -89,7 +89,7 @@ func isGitRepository(libraryFilePath string) bool {
 }
 
 func isLibraryPreviouslyAdded(libraryFilePath string) bool {
-	for _, libraryConfig := range config.MppmGlobalConfig.Libraries {
+	for _, libraryConfig := range configManager.GetGlobalConfig().Libraries {
 		if libraryConfig.FilePath == libraryFilePath {
 			return true
 		}

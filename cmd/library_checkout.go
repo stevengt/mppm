@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
-	"github.com/stevengt/mppm/config"
 	"github.com/stevengt/mppm/util"
 )
 
@@ -65,7 +64,7 @@ var isCheckoutProjectSpecifiedLibrariesCommand bool
 
 func checkoutMostRecentLibraries() (err error) {
 
-	libraryConfigList := config.MppmGlobalConfig.Libraries
+	libraryConfigList := configManager.GetGlobalConfig().Libraries
 
 	for _, libraryConfig := range libraryConfigList {
 
@@ -77,7 +76,7 @@ func checkoutMostRecentLibraries() (err error) {
 		}
 
 		libraryConfig.CurrentGitCommitId = libraryConfig.MostRecentGitCommitId
-		err = config.MppmGlobalConfig.SaveAsGlobalConfig()
+		err = configManager.SaveGlobalConfig()
 		if err != nil {
 			return
 		}
@@ -90,9 +89,8 @@ func checkoutMostRecentLibraries() (err error) {
 
 func checkoutProjectSpecifiedLibraries() (err error) {
 
-	config.LoadMppmProjectConfig()
-	libraryProjectConfigList := config.MppmProjectConfig.Libraries
-	libraryGlobalConfigList := config.MppmGlobalConfig.Libraries
+	libraryProjectConfigList := configManager.GetProjectConfig().Libraries
+	libraryGlobalConfigList := configManager.GetGlobalConfig().Libraries
 
 	for _, libraryProjectConfig := range libraryProjectConfigList {
 
@@ -110,12 +108,12 @@ func checkoutProjectSpecifiedLibraries() (err error) {
 					return
 				}
 
-				err = config.MppmGlobalConfig.SaveAsGlobalConfig()
+				err = configManager.SaveGlobalConfig()
 				if err != nil {
 					return
 				}
 
-				err = config.MppmProjectConfig.SaveAsProjectConfig()
+				err = configManager.SaveProjectConfig()
 				if err != nil {
 					return
 				}

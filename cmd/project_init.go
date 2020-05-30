@@ -88,7 +88,6 @@ func createGitIgnoreFile(filePatterns ...string) (err error) {
 }
 
 func createMppmProjectConfigFile() (err error) {
-	mppmProjectConfig := config.GetDefaultMppmConfig()
-	err = mppmProjectConfig.SaveAsProjectConfig()
+	err = configManager.SaveDefaultProjectConfig()
 	return
 }

@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
-	"github.com/stevengt/mppm/config"
 	"github.com/stevengt/mppm/util"
 )
 
@@ -61,10 +60,6 @@ var projectCmd = &cobra.Command{
 	Args: cobra.OnlyValidArgs,
 
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		shouldLoadMppmProjectConfig := cmd.Use != "init" && (cmd.Use != "project" || isCommitAllCommand || shouldUpdateLibraries)
-		if shouldLoadMppmProjectConfig {
-			config.LoadMppmProjectConfig()
-		}
 		if shouldUpdateLibraries {
 			err := updateProjectLibraryGitCommitIds()
 			if err != nil {
@@ -114,8 +109,7 @@ func commitAll(commitMessage string) (err error) {
 }
 
 func updateProjectLibraryGitCommitIds() (err error) {
-	config.LoadMppmGlobalConfig()
-	config.MppmProjectConfig.Libraries = config.MppmGlobalConfig.Libraries
-	err = config.MppmProjectConfig.SaveAsProjectConfig()
+	configManager.GetProjectConfig().Libraries = configManager.GetGlobalConfig().Libraries
+	err = configManager.SaveProjectConfig()
 	return
 }

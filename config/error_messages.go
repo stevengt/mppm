@@ -26,7 +26,8 @@ An example valid config file is formatted like this:
 %s
 `
 
-	defaultMppmProjectConfigAsJson, err := json.Marshal(GetDefaultMppmConfig())
+	defaultMppmProjectConfig := GetMppmConfigManager().GetDefaultMppmConfig()
+	defaultMppmProjectConfigAsJson, err := json.Marshal(defaultMppmProjectConfig)
 	if err != nil {
 		jsonMarshalErrorMessage := "Something went wrong while loading the default Mppm project config: " + err.Error()
 		defaultMppmProjectConfigAsJson = []byte(jsonMarshalErrorMessage)
