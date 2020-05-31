@@ -10,8 +10,16 @@ import (
 
 var FileSystemProxy FileSystemDelegater = &fileSystemProxy{}
 
-func CreateFile(fileName string) (file *os.File, err error) {
+func OpenFile(fileName string) (file io.ReadWriteCloser, err error) {
+	return FileSystemProxy.OpenFile(fileName)
+}
+
+func CreateFile(fileName string) (file io.ReadWriteCloser, err error) {
 	return FileSystemProxy.CreateFile(fileName)
+}
+
+func RemoveFile(fileName string) (err error) {
+	return FileSystemProxy.RemoveFile(fileName)
 }
 
 func CopyFile(sourceFileName string, targetFileName string) (err error) {
@@ -31,7 +39,9 @@ func GetAllFileNamesWithExtension(extension string) (fileNames []string, err err
 }
 
 type FileSystemDelegater interface {
-	CreateFile(fileName string) (file *os.File, err error)
+	OpenFile(fileName string) (file io.ReadWriteCloser, err error)
+	CreateFile(fileName string) (file io.ReadWriteCloser, err error)
+	RemoveFile(fileName string) (err error)
 	CopyFile(sourceFileName string, targetFileName string) (err error)
 	GzipFile(fileName string) (err error)
 	GunzipFile(compressedFileName string) (err error)
@@ -40,9 +50,14 @@ type FileSystemDelegater interface {
 
 type fileSystemProxy struct{}
 
-func (proxy *fileSystemProxy) CreateFile(fileName string) (file *os.File, err error) {
+func (proxy *fileSystemProxy) OpenFile(fileName string) (file io.ReadWriteCloser, err error) {
+	file, err = os.Open(fileName)
+	return
+}
 
-	err = os.RemoveAll(fileName)
+func (proxy *fileSystemProxy) CreateFile(fileName string) (file io.ReadWriteCloser, err error) {
+
+	err = proxy.RemoveFile(fileName)
 	if err != nil {
 		return
 	}
@@ -55,15 +70,20 @@ func (proxy *fileSystemProxy) CreateFile(fileName string) (file *os.File, err er
 	return
 }
 
+func (proxy *fileSystemProxy) RemoveFile(fileName string) (err error) {
+	err = os.RemoveAll(fileName)
+	return
+}
+
 func (proxy *fileSystemProxy) CopyFile(sourceFileName string, targetFileName string) (err error) {
 
-	source, err := os.Open(sourceFileName)
+	source, err := proxy.OpenFile(sourceFileName)
 	if err != nil {
 		return
 	}
 	defer source.Close()
 
-	destination, err := os.Create(targetFileName)
+	destination, err := proxy.CreateFile(targetFileName)
 	if err != nil {
 		return
 	}
@@ -75,7 +95,7 @@ func (proxy *fileSystemProxy) CopyFile(sourceFileName string, targetFileName str
 
 func (proxy *fileSystemProxy) GzipFile(fileName string) (err error) {
 
-	uncompressedFile, err := os.Open(fileName)
+	uncompressedFile, err := proxy.OpenFile(fileName)
 	if err != nil {
 		return
 	}
@@ -101,13 +121,13 @@ func (proxy *fileSystemProxy) GzipFile(fileName string) (err error) {
 
 func (proxy *fileSystemProxy) GunzipFile(compressedFileName string) (err error) {
 
-	compressedFile, err := os.Open(compressedFileName)
+	compressedFile, err := proxy.OpenFile(compressedFileName)
 	if err != nil {
 		return
 	}
 	defer func() {
 		compressedFile.Close()
-		err = os.RemoveAll(compressedFileName)
+		err = proxy.RemoveFile(compressedFileName)
 	}()
 
 	gzipReader, err := gzip.NewReader(compressedFile)
