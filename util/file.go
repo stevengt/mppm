@@ -23,29 +23,108 @@ func RemoveFile(fileName string) (err error) {
 }
 
 func CopyFile(sourceFileName string, targetFileName string) (err error) {
-	return FileSystemProxy.CopyFile(sourceFileName, targetFileName)
+
+	source, err := FileSystemProxy.OpenFile(sourceFileName)
+	if err != nil {
+		return
+	}
+	defer source.Close()
+
+	destination, err := FileSystemProxy.CreateFile(targetFileName)
+	if err != nil {
+		return
+	}
+	defer destination.Close()
+
+	_, err = io.Copy(destination, source)
+	return
 }
 
 func GzipFile(fileName string) (err error) {
-	return FileSystemProxy.GzipFile(fileName)
+
+	uncompressedFile, err := FileSystemProxy.OpenFile(fileName)
+	if err != nil {
+		return
+	}
+	defer uncompressedFile.Close()
+
+	compressedFileName := fileName + ".gz"
+	compressedFile, err := FileSystemProxy.CreateFile(compressedFileName)
+	if err != nil {
+		return
+	}
+	defer compressedFile.Close()
+
+	gzipWriter := gzip.NewWriter(compressedFile)
+	defer gzipWriter.Close()
+
+	_, err = io.Copy(gzipWriter, uncompressedFile)
+	if err != nil {
+		return
+	}
+
+	return
 }
 
 func GunzipFile(compressedFileName string) (err error) {
-	return FileSystemProxy.GunzipFile(compressedFileName)
+
+	compressedFile, err := FileSystemProxy.OpenFile(compressedFileName)
+	if err != nil {
+		return
+	}
+	defer func() {
+		compressedFile.Close()
+		err = FileSystemProxy.RemoveFile(compressedFileName)
+	}()
+
+	gzipReader, err := gzip.NewReader(compressedFile)
+	if err != nil {
+		return
+	}
+	defer gzipReader.Close()
+
+	uncompressedFileName := strings.TrimSuffix(compressedFileName, ".gz")
+	uncompressedFile, err := FileSystemProxy.CreateFile(uncompressedFileName)
+	if err != nil {
+		return
+	}
+	defer uncompressedFile.Close()
+
+	_, err = io.Copy(uncompressedFile, gzipReader)
+	if err != nil {
+		return
+	}
+
+	return
 }
 
 func GetAllFileNamesWithExtension(extension string) (fileNames []string, err error) {
-	return FileSystemProxy.GetAllFileNamesWithExtension(extension)
+
+	fileNames = make([]string, 0)
+
+	err = FileSystemProxy.WalkFilePath(".", func(fileName string, fileInfo os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if strings.HasSuffix(fileName, "."+extension) {
+			fileNames = append(fileNames, fileName)
+		}
+		return nil
+	})
+
+	if err != nil {
+		return
+	}
+
+	return
+
 }
 
 type FileSystemDelegater interface {
 	OpenFile(fileName string) (file io.ReadWriteCloser, err error)
 	CreateFile(fileName string) (file io.ReadWriteCloser, err error)
 	RemoveFile(fileName string) (err error)
-	CopyFile(sourceFileName string, targetFileName string) (err error)
-	GzipFile(fileName string) (err error)
-	GunzipFile(compressedFileName string) (err error)
-	GetAllFileNamesWithExtension(extension string) (fileNames []string, err error)
+	WalkFilePath(root string, walkFn filepath.WalkFunc) (err error)
 }
 
 type fileSystemProxy struct{}
@@ -75,100 +154,7 @@ func (proxy *fileSystemProxy) RemoveFile(fileName string) (err error) {
 	return
 }
 
-func (proxy *fileSystemProxy) CopyFile(sourceFileName string, targetFileName string) (err error) {
-
-	source, err := proxy.OpenFile(sourceFileName)
-	if err != nil {
-		return
-	}
-	defer source.Close()
-
-	destination, err := proxy.CreateFile(targetFileName)
-	if err != nil {
-		return
-	}
-	defer destination.Close()
-
-	_, err = io.Copy(destination, source)
+func (proxy *fileSystemProxy) WalkFilePath(root string, walkFn filepath.WalkFunc) (err error) {
+	err = filepath.Walk(root, walkFn)
 	return
-}
-
-func (proxy *fileSystemProxy) GzipFile(fileName string) (err error) {
-
-	uncompressedFile, err := proxy.OpenFile(fileName)
-	if err != nil {
-		return
-	}
-	defer uncompressedFile.Close()
-
-	compressedFileName := fileName + ".gz"
-	compressedFile, err := proxy.CreateFile(compressedFileName)
-	if err != nil {
-		return
-	}
-	defer compressedFile.Close()
-
-	gzipWriter := gzip.NewWriter(compressedFile)
-	defer gzipWriter.Close()
-
-	_, err = io.Copy(gzipWriter, uncompressedFile)
-	if err != nil {
-		return
-	}
-
-	return
-}
-
-func (proxy *fileSystemProxy) GunzipFile(compressedFileName string) (err error) {
-
-	compressedFile, err := proxy.OpenFile(compressedFileName)
-	if err != nil {
-		return
-	}
-	defer func() {
-		compressedFile.Close()
-		err = proxy.RemoveFile(compressedFileName)
-	}()
-
-	gzipReader, err := gzip.NewReader(compressedFile)
-	if err != nil {
-		return
-	}
-	defer gzipReader.Close()
-
-	uncompressedFileName := strings.TrimSuffix(compressedFileName, ".gz")
-	uncompressedFile, err := proxy.CreateFile(uncompressedFileName)
-	if err != nil {
-		return
-	}
-	defer uncompressedFile.Close()
-
-	_, err = io.Copy(uncompressedFile, gzipReader)
-	if err != nil {
-		return
-	}
-
-	return
-}
-
-func (proxy *fileSystemProxy) GetAllFileNamesWithExtension(extension string) (fileNames []string, err error) {
-
-	fileNames = make([]string, 0)
-
-	err = filepath.Walk(".", func(fileName string, fileInfo os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		if strings.HasSuffix(fileName, "."+extension) {
-			fileNames = append(fileNames, fileName)
-		}
-		return nil
-	})
-
-	if err != nil {
-		return
-	}
-
-	return
-
 }
