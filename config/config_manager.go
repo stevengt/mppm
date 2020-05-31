@@ -8,12 +8,12 @@ import (
 	"github.com/stevengt/mppm/util"
 )
 
-var mppmConfigManagerFactory MppmConfigManagerCreator = &MppmConfigFileManagerCreator{}
+var MppmConfigManagerFactory MppmConfigManagerCreator = &MppmConfigFileManagerCreator{}
 var mppmConfigManager MppmConfigManager
 
 func GetMppmConfigManager() MppmConfigManager {
 	if mppmConfigManager == nil {
-		mppmConfigManager = mppmConfigManagerFactory.NewMppmConfigManager()
+		mppmConfigManager = MppmConfigManagerFactory.NewMppmConfigManager()
 	}
 	return mppmConfigManager
 }
