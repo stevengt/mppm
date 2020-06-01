@@ -6,25 +6,7 @@ import (
 	"github.com/stevengt/mppm/util"
 )
 
-var MppmConfigManagerFactory MppmConfigManagerCreator = &MppmConfigFileManagerCreator{}
-var mppmConfigManager MppmConfigManager
-
-func GetMppmConfigManager() MppmConfigManager {
-	if mppmConfigManager == nil {
-		mppmConfigManager = MppmConfigManagerFactory.NewMppmConfigManager()
-	}
-	return mppmConfigManager
-}
-
-type MppmConfigManagerCreator interface {
-	NewMppmConfigManager() MppmConfigManager
-}
-
-type MppmConfigFileManagerCreator struct{}
-
-func (mppmConfigFileManagerCreator *MppmConfigFileManagerCreator) NewMppmConfigManager() MppmConfigManager {
-	return &MppmConfigFileManager{}
-}
+var MppmConfigFileManager MppmConfigManager = &mppmConfigFileManager{}
 
 type MppmConfigManager interface {
 	GetProjectConfig() *MppmConfigInfo
@@ -36,12 +18,12 @@ type MppmConfigManager interface {
 	SaveDefaultProjectConfig() (err error)
 }
 
-type MppmConfigFileManager struct {
+type mppmConfigFileManager struct {
 	projectConfig *MppmConfigInfo
 	globalConfig  *MppmConfigInfo
 }
 
-func (configFileManager *MppmConfigFileManager) GetProjectConfig() *MppmConfigInfo {
+func (configFileManager *mppmConfigFileManager) GetProjectConfig() *MppmConfigInfo {
 	if configFileManager.projectConfig == nil {
 		configFileManager.projectConfig = &MppmConfigInfo{}
 		configFileManager.loadMppmConfig(
@@ -52,7 +34,7 @@ func (configFileManager *MppmConfigFileManager) GetProjectConfig() *MppmConfigIn
 	return configFileManager.projectConfig
 }
 
-func (configFileManager *MppmConfigFileManager) GetGlobalConfig() *MppmConfigInfo {
+func (configFileManager *mppmConfigFileManager) GetGlobalConfig() *MppmConfigInfo {
 	if configFileManager.globalConfig == nil {
 		configFileManager.globalConfig = &MppmConfigInfo{}
 		configFileManager.createMppmGlobalConfigFileIfNotExists()
@@ -64,7 +46,7 @@ func (configFileManager *MppmConfigFileManager) GetGlobalConfig() *MppmConfigInf
 	return configFileManager.globalConfig
 }
 
-func (configFileManager *MppmConfigFileManager) GetDefaultMppmConfig() (mppmConfig *MppmConfigInfo) {
+func (configFileManager *mppmConfigFileManager) GetDefaultMppmConfig() (mppmConfig *MppmConfigInfo) {
 
 	applicationConfigList := make([]*ApplicationConfig, 0)
 	libraryConfigList := make([]*LibraryConfig, 0)
@@ -87,18 +69,18 @@ func (configFileManager *MppmConfigFileManager) GetDefaultMppmConfig() (mppmConf
 
 }
 
-func (configFileManager *MppmConfigFileManager) GetMppmGlobalConfigFilePath() (filePath string) {
+func (configFileManager *mppmConfigFileManager) GetMppmGlobalConfigFilePath() (filePath string) {
 	homeDirectoryPath, _ := util.UserHomeDir()
 	filePath = util.JoinFilePath(homeDirectoryPath, MppmConfigFileName)
 	return
 }
 
-func (configFileManager *MppmConfigFileManager) SaveProjectConfig() (err error) {
+func (configFileManager *mppmConfigFileManager) SaveProjectConfig() (err error) {
 	err = configFileManager.GetProjectConfig().save(MppmConfigFileName)
 	return
 }
 
-func (configFileManager *MppmConfigFileManager) SaveGlobalConfig() (err error) {
+func (configFileManager *mppmConfigFileManager) SaveGlobalConfig() (err error) {
 
 	configFilePath := configFileManager.GetMppmGlobalConfigFilePath()
 	err = configFileManager.GetGlobalConfig().save(configFilePath)
@@ -110,12 +92,12 @@ func (configFileManager *MppmConfigFileManager) SaveGlobalConfig() (err error) {
 
 }
 
-func (configFileManager *MppmConfigFileManager) SaveDefaultProjectConfig() (err error) {
+func (configFileManager *mppmConfigFileManager) SaveDefaultProjectConfig() (err error) {
 	err = configFileManager.GetDefaultMppmConfig().save(MppmConfigFileName)
 	return
 }
 
-func (configFileManager *MppmConfigFileManager) loadMppmConfig(config *MppmConfigInfo, configFilePath string) {
+func (configFileManager *mppmConfigFileManager) loadMppmConfig(config *MppmConfigInfo, configFilePath string) {
 
 	configFile, err := util.OpenFile(configFilePath)
 	if err != nil {
@@ -145,7 +127,7 @@ func (configFileManager *MppmConfigFileManager) loadMppmConfig(config *MppmConfi
 
 }
 
-func (configFileManager *MppmConfigFileManager) createMppmGlobalConfigFileIfNotExists() {
+func (configFileManager *mppmConfigFileManager) createMppmGlobalConfigFileIfNotExists() {
 	mppmGlobalConfigFilePath := configFileManager.GetMppmGlobalConfigFilePath()
 	if !util.DoesFileExist(mppmGlobalConfigFilePath) {
 		configFileManager.globalConfig = configFileManager.GetDefaultMppmConfig()

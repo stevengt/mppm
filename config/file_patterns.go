@@ -37,7 +37,7 @@ func GetAllFilePatternsConfig() (allFilePatternsConfig *FilePatternsConfig) {
 // Returns a list of *FilePatternsConfig, including only the applications specified in the project config file.
 func GetFilePatternsConfigListFromProjectConfig() (filePatternsConfigList []*FilePatternsConfig) {
 
-	configManager := GetMppmConfigManager()
+	configManager := MppmConfigFileManager
 
 	filePatternsConfigList = make([]*FilePatternsConfig, 0)
 	projectApplicationConfigs := configManager.GetProjectConfig().Applications
