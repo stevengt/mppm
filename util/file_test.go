@@ -6,6 +6,7 @@ import (
 	"errors"
 	"io"
 	"path/filepath"
+	"sort"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -88,9 +89,47 @@ func TestCopyFile(t *testing.T) {
 // 	t.Error("Not implemented.")
 // }
 
-// func TestGetAllFileNamesWithExtension(t *testing.T) {
-// 	t.Error("Not implemented.")
-// }
+func TestGetAllFileNamesWithExtension(t *testing.T) {
+
+	fileExtensionsAndExpectedFileNames := map[string][]string{
+		"txt":  []string{"file1.txt"},
+		"bin":  []string{"file2.bin", "empty-file.bin"},
+		"fake": []string{},
+	}
+
+	for fileExtension, expectedFileNames := range fileExtensionsAndExpectedFileNames {
+
+		mockFileSystemDelegater := &MockFileSystemDelegater{}
+		mockFileSystemDelegater.InitFiles(GetTestFileNamesAndContents())
+		util.FileSystemProxy = mockFileSystemDelegater
+
+		actualFileNames, err := util.GetAllFileNamesWithExtension(fileExtension)
+		sort.Strings(expectedFileNames)
+		sort.Strings(actualFileNames)
+
+		assert.Nil(t, err)
+		assert.Exactly(t, expectedFileNames, actualFileNames)
+	}
+
+	for fileExtension, _ := range fileExtensionsAndExpectedFileNames {
+
+		expectedFileNames := make([]string, 0)
+		expectedError := errors.New("There was a problem while walking the filepath.")
+
+		mockFileSystemDelegater := &MockFileSystemDelegater{
+			WalkFilePathError: expectedError,
+		}
+		mockFileSystemDelegater.InitFiles(GetTestFileNamesAndContents())
+		util.FileSystemProxy = mockFileSystemDelegater
+
+		actualFileNames, actualError := util.GetAllFileNamesWithExtension(fileExtension)
+		assert.NotNil(t, actualError)
+		assert.Exactly(t, expectedFileNames, actualFileNames)
+		assert.Exactly(t, expectedError, actualError)
+
+	}
+
+}
 
 func GetTestFileNamesAndContents() map[string][]byte {
 	return map[string][]byte{
