@@ -81,9 +81,72 @@ func TestCopyFile(t *testing.T) {
 
 }
 
-// func TestGzipFile(t *testing.T) {
-// 	t.Error("Not implemented.")
-// }
+func TestGzipFile(t *testing.T) {
+
+	testCases := []*GzipFileTestCase{
+		&GzipFileTestCase{
+			fileName:                       "file1.txt",
+			expectedCompressedFileContents: []byte{0x4e, 0xb0, 0xa0, 0xe3, 0xf, 0x0, 0x0, 0x0},
+			fileNamesAndContents:           GetTestFileNamesAndContents(),
+			openFileError:                  nil,
+			createFileError:                nil,
+		},
+		&GzipFileTestCase{
+			fileName:                       "file1.txt",
+			expectedCompressedFileContents: nil,
+			fileNamesAndContents:           GetTestFileNamesAndContents(),
+			openFileError:                  errors.New("There was a problem opening the file."),
+			createFileError:                nil,
+		},
+		&GzipFileTestCase{
+			fileName:                       "file1.txt",
+			expectedCompressedFileContents: nil,
+			fileNamesAndContents:           GetTestFileNamesAndContents(),
+			openFileError:                  nil,
+			createFileError:                errors.New("There was a problem creating the file."),
+		},
+		&GzipFileTestCase{
+			fileName:                       "file2.bin",
+			expectedCompressedFileContents: []byte{0x5a, 0xa3, 0x9c, 0x7c, 0x4, 0x0, 0x0, 0x0},
+			fileNamesAndContents:           GetTestFileNamesAndContents(),
+			openFileError:                  nil,
+			createFileError:                nil,
+		},
+		&GzipFileTestCase{
+			fileName:                       "file2.bin",
+			expectedCompressedFileContents: nil,
+			fileNamesAndContents:           GetTestFileNamesAndContents(),
+			openFileError:                  errors.New("There was a problem opening the file."),
+			createFileError:                nil,
+		},
+		&GzipFileTestCase{
+			fileName:                       "file2.bin",
+			expectedCompressedFileContents: nil,
+			fileNamesAndContents:           GetTestFileNamesAndContents(),
+			openFileError:                  nil,
+			createFileError:                errors.New("There was a problem creating the file."),
+		},
+		&GzipFileTestCase{
+			fileName:                       "empty-file.bin",
+			expectedCompressedFileContents: []byte{0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0},
+			fileNamesAndContents:           GetTestFileNamesAndContents(),
+			openFileError:                  nil,
+			createFileError:                nil,
+		},
+		&GzipFileTestCase{
+			fileName:                       "does-not-exist",
+			expectedCompressedFileContents: nil,
+			fileNamesAndContents:           GetTestFileNamesAndContents(),
+			openFileError:                  nil,
+			createFileError:                nil,
+		},
+	}
+
+	for _, testCase := range testCases {
+		testCase.Run(t)
+	}
+
+}
 
 // func TestGunzipFile(t *testing.T) {
 // 	t.Error("Not implemented.")
@@ -133,9 +196,11 @@ func TestGetAllFileNamesWithExtension(t *testing.T) {
 
 func GetTestFileNamesAndContents() map[string][]byte {
 	return map[string][]byte{
-		"file1.txt":      []byte("file 1 contents"),
-		"file2.bin":      []byte{0xDE, 0xAD, 0xBE, 0xEF},
-		"empty-file.bin": make([]byte, 0),
+		"file1.txt":         []byte("file 1 contents"),
+		"file1.txt.gz":      []byte{0x4e, 0xb0, 0xa0, 0xe3, 0xf, 0x0, 0x0, 0x0},
+		"file2.bin":         []byte{0xDE, 0xAD, 0xBE, 0xEF},
+		"empty-file.bin":    make([]byte, 0),
+		"does-not-exist.gz": []byte("The uncompressed version of this file does not exist"),
 	}
 }
 
@@ -330,6 +395,115 @@ func (testCase *CopyFileTestCase) Run(t *testing.T) {
 			assert.NotNil(t, targetFileAfterCopy)
 			assert.True(t, targetFileAfterCopy.WasClosed)
 			assert.Exactly(t, sourceFileContentsBeforeCopy, targetFileContentsAfterCopy)
+		}
+
+	}
+
+}
+
+type GzipFileTestCase struct {
+	fileName                       string
+	expectedCompressedFileContents []byte
+	fileNamesAndContents           map[string][]byte
+	openFileError                  error
+	createFileError                error
+}
+
+func (testCase *GzipFileTestCase) Run(t *testing.T) {
+
+	mockFileSystemDelegater := &MockFileSystemDelegater{
+		OpenFileError:   testCase.openFileError,
+		CreateFileError: testCase.createFileError,
+	}
+	mockFileSystemDelegater.InitFiles(testCase.fileNamesAndContents)
+	util.FileSystemProxy = mockFileSystemDelegater
+
+	uncompressedFileName := testCase.fileName
+	compressedFileName := uncompressedFileName + ".gz"
+
+	uncompressedFileBeforeGzip := mockFileSystemDelegater.Files[uncompressedFileName]
+	compressedFileBeforeGzip := mockFileSystemDelegater.Files[compressedFileName]
+
+	var uncompressedFileContentsBeforeGzip, compressedFileContentsBeforeGzip []byte
+	if uncompressedFileBeforeGzip != nil {
+		uncompressedFileContentsBeforeGzip = uncompressedFileBeforeGzip.contents
+	}
+	if compressedFileBeforeGzip != nil {
+		compressedFileContentsBeforeGzip = compressedFileBeforeGzip.contents
+	}
+
+	actualError := util.GzipFile(testCase.fileName)
+
+	uncompressedFileAfterGzip := mockFileSystemDelegater.Files[uncompressedFileName]
+	compressedFileAfterGzip := mockFileSystemDelegater.Files[compressedFileName]
+
+	var uncompressedFileContentsAfterGzip, compressedFileContentsAfterGzip []byte
+	if uncompressedFileAfterGzip != nil {
+		uncompressedFileContentsAfterGzip = uncompressedFileAfterGzip.contents
+	}
+	if compressedFileAfterGzip != nil {
+		compressedFileContentsAfterGzip = compressedFileAfterGzip.contents
+	}
+
+	if uncompressedFileBeforeGzip == nil {
+		assert.NotNil(t, actualError)
+		if compressedFileBeforeGzip != nil {
+			assert.Same(t, compressedFileBeforeGzip, compressedFileAfterGzip)
+			assert.Equal(t, compressedFileContentsBeforeGzip, compressedFileContentsAfterGzip)
+			assert.False(t, compressedFileBeforeGzip.WasClosed)
+		}
+		return
+	}
+
+	if testCase.openFileError != nil {
+
+		expectedError := testCase.openFileError
+		assert.Exactly(t, expectedError, actualError)
+
+		if uncompressedFileBeforeGzip != nil {
+			assert.Same(t, uncompressedFileBeforeGzip, uncompressedFileAfterGzip)
+			assert.Equal(t, uncompressedFileContentsBeforeGzip, uncompressedFileContentsAfterGzip)
+			assert.False(t, uncompressedFileBeforeGzip.WasClosed)
+		}
+
+		if compressedFileBeforeGzip != nil {
+			assert.Same(t, compressedFileBeforeGzip, compressedFileAfterGzip)
+			assert.Equal(t, compressedFileContentsBeforeGzip, compressedFileContentsAfterGzip)
+			assert.False(t, compressedFileBeforeGzip.WasClosed)
+		} else {
+			assert.Nil(t, compressedFileAfterGzip)
+		}
+
+	} else if testCase.createFileError != nil {
+
+		expectedError := testCase.createFileError
+		assert.Exactly(t, expectedError, actualError)
+
+		if uncompressedFileBeforeGzip != nil {
+			assert.Same(t, uncompressedFileBeforeGzip, uncompressedFileAfterGzip)
+			assert.Equal(t, uncompressedFileContentsBeforeGzip, uncompressedFileContentsAfterGzip)
+			assert.True(t, uncompressedFileAfterGzip.WasClosed)
+		}
+
+		if compressedFileBeforeGzip != nil {
+			assert.Same(t, compressedFileBeforeGzip, compressedFileAfterGzip)
+			assert.Equal(t, compressedFileContentsBeforeGzip, compressedFileContentsAfterGzip)
+			assert.False(t, compressedFileAfterGzip.WasClosed)
+		} else {
+			assert.Nil(t, compressedFileAfterGzip)
+		}
+
+	} else {
+
+		assert.Nil(t, actualError)
+
+		if uncompressedFileBeforeGzip != nil {
+			assert.Same(t, uncompressedFileBeforeGzip, uncompressedFileAfterGzip)
+			assert.Equal(t, uncompressedFileContentsBeforeGzip, uncompressedFileContentsAfterGzip)
+			assert.True(t, uncompressedFileAfterGzip.WasClosed)
+			assert.NotNil(t, compressedFileAfterGzip)
+			assert.True(t, compressedFileAfterGzip.WasClosed)
+			assert.Exactly(t, testCase.expectedCompressedFileContents, compressedFileContentsAfterGzip)
 		}
 
 	}
