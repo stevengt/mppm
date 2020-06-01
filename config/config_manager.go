@@ -2,8 +2,6 @@ package config
 
 import (
 	"encoding/json"
-	"os"
-	"path/filepath"
 
 	"github.com/stevengt/mppm/util"
 )
@@ -90,8 +88,8 @@ func (configFileManager *MppmConfigFileManager) GetDefaultMppmConfig() (mppmConf
 }
 
 func (configFileManager *MppmConfigFileManager) GetMppmGlobalConfigFilePath() (filePath string) {
-	homeDirectoryPath, _ := os.UserHomeDir()
-	filePath = filepath.Join(homeDirectoryPath, MppmConfigFileName)
+	homeDirectoryPath, _ := util.UserHomeDir()
+	filePath = util.JoinFilePath(homeDirectoryPath, MppmConfigFileName)
 	return
 }
 
@@ -119,7 +117,7 @@ func (configFileManager *MppmConfigFileManager) SaveDefaultProjectConfig() (err 
 
 func (configFileManager *MppmConfigFileManager) loadMppmConfig(config *MppmConfigInfo, configFilePath string) {
 
-	configFile, err := os.Open(configFilePath)
+	configFile, err := util.OpenFile(configFilePath)
 	if err != nil {
 		errorMessage := getOpeningMppmProjectConfigFileErrorMessage(err)
 		util.ExitWithErrorMessage(errorMessage)
@@ -149,9 +147,9 @@ func (configFileManager *MppmConfigFileManager) loadMppmConfig(config *MppmConfi
 
 func (configFileManager *MppmConfigFileManager) createMppmGlobalConfigFileIfNotExists() {
 	mppmGlobalConfigFilePath := configFileManager.GetMppmGlobalConfigFilePath()
-	if _, err := os.Stat(mppmGlobalConfigFilePath); os.IsNotExist(err) {
+	if !util.DoesFileExist(mppmGlobalConfigFilePath) {
 		configFileManager.globalConfig = configFileManager.GetDefaultMppmConfig()
-		err = configFileManager.SaveGlobalConfig()
+		err := configFileManager.SaveGlobalConfig()
 		if err != nil {
 			util.ExitWithError(err)
 		}
