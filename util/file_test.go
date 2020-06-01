@@ -258,6 +258,8 @@ func TestGetAllFileNamesWithExtension(t *testing.T) {
 
 }
 
+// ------------------------------------------------------------------------------
+
 func GetTestFileNamesAndContents() map[string][]byte {
 	return map[string][]byte{
 		"file1.txt": []byte("file 1 contents"),
@@ -277,6 +279,8 @@ func GetTestFileNamesAndContents() map[string][]byte {
 		},
 	}
 }
+
+// ------------------------------------------------------------------------------
 
 type MockFileSystemDelegater struct {
 	Files             map[string]*MockFile // Map of file names to mocked file instances.
@@ -343,6 +347,8 @@ func (mockFileSystemDelegater *MockFileSystemDelegater) WalkFilePath(root string
 	return
 }
 
+// ------------------------------------------------------------------------------
+
 type MockFile struct {
 	contents         []byte
 	bufferReadWriter *bufio.ReadWriter
@@ -373,6 +379,8 @@ func (mockFile *MockFile) Close() error {
 	mockFile.WasClosed = true
 	return nil
 }
+
+// ------------------------------------------------------------------------------
 
 type CopyFileTestCase struct {
 	sourceFileName       string
@@ -474,6 +482,8 @@ func (testCase *CopyFileTestCase) Run(t *testing.T) {
 	}
 
 }
+
+// ------------------------------------------------------------------------------
 
 type GzipFileTestCase struct {
 	fileName                       string
@@ -583,6 +593,8 @@ func (testCase *GzipFileTestCase) Run(t *testing.T) {
 	}
 
 }
+
+// ------------------------------------------------------------------------------
 
 type GunzipFileTestCase struct {
 	fileName                         string
