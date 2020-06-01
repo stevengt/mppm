@@ -72,10 +72,7 @@ func GunzipFile(compressedFileName string) (err error) {
 	if err != nil {
 		return
 	}
-	defer func() {
-		compressedFile.Close()
-		err = FileSystemProxy.RemoveFile(compressedFileName)
-	}()
+	defer compressedFile.Close()
 
 	gzipReader, err := gzip.NewReader(compressedFile)
 	if err != nil {
@@ -91,6 +88,11 @@ func GunzipFile(compressedFileName string) (err error) {
 	defer uncompressedFile.Close()
 
 	_, err = io.Copy(uncompressedFile, gzipReader)
+	if err != nil {
+		return
+	}
+
+	err = FileSystemProxy.RemoveFile(compressedFileName)
 	if err != nil {
 		return
 	}
