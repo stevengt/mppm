@@ -1,11 +1,13 @@
 package config
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
-	"io/ioutil"
-	"os"
+	"io"
 	"strings"
+
+	"github.com/stevengt/mppm/util"
 )
 
 var Version = "1.2.1"
@@ -24,9 +26,15 @@ func (config *MppmConfigInfo) save(filePath string) (err error) {
 	if err != nil {
 		return
 	}
+	configAsJsonReader := bytes.NewReader(configAsJson)
 
-	filePermissionsCode := os.FileMode(0644)
-	err = ioutil.WriteFile(filePath, configAsJson, filePermissionsCode)
+	file, err := util.CreateFile(filePath)
+	if err != nil {
+		return
+	}
+	defer file.Close()
+
+	_, err = io.Copy(file, configAsJsonReader)
 	if err != nil {
 		return
 	}
