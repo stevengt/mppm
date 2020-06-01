@@ -1,5 +1,7 @@
 package util
 
+import "fmt"
+
 var GitManagerFactory GitManagerCreator = &gitShellCommandProxyCreator{}
 
 func NewGitManager(repoFilePath string) GitManager {
@@ -54,16 +56,7 @@ func (proxy *gitShellCommandProxy) Checkout(args ...string) (err error) {
 }
 
 func (proxy *gitShellCommandProxy) RevParse(args ...string) (stdout string, err error) {
-	commandName := "git"
-	commandArgs := append(
-		[]string{
-			"-C",
-			proxy.RepositoryDirectoryPath,
-			"rev-parse",
-		},
-		args...,
-	)
-	stdout, err = ExecuteShellCommandAndReturnOutput(commandName, commandArgs...)
+	stdout, err = proxy.executeGitShellCommandAndReturnOutput("rev-parse", args...)
 	return
 }
 
@@ -101,6 +94,14 @@ func (proxy *gitShellCommandProxy) AddAllAndCommit(commitMessage string) (err er
 }
 
 func (proxy *gitShellCommandProxy) executeGitShellCommand(gitCommandName string, args ...string) (err error) {
+	stdout, err := proxy.executeGitShellCommandAndReturnOutput(gitCommandName, args...)
+	if len(stdout) > 0 {
+		fmt.Println(stdout)
+	}
+	return
+}
+
+func (proxy *gitShellCommandProxy) executeGitShellCommandAndReturnOutput(gitCommandName string, args ...string) (stdout string, err error) {
 	commandName := "git"
 	commandArgs := append(
 		[]string{
@@ -110,6 +111,6 @@ func (proxy *gitShellCommandProxy) executeGitShellCommand(gitCommandName string,
 		},
 		args...,
 	)
-	err = ExecuteShellCommand(commandName, commandArgs...)
+	stdout, err = ExecuteShellCommandAndReturnOutput(commandName, commandArgs...)
 	return
 }
