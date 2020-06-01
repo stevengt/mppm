@@ -301,6 +301,14 @@ func TestAddAllAndCommit(t *testing.T) {
 
 // ------------------------------------------------------------------------------
 
+type MockGitManagerCreator struct {
+	MockGitManager *MockGitManager
+}
+
+func (mockGitManagerCreator *MockGitManagerCreator) NewGitManager(repoFilePath string) util.GitManager {
+	return mockGitManagerCreator.MockGitManager
+}
+
 type MockGitManager struct {
 	InitError            error
 	AddError             error
