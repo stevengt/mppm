@@ -288,6 +288,7 @@ type MockFileSystemDelegater struct {
 	CreateFileError   error
 	RemoveFileError   error
 	WalkFilePathError error
+	UserHomeDirError  error
 }
 
 func (mockFileSystemDelegater *MockFileSystemDelegater) InitFiles(fileNamesAndContents map[string][]byte) {
@@ -345,6 +346,24 @@ func (mockFileSystemDelegater *MockFileSystemDelegater) WalkFilePath(root string
 		}
 	}
 	return
+}
+
+func (mockFileSystemDelegater *MockFileSystemDelegater) UserHomeDir() (string, error) {
+	err := mockFileSystemDelegater.UserHomeDirError
+	if err == nil {
+		return "/home/testuser", err
+	}
+	return "", err
+}
+
+func (mockFileSystemDelegater *MockFileSystemDelegater) JoinFilePath(elem ...string) string {
+	return strings.Join(elem, "/")
+}
+
+func (mockFileSystemDelegater *MockFileSystemDelegater) DoesFileExist(filePath string) bool {
+	var doesFileExist bool
+	_, doesFileExist = mockFileSystemDelegater.Files[filePath]
+	return doesFileExist
 }
 
 // ------------------------------------------------------------------------------

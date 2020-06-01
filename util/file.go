@@ -22,6 +22,18 @@ func RemoveFile(fileName string) (err error) {
 	return FileSystemProxy.RemoveFile(fileName)
 }
 
+func UserHomeDir() (string, error) {
+	return FileSystemProxy.UserHomeDir()
+}
+
+func JoinFilePath(elem ...string) string {
+	return FileSystemProxy.JoinFilePath(elem...)
+}
+
+func DoesFileExist(filePath string) bool {
+	return FileSystemProxy.DoesFileExist(filePath)
+}
+
 func CopyFile(sourceFileName string, targetFileName string) (err error) {
 
 	source, err := FileSystemProxy.OpenFile(sourceFileName)
@@ -127,6 +139,9 @@ type FileSystemDelegater interface {
 	CreateFile(fileName string) (file io.ReadWriteCloser, err error)
 	RemoveFile(fileName string) (err error)
 	WalkFilePath(root string, walkFn filepath.WalkFunc) (err error)
+	UserHomeDir() (string, error)
+	JoinFilePath(elem ...string) string
+	DoesFileExist(filePath string) bool
 }
 
 type fileSystemProxy struct{}
@@ -159,4 +174,19 @@ func (proxy *fileSystemProxy) RemoveFile(fileName string) (err error) {
 func (proxy *fileSystemProxy) WalkFilePath(root string, walkFn filepath.WalkFunc) (err error) {
 	err = filepath.Walk(root, walkFn)
 	return
+}
+
+func (proxy *fileSystemProxy) UserHomeDir() (string, error) {
+	return os.UserHomeDir()
+}
+
+func (proxy *fileSystemProxy) JoinFilePath(elem ...string) string {
+	return filepath.Join(elem...)
+}
+
+func (proxy *fileSystemProxy) DoesFileExist(filePath string) bool {
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		return false
+	}
+	return true
 }
