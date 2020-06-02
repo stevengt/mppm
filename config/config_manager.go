@@ -24,6 +24,10 @@ type mppmConfigFileManager struct {
 	globalConfig  *MppmConfigInfo
 }
 
+func NewMppmConfigFileManager() *mppmConfigFileManager {
+	return &mppmConfigFileManager{}
+}
+
 func (configFileManager *mppmConfigFileManager) GetProjectConfig() *MppmConfigInfo {
 	if configFileManager.projectConfig == nil {
 		configFileManager.projectConfig = &MppmConfigInfo{}

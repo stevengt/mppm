@@ -49,7 +49,7 @@ type MockFileSystemDelegater struct {
 func (mockFileSystemDelegater *MockFileSystemDelegater) InitFiles(fileNamesAndContents map[string][]byte) {
 	files := make(map[string]*MockFile)
 	for fileName, fileContents := range fileNamesAndContents {
-		files[fileName] = newMockFile(fileContents)
+		files[fileName] = NewMockFile(fileContents)
 	}
 	mockFileSystemDelegater.Files = files
 }
@@ -76,7 +76,7 @@ func (mockFileSystemDelegater *MockFileSystemDelegater) CreateFile(fileName stri
 			}
 		}
 		fileContents := make([]byte, 0)
-		mockFileSystemDelegater.Files[fileName] = newMockFile(fileContents)
+		mockFileSystemDelegater.Files[fileName] = NewMockFile(fileContents)
 		file = mockFileSystemDelegater.Files[fileName]
 	}
 	return
@@ -129,7 +129,7 @@ type MockFile struct {
 	WasClosed        bool
 }
 
-func newMockFile(contents []byte) *MockFile {
+func NewMockFile(contents []byte) *MockFile {
 	buffer := bytes.NewBuffer(contents)
 	bufferReader := bufio.NewReader(buffer)
 	bufferWriter := bufio.NewWriter(buffer)
