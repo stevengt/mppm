@@ -1,4 +1,4 @@
-package util_test
+package utiltest
 
 type MockExiter struct {
 	WasExited    bool

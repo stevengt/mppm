@@ -7,17 +7,18 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/stevengt/mppm/util"
+	"github.com/stevengt/mppm/util/utiltest"
 )
 
 func TestInit(t *testing.T) {
 
-	mockShellCommandDelegater := NewMockShellCommandDelegater(
-		[]*MockShellCommandOutput{
-			&MockShellCommandOutput{
+	mockShellCommandDelegater := utiltest.NewMockShellCommandDelegater(
+		[]*utiltest.MockShellCommandOutput{
+			&utiltest.MockShellCommandOutput{
 				Stdout: "Initialized git repository.",
 				Err:    nil,
 			},
-			&MockShellCommandOutput{
+			&utiltest.MockShellCommandOutput{
 				Stdout: "Something went wrong.",
 				Err:    errors.New("There was a problem initializing the git repository."),
 			},
@@ -42,17 +43,17 @@ func TestInit(t *testing.T) {
 
 func TestAdd(t *testing.T) {
 
-	mockShellCommandDelegater := NewMockShellCommandDelegater(
-		[]*MockShellCommandOutput{
-			&MockShellCommandOutput{
+	mockShellCommandDelegater := utiltest.NewMockShellCommandDelegater(
+		[]*utiltest.MockShellCommandOutput{
+			&utiltest.MockShellCommandOutput{
 				Stdout: "Added items to git repository.",
 				Err:    nil,
 			},
-			&MockShellCommandOutput{
+			&utiltest.MockShellCommandOutput{
 				Stdout: "Added items to git repository.",
 				Err:    nil,
 			},
-			&MockShellCommandOutput{
+			&utiltest.MockShellCommandOutput{
 				Stdout: "Something went wrong.",
 				Err:    errors.New("There was a problem adding items to the git repository."),
 			},
@@ -82,13 +83,13 @@ func TestAdd(t *testing.T) {
 
 func TestCommit(t *testing.T) {
 
-	mockShellCommandDelegater := NewMockShellCommandDelegater(
-		[]*MockShellCommandOutput{
-			&MockShellCommandOutput{
+	mockShellCommandDelegater := utiltest.NewMockShellCommandDelegater(
+		[]*utiltest.MockShellCommandOutput{
+			&utiltest.MockShellCommandOutput{
 				Stdout: "Committed items to git repository.",
 				Err:    nil,
 			},
-			&MockShellCommandOutput{
+			&utiltest.MockShellCommandOutput{
 				Stdout: "Something went wrong.",
 				Err:    errors.New("There was a problem committing items to the git repository."),
 			},
@@ -113,13 +114,13 @@ func TestCommit(t *testing.T) {
 
 func TestCheckout(t *testing.T) {
 
-	mockShellCommandDelegater := NewMockShellCommandDelegater(
-		[]*MockShellCommandOutput{
-			&MockShellCommandOutput{
+	mockShellCommandDelegater := utiltest.NewMockShellCommandDelegater(
+		[]*utiltest.MockShellCommandOutput{
+			&utiltest.MockShellCommandOutput{
 				Stdout: "Checked out git repository.",
 				Err:    nil,
 			},
-			&MockShellCommandOutput{
+			&utiltest.MockShellCommandOutput{
 				Stdout: "Something went wrong.",
 				Err:    errors.New("There was a problem checking out the git repository."),
 			},
@@ -144,17 +145,17 @@ func TestCheckout(t *testing.T) {
 
 func TestRevParse(t *testing.T) {
 
-	mockShellCommandDelegater := NewMockShellCommandDelegater(
-		[]*MockShellCommandOutput{
-			&MockShellCommandOutput{
+	mockShellCommandDelegater := utiltest.NewMockShellCommandDelegater(
+		[]*utiltest.MockShellCommandOutput{
+			&utiltest.MockShellCommandOutput{
 				Stdout: "",
 				Err:    nil,
 			},
-			&MockShellCommandOutput{
+			&utiltest.MockShellCommandOutput{
 				Stdout: "git commit id = 012345",
 				Err:    nil,
 			},
-			&MockShellCommandOutput{
+			&utiltest.MockShellCommandOutput{
 				Stdout: "",
 				Err:    errors.New("Not a git repository."),
 			},
@@ -184,13 +185,13 @@ func TestRevParse(t *testing.T) {
 
 func TestLfsInstall(t *testing.T) {
 
-	mockShellCommandDelegater := NewMockShellCommandDelegater(
-		[]*MockShellCommandOutput{
-			&MockShellCommandOutput{
+	mockShellCommandDelegater := utiltest.NewMockShellCommandDelegater(
+		[]*utiltest.MockShellCommandOutput{
+			&utiltest.MockShellCommandOutput{
 				Stdout: "git lfs is now set up.",
 				Err:    nil,
 			},
-			&MockShellCommandOutput{
+			&utiltest.MockShellCommandOutput{
 				Stdout: "",
 				Err:    errors.New("There was a problem while setting up git lfs."),
 			},
@@ -215,13 +216,13 @@ func TestLfsInstall(t *testing.T) {
 
 func TestLfsTrack(t *testing.T) {
 
-	mockShellCommandDelegater := NewMockShellCommandDelegater(
-		[]*MockShellCommandOutput{
-			&MockShellCommandOutput{
+	mockShellCommandDelegater := utiltest.NewMockShellCommandDelegater(
+		[]*utiltest.MockShellCommandOutput{
+			&utiltest.MockShellCommandOutput{
 				Stdout: "Tracking files with git lfs.",
 				Err:    nil,
 			},
-			&MockShellCommandOutput{
+			&utiltest.MockShellCommandOutput{
 				Stdout: "",
 				Err:    errors.New("There was a problem trying to track files with git lfs."),
 			},
@@ -246,27 +247,27 @@ func TestLfsTrack(t *testing.T) {
 
 func TestAddAllAndCommit(t *testing.T) {
 
-	mockShellCommandDelegater := NewMockShellCommandDelegater(
-		[]*MockShellCommandOutput{
-			&MockShellCommandOutput{
+	mockShellCommandDelegater := utiltest.NewMockShellCommandDelegater(
+		[]*utiltest.MockShellCommandOutput{
+			&utiltest.MockShellCommandOutput{
 				Stdout: "Added items to git repository.",
 				Err:    nil,
 			},
-			&MockShellCommandOutput{
+			&utiltest.MockShellCommandOutput{
 				Stdout: "Committed items to git repository.",
 				Err:    nil,
 			},
 
-			&MockShellCommandOutput{
+			&utiltest.MockShellCommandOutput{
 				Stdout: "",
 				Err:    errors.New("There was a problem adding items to the git repository."),
 			},
 
-			&MockShellCommandOutput{
+			&utiltest.MockShellCommandOutput{
 				Stdout: "Added items to git repository.",
 				Err:    nil,
 			},
-			&MockShellCommandOutput{
+			&utiltest.MockShellCommandOutput{
 				Stdout: "",
 				Err:    errors.New("There was a problem committing items to the git repository."),
 			},
@@ -297,58 +298,4 @@ func TestAddAllAndCommit(t *testing.T) {
 	assert.NotNil(t, err)
 	assert.Equal(t, err.Error(), "There was a problem committing items to the git repository.")
 
-}
-
-// ------------------------------------------------------------------------------
-
-type MockGitManagerCreator struct {
-	MockGitManager *MockGitManager
-}
-
-func (mockGitManagerCreator *MockGitManagerCreator) NewGitManager(repoFilePath string) util.GitManager {
-	return mockGitManagerCreator.MockGitManager
-}
-
-type MockGitManager struct {
-	InitError            error
-	AddError             error
-	CommitError          error
-	CheckoutError        error
-	RevParseStdout       string
-	RevParseError        error
-	LfsInstallError      error
-	LfsTrackError        error
-	AddAllAndCommitError error
-}
-
-func (mockGitManager *MockGitManager) Init() (err error) {
-	return mockGitManager.InitError
-}
-
-func (mockGitManager *MockGitManager) Add(args ...string) (err error) {
-	return mockGitManager.AddError
-}
-
-func (mockGitManager *MockGitManager) Commit(args ...string) (err error) {
-	return mockGitManager.CommitError
-}
-
-func (mockGitManager *MockGitManager) Checkout(args ...string) (err error) {
-	return mockGitManager.CheckoutError
-}
-
-func (mockGitManager *MockGitManager) RevParse(args ...string) (stdout string, err error) {
-	return mockGitManager.RevParseStdout, mockGitManager.RevParseError
-}
-
-func (mockGitManager *MockGitManager) LfsInstall() (err error) {
-	return mockGitManager.LfsInstallError
-}
-
-func (mockGitManager *MockGitManager) LfsTrack(args ...string) (err error) {
-	return mockGitManager.LfsTrackError
-}
-
-func (mockGitManager *MockGitManager) AddAllAndCommit(commitMessage string) (err error) {
-	return mockGitManager.AddAllAndCommitError
 }
