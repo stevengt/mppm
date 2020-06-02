@@ -7,6 +7,7 @@ import (
 	"io"
 	"strings"
 
+	"github.com/stevengt/mppm/config/applications"
 	"github.com/stevengt/mppm/util"
 )
 
@@ -15,9 +16,9 @@ var Version = "1.2.1"
 var MppmConfigFileName = ".mppm.json"
 
 type MppmConfigInfo struct {
-	Version      string               `json:"version"`
-	Applications []*ApplicationConfig `json:"applications"`
-	Libraries    []*LibraryConfig     `json:"libraries"`
+	Version      string                            `json:"version"`
+	Applications []*applications.ApplicationConfig `json:"applications"`
+	Libraries    []*LibraryConfig                  `json:"libraries"`
 }
 
 func (config *MppmConfigInfo) save(filePath string) (err error) {
@@ -66,7 +67,7 @@ func (config *MppmConfigInfo) checkIfCompatibleWithSupportedApplications() (err 
 	for _, application := range config.Applications {
 
 		isApplicationSupported := false
-		for _, supportedApplication := range SupportedApplications {
+		for _, supportedApplication := range applications.SupportedApplications {
 			if application.Name == supportedApplication.Name {
 
 				isVersionSupported := false
@@ -93,4 +94,35 @@ func (config *MppmConfigInfo) checkIfCompatibleWithSupportedApplications() (err 
 
 	return
 
+}
+
+// Returns a list of *applications.FilePatternsConfig, including only the applications specified in the project config file.
+func GetFilePatternsConfigListFromProjectConfig() (filePatternsConfigList []*applications.FilePatternsConfig) {
+
+	configManager := MppmConfigFileManager
+
+	filePatternsConfigList = make([]*applications.FilePatternsConfig, 0)
+	projectApplicationConfigs := configManager.GetProjectConfig().Applications
+
+	for _, projectApplicationConfig := range projectApplicationConfigs {
+		for _, supportedApplication := range applications.SupportedApplications {
+			if supportedApplication.Name == projectApplicationConfig.Name {
+				filePatternsConfig := supportedApplication.FilePatternConfigs[projectApplicationConfig.Version]
+				filePatternsConfigList = append(filePatternsConfigList, filePatternsConfig)
+			}
+		}
+	}
+
+	return
+
+}
+
+// Returns a single *applications.FilePatternsConfig containing the aggregate of all file patterns, including only
+// the applications specified in the project config file.
+func GetAllFilePatternsConfigFromProjectConfig() (allFilePatternsConfig *applications.FilePatternsConfig) {
+	allFilePatternsConfig = applications.NewFilePatternsConfig()
+	for _, filePatternsConfig := range GetFilePatternsConfigListFromProjectConfig() {
+		allFilePatternsConfig = allFilePatternsConfig.AppendAll(filePatternsConfig)
+	}
+	return
 }

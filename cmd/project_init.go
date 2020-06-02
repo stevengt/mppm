@@ -8,6 +8,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/stevengt/mppm/config"
+	"github.com/stevengt/mppm/config/applications"
 	"github.com/stevengt/mppm/util"
 )
 
@@ -53,7 +54,7 @@ func initProject() (err error) {
 		return
 	}
 
-	filePatternsConfig := config.GetAllFilePatternsConfig()
+	filePatternsConfig := applications.GetAllFilePatternsConfig()
 
 	err = createGitIgnoreFile(filePatternsConfig.GitIgnorePatterns...)
 	if err != nil {

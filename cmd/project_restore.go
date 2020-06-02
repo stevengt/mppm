@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/stevengt/mppm/config"
+	"github.com/stevengt/mppm/config/applications"
 
 	"github.com/spf13/cobra"
 	"github.com/stevengt/mppm/util"
@@ -48,7 +49,7 @@ func restoreAllUncompressedFilesToOriginalCompressedFiles() (err error) {
 	return
 }
 
-func restoreAllGzippedXmlFiles(filePatternsConfig *config.FilePatternsConfig) (err error) {
+func restoreAllGzippedXmlFiles(filePatternsConfig *applications.FilePatternsConfig) (err error) {
 	gzippedXmlFileExtensions := filePatternsConfig.GzippedXmlFileExtensions
 	for _, fileExtension := range gzippedXmlFileExtensions {
 		err = restoreAllGzippedXmlFilesWithExtension(fileExtension)

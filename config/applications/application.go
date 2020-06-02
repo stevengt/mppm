@@ -1,4 +1,4 @@
-package config
+package applications
 
 type ApplicationInfo struct {
 	Name               ApplicationName

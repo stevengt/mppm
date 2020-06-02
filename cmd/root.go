@@ -6,6 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/stevengt/mppm/config"
+	"github.com/stevengt/mppm/config/applications"
 )
 
 func init() {
@@ -62,7 +63,7 @@ func Execute() {
 }
 
 func showSupportedFileTypes() {
-	for _, filePatternsConfig := range config.GetFilePatternsConfigList() {
+	for _, filePatternsConfig := range applications.GetFilePatternsConfigList() {
 		filePatternsConfig.Print()
 	}
 }

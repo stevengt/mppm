@@ -1,4 +1,4 @@
-package config
+package applications
 
 var AudioFilePatternsConfig *FilePatternsConfig = &FilePatternsConfig{
 

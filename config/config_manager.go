@@ -3,6 +3,7 @@ package config
 import (
 	"encoding/json"
 
+	"github.com/stevengt/mppm/config/applications"
 	"github.com/stevengt/mppm/util"
 )
 
@@ -48,11 +49,11 @@ func (configFileManager *mppmConfigFileManager) GetGlobalConfig() *MppmConfigInf
 
 func (configFileManager *mppmConfigFileManager) GetDefaultMppmConfig() (mppmConfig *MppmConfigInfo) {
 
-	applicationConfigList := make([]*ApplicationConfig, 0)
+	applicationConfigList := make([]*applications.ApplicationConfig, 0)
 	libraryConfigList := make([]*LibraryConfig, 0)
 
-	for _, supportedApplication := range SupportedApplications {
-		applicationConfig := &ApplicationConfig{
+	for _, supportedApplication := range applications.SupportedApplications {
+		applicationConfig := &applications.ApplicationConfig{
 			Name:    supportedApplication.Name,
 			Version: supportedApplication.DefaultVersion,
 		}

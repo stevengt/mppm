@@ -3,6 +3,8 @@ package config
 import (
 	"encoding/json"
 	"fmt"
+
+	"github.com/stevengt/mppm/config/applications"
 )
 
 func getOpeningMppmProjectConfigFileErrorMessage(err error) (errorMessage string) {
@@ -53,7 +55,7 @@ func getIncompatibleMppmVersionErrorMessage(installedVersion string, configVersi
 	return
 }
 
-func getUnsupportedApplicationErrorMessage(application *ApplicationConfig) (errorMessage string) {
+func getUnsupportedApplicationErrorMessage(application *applications.ApplicationConfig) (errorMessage string) {
 	errorMessageTemplate := `
 Found unsupported application %s %s in config file %s
 To see what applications are supported, please run 'mppm --show-supported'.

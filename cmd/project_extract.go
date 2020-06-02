@@ -6,6 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/stevengt/mppm/config"
+	"github.com/stevengt/mppm/config/applications"
 	"github.com/stevengt/mppm/util"
 )
 
@@ -47,7 +48,7 @@ func extractAllCompressedFiles() (err error) {
 	return
 }
 
-func extractAllGzippedXmlFiles(filePatternsConfig *config.FilePatternsConfig) (err error) {
+func extractAllGzippedXmlFiles(filePatternsConfig *applications.FilePatternsConfig) (err error) {
 	gzippedXmlFileExtensions := filePatternsConfig.GzippedXmlFileExtensions
 	for _, fileExtension := range gzippedXmlFileExtensions {
 		err = extractAllGzippedXmlFilesWithExtension(fileExtension)
