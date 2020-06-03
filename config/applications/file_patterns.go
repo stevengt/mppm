@@ -2,6 +2,7 @@ package applications
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 )
 
@@ -42,6 +43,12 @@ func (config *FilePatternsConfig) Print() {
 	fmt.Println(strings.Join(config.GitLfsTrackPatterns, "\n\t\t"))
 	fmt.Print("\tGzipped XML File Types \n\t\t")
 	fmt.Println(strings.Join(config.GzippedXmlFileExtensions, "\n\t\t"))
+}
+
+func (config *FilePatternsConfig) SortAllLists() {
+	sort.Strings(config.GitIgnorePatterns)
+	sort.Strings(config.GitLfsTrackPatterns)
+	sort.Strings(config.GzippedXmlFileExtensions)
 }
 
 func NewFilePatternsConfig() (filePatternsConfig *FilePatternsConfig) {
