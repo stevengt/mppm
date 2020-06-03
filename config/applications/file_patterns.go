@@ -13,20 +13,18 @@ type FilePatternsConfig struct {
 	GzippedXmlFileExtensions []string // List of file extensions that represent Gzipped XML files.
 }
 
-// Returns a list of *FilePatternsConfig, including all supported application version configs.
+// Returns a list of *FilePatternsConfig, including all non-application-specific configs
+// and all supported application-specific configs.
 func GetFilePatternsConfigList() (filePatternsConfigList []*FilePatternsConfig) {
-	filePatternsConfigList = []*FilePatternsConfig{
-		AudioFilePatternsConfig,
-	}
-	for _, supprtedApplication := range SupportedApplications {
-		for _, supportedVersionConfig := range supprtedApplication.FilePatternConfigs {
-			filePatternsConfigList = append(filePatternsConfigList, supportedVersionConfig)
-		}
-	}
+	filePatternsConfigList = append(
+		GetNonApplicationSpecificFilePatternsConfigList(),
+		GetApplicationSpecificFilePatternsConfigList()...,
+	)
 	return
 }
 
-// Returns a single *FilePatternsConfig containing the aggregate of all supported file patterns.
+// Returns a single *FilePatternsConfig containing the aggregate of all
+// non-application-specific configs and all supported application-specific configs.
 func GetAllFilePatternsConfig() (allFilePatternsConfig *FilePatternsConfig) {
 	allFilePatternsConfig = NewFilePatternsConfig()
 	for _, filePatternsConfig := range GetFilePatternsConfigList() {

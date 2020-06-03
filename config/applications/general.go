@@ -1,5 +1,11 @@
 package applications
 
+func GetNonApplicationSpecificFilePatternsConfigList() (filePatternsConfigList []*FilePatternsConfig) {
+	return []*FilePatternsConfig{
+		AudioFilePatternsConfig,
+	}
+}
+
 var AudioFilePatternsConfig *FilePatternsConfig = &FilePatternsConfig{
 
 	Name: "Audio",

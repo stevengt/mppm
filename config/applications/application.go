@@ -18,3 +18,13 @@ type ApplicationVersion string
 var SupportedApplications = map[string]*ApplicationInfo{
 	"Ableton": AbletonInfo,
 }
+
+func GetApplicationSpecificFilePatternsConfigList() (filePatternsConfigList []*FilePatternsConfig) {
+	filePatternsConfigList = make([]*FilePatternsConfig, 0)
+	for _, supprtedApplication := range SupportedApplications {
+		for _, supportedVersionConfig := range supprtedApplication.FilePatternConfigs {
+			filePatternsConfigList = append(filePatternsConfigList, supportedVersionConfig)
+		}
+	}
+	return
+}

@@ -96,19 +96,21 @@ func (config *MppmConfigInfo) checkIfCompatibleWithSupportedApplications() (err 
 
 }
 
-// Returns a list of *applications.FilePatternsConfig, including only the applications specified in the project config file.
+// Returns a list of *applications.FilePatternsConfig, including all non-application-specific configs
+// and any supported application-specific configs specified in the project config file.
 func GetFilePatternsConfigListFromProjectConfig() (filePatternsConfigList []*applications.FilePatternsConfig) {
 
 	configManager := MppmConfigFileManager
 
-	filePatternsConfigList = make([]*applications.FilePatternsConfig, 0)
+	filePatternsConfigList = applications.GetNonApplicationSpecificFilePatternsConfigList()
 	projectApplicationConfigs := configManager.GetProjectConfig().Applications
 
 	for _, projectApplicationConfig := range projectApplicationConfigs {
 		for _, supportedApplication := range applications.SupportedApplications {
 			if supportedApplication.Name == projectApplicationConfig.Name {
-				filePatternsConfig := supportedApplication.FilePatternConfigs[projectApplicationConfig.Version]
-				filePatternsConfigList = append(filePatternsConfigList, filePatternsConfig)
+				if filePatternsConfig, ok := supportedApplication.FilePatternConfigs[projectApplicationConfig.Version]; ok {
+					filePatternsConfigList = append(filePatternsConfigList, filePatternsConfig)
+				}
 			}
 		}
 	}
@@ -117,8 +119,9 @@ func GetFilePatternsConfigListFromProjectConfig() (filePatternsConfigList []*app
 
 }
 
-// Returns a single *applications.FilePatternsConfig containing the aggregate of all file patterns, including only
-// the applications specified in the project config file.
+// Returns a single *applications.FilePatternsConfig containing the aggregate of all file patterns,
+// including all non-application-specific configs and any supported application-specific configs
+// specified in the project config file.
 func GetAllFilePatternsConfigFromProjectConfig() (allFilePatternsConfig *applications.FilePatternsConfig) {
 	allFilePatternsConfig = applications.NewFilePatternsConfig()
 	for _, filePatternsConfig := range GetFilePatternsConfigListFromProjectConfig() {
