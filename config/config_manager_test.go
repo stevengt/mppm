@@ -13,28 +13,24 @@ func TestGetProjectConfig(t *testing.T) {
 	expectedConfigInfo, configAsJson := configtest.GetTestMppmConfigInfo()
 	configtest.InitMockFileSystemDelegaterWithConfigFiles(configAsJson, configAsJson)
 	configManager := config.MppmConfigFileManager
-	actualConfigInfo, err := configManager.GetProjectConfig()
-	assert.Nil(t, err)
+	actualConfigInfo, actualError := configManager.GetProjectConfig()
+	assert.Nil(t, actualError)
 	assert.NotNil(t, actualConfigInfo)
 	assert.Exactly(t, expectedConfigInfo, actualConfigInfo)
 
-	configAsJson = configtest.TestMppmConfigInfosAsJson["invalid version, no applications"]
-	configtest.InitMockFileSystemDelegaterWithConfigFiles(configAsJson, configAsJson)
-	configManager = config.MppmConfigFileManager
-	actualConfigInfo, err = configManager.GetProjectConfig()
-	assert.NotNil(t, err)
+	for _, testCase := range configtest.TestMppmConfigInfoAsJsonAndExpectedConfigFunctionResponses {
 
-	configAsJson = configtest.TestMppmConfigInfosAsJson["valid version, invalid application name"]
-	configtest.InitMockFileSystemDelegaterWithConfigFiles(configAsJson, configAsJson)
-	configManager = config.MppmConfigFileManager
-	actualConfigInfo, err = configManager.GetProjectConfig()
-	assert.NotNil(t, err)
+		configAsJson = testCase.ConfigAsJson
+		configtest.InitMockFileSystemDelegaterWithConfigFiles(configAsJson, configAsJson)
+		configManager = config.MppmConfigFileManager
 
-	configAsJson = configtest.TestMppmConfigInfosAsJson["valid version, valid application name, invalid application version"]
-	configtest.InitMockFileSystemDelegaterWithConfigFiles(configAsJson, configAsJson)
-	configManager = config.MppmConfigFileManager
-	actualConfigInfo, err = configManager.GetProjectConfig()
-	assert.NotNil(t, err)
+		expectedError := testCase.ExpectedError
+
+		_, actualError = configManager.GetProjectConfig()
+
+		assert.Exactly(t, expectedError, actualError)
+
+	}
 
 }
 
@@ -43,28 +39,23 @@ func TestGetGlobalConfig(t *testing.T) {
 	expectedConfigInfo, configAsJson := configtest.GetTestMppmConfigInfo()
 	configtest.InitMockFileSystemDelegaterWithConfigFiles(configAsJson, configAsJson)
 	configManager := config.MppmConfigFileManager
-	actualConfigInfo, err := configManager.GetGlobalConfig()
-	assert.Nil(t, err)
+	actualConfigInfo, actualError := configManager.GetGlobalConfig()
+	assert.Nil(t, actualError)
 	assert.NotNil(t, actualConfigInfo)
 	assert.Exactly(t, expectedConfigInfo, actualConfigInfo)
 
-	configAsJson = configtest.TestMppmConfigInfosAsJson["invalid version, no applications"]
-	configtest.InitMockFileSystemDelegaterWithConfigFiles(configAsJson, configAsJson)
-	configManager = config.MppmConfigFileManager
-	actualConfigInfo, err = configManager.GetGlobalConfig()
-	assert.NotNil(t, err)
+	for _, testCase := range configtest.TestMppmConfigInfoAsJsonAndExpectedConfigFunctionResponses {
 
-	configAsJson = configtest.TestMppmConfigInfosAsJson["valid version, invalid application name"]
-	configtest.InitMockFileSystemDelegaterWithConfigFiles(configAsJson, configAsJson)
-	configManager = config.MppmConfigFileManager
-	actualConfigInfo, err = configManager.GetGlobalConfig()
-	assert.NotNil(t, err)
+		configAsJson = testCase.ConfigAsJson
+		configtest.InitMockFileSystemDelegaterWithConfigFiles(configAsJson, configAsJson)
+		configManager = config.MppmConfigFileManager
 
-	configAsJson = configtest.TestMppmConfigInfosAsJson["valid version, valid application name, invalid application version"]
-	configtest.InitMockFileSystemDelegaterWithConfigFiles(configAsJson, configAsJson)
-	configManager = config.MppmConfigFileManager
-	actualConfigInfo, err = configManager.GetGlobalConfig()
-	assert.NotNil(t, err)
+		expectedError := testCase.ExpectedError
+		_, actualError = configManager.GetGlobalConfig()
+
+		assert.Exactly(t, expectedError, actualError)
+
+	}
 
 }
 

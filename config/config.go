@@ -102,12 +102,13 @@ func GetFilePatternsConfigListFromProjectConfig() (filePatternsConfigList []*app
 
 	configManager := MppmConfigFileManager
 
-	filePatternsConfigList = applications.GetNonApplicationSpecificFilePatternsConfigList()
 	projectConfig, err := configManager.GetProjectConfig()
 	if err != nil {
 		return
 	}
 	projectApplicationConfigs := projectConfig.Applications
+
+	filePatternsConfigList = applications.GetNonApplicationSpecificFilePatternsConfigList()
 
 	for _, projectApplicationConfig := range projectApplicationConfigs {
 		for _, supportedApplication := range applications.SupportedApplications {
@@ -128,12 +129,12 @@ func GetFilePatternsConfigListFromProjectConfig() (filePatternsConfigList []*app
 // specified in the project config file.
 func GetAllFilePatternsConfigFromProjectConfig() (allFilePatternsConfig *applications.FilePatternsConfig, err error) {
 
-	allFilePatternsConfig = applications.NewFilePatternsConfig()
-
 	filePatternsConfigList, err := GetFilePatternsConfigListFromProjectConfig()
 	if err != nil {
 		return
 	}
+
+	allFilePatternsConfig = applications.NewFilePatternsConfig()
 
 	for _, filePatternsConfig := range filePatternsConfigList {
 		allFilePatternsConfig = allFilePatternsConfig.AppendAll(filePatternsConfig)
