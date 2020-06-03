@@ -3,6 +3,9 @@ package config_test
 import (
 	"testing"
 
+	"github.com/stevengt/mppm/util"
+	"github.com/stevengt/mppm/util/utiltest"
+
 	"github.com/stretchr/testify/assert"
 
 	"github.com/stevengt/mppm/config"
@@ -14,35 +17,59 @@ import (
 func TestGetFilePatternsConfigListFromProjectConfig(t *testing.T) {
 
 	configAsJson := []byte(`{"version":"1.0.0","applications":[{"name":"Ableton","version":"10"}]}`)
+	mockCurrentProcessExiter := utiltest.NewMockExiter()
+	util.CurrentProcessExiter = mockCurrentProcessExiter
 	configtest.InitMockFileSystemDelegaterWithConfigFiles(configAsJson, configAsJson)
-
 	expectedFilePatternsConfigList := []*applications.FilePatternsConfig{
 		applications.AudioFilePatternsConfig,
 		applications.Ableton10FilePatternsConfig,
 	}
-
 	actualFilePatternsConfigList := config.GetFilePatternsConfigListFromProjectConfig()
 	assert.NotNil(t, actualFilePatternsConfigList)
 	assert.Exactly(t, expectedFilePatternsConfigList, actualFilePatternsConfigList)
+	assert.False(t, mockCurrentProcessExiter.WasExited)
 
 	configAsJson = []byte(`{"version":"1.0.0","applications":[]}`)
+	mockCurrentProcessExiter = utiltest.NewMockExiter()
+	util.CurrentProcessExiter = mockCurrentProcessExiter
 	configtest.InitMockFileSystemDelegaterWithConfigFiles(configAsJson, configAsJson)
-
 	expectedFilePatternsConfigList = []*applications.FilePatternsConfig{
 		applications.AudioFilePatternsConfig,
 	}
-
 	actualFilePatternsConfigList = config.GetFilePatternsConfigListFromProjectConfig()
 	assert.NotNil(t, actualFilePatternsConfigList)
 	assert.Exactly(t, expectedFilePatternsConfigList, actualFilePatternsConfigList)
+	assert.False(t, mockCurrentProcessExiter.WasExited)
+
+	configAsJson = []byte(`{"version":"0.0.0","applications":[]}`)
+	mockCurrentProcessExiter = utiltest.NewMockExiter()
+	util.CurrentProcessExiter = mockCurrentProcessExiter
+	configtest.InitMockFileSystemDelegaterWithConfigFiles(configAsJson, configAsJson)
+	_ = config.GetFilePatternsConfigListFromProjectConfig()
+	assert.True(t, mockCurrentProcessExiter.WasExited)
+
+	configAsJson = []byte(`{"version":"1.0.0","applications":[{"name":"Fake Application","version":"1"}]}`)
+	mockCurrentProcessExiter = utiltest.NewMockExiter()
+	util.CurrentProcessExiter = mockCurrentProcessExiter
+	configtest.InitMockFileSystemDelegaterWithConfigFiles(configAsJson, configAsJson)
+	_ = config.GetFilePatternsConfigListFromProjectConfig()
+	assert.True(t, mockCurrentProcessExiter.WasExited)
+
+	configAsJson = []byte(`{"version":"1.0.0","applications":[{"name":"Ableton","version":"-1"}]}`)
+	mockCurrentProcessExiter = utiltest.NewMockExiter()
+	util.CurrentProcessExiter = mockCurrentProcessExiter
+	configtest.InitMockFileSystemDelegaterWithConfigFiles(configAsJson, configAsJson)
+	_ = config.GetFilePatternsConfigListFromProjectConfig()
+	assert.True(t, mockCurrentProcessExiter.WasExited)
 
 }
 
 func TestGetAllFilePatternsConfigFromProjectConfig(t *testing.T) {
 
 	configAsJson := []byte(`{"version":"1.0.0","applications":[{"name":"Ableton","version":"10"}]}`)
+	mockCurrentProcessExiter := utiltest.NewMockExiter()
+	util.CurrentProcessExiter = mockCurrentProcessExiter
 	configtest.InitMockFileSystemDelegaterWithConfigFiles(configAsJson, configAsJson)
-
 	expectedFilePatternsConfig := &applications.FilePatternsConfig{
 		Name:              "",
 		GitIgnorePatterns: []string{"Backup/", "*.als", "*.alc", "*.adv", "*.adg"},
@@ -57,15 +84,16 @@ func TestGetAllFilePatternsConfigFromProjectConfig(t *testing.T) {
 		GzippedXmlFileExtensions: []string{"adv", "adg", "als", "alc"},
 	}
 	expectedFilePatternsConfig.SortAllLists()
-
 	actualFilePatternsConfig := config.GetAllFilePatternsConfigFromProjectConfig()
 	assert.NotNil(t, actualFilePatternsConfig)
 	actualFilePatternsConfig.SortAllLists()
 	assert.Exactly(t, expectedFilePatternsConfig, actualFilePatternsConfig)
+	assert.False(t, mockCurrentProcessExiter.WasExited)
 
 	configAsJson = []byte(`{"version":"1.0.0","applications":[]}`)
+	mockCurrentProcessExiter = utiltest.NewMockExiter()
+	util.CurrentProcessExiter = mockCurrentProcessExiter
 	configtest.InitMockFileSystemDelegaterWithConfigFiles(configAsJson, configAsJson)
-
 	expectedFilePatternsConfig = &applications.FilePatternsConfig{
 		Name:              "",
 		GitIgnorePatterns: []string{},
@@ -79,10 +107,31 @@ func TestGetAllFilePatternsConfigFromProjectConfig(t *testing.T) {
 		GzippedXmlFileExtensions: []string{},
 	}
 	expectedFilePatternsConfig.SortAllLists()
-
 	actualFilePatternsConfig = config.GetAllFilePatternsConfigFromProjectConfig()
 	assert.NotNil(t, actualFilePatternsConfig)
 	actualFilePatternsConfig.SortAllLists()
 	assert.Exactly(t, expectedFilePatternsConfig, actualFilePatternsConfig)
+	assert.False(t, mockCurrentProcessExiter.WasExited)
+
+	configAsJson = []byte(`{"version":"0.0.0","applications":[]}`)
+	mockCurrentProcessExiter = utiltest.NewMockExiter()
+	util.CurrentProcessExiter = mockCurrentProcessExiter
+	configtest.InitMockFileSystemDelegaterWithConfigFiles(configAsJson, configAsJson)
+	_ = config.GetAllFilePatternsConfigFromProjectConfig()
+	assert.True(t, mockCurrentProcessExiter.WasExited)
+
+	configAsJson = []byte(`{"version":"1.0.0","applications":[{"name":"Fake Application","version":"1"}]}`)
+	mockCurrentProcessExiter = utiltest.NewMockExiter()
+	util.CurrentProcessExiter = mockCurrentProcessExiter
+	configtest.InitMockFileSystemDelegaterWithConfigFiles(configAsJson, configAsJson)
+	_ = config.GetAllFilePatternsConfigFromProjectConfig()
+	assert.True(t, mockCurrentProcessExiter.WasExited)
+
+	configAsJson = []byte(`{"version":"1.0.0","applications":[{"name":"Ableton","version":"-1"}]}`)
+	mockCurrentProcessExiter = utiltest.NewMockExiter()
+	util.CurrentProcessExiter = mockCurrentProcessExiter
+	configtest.InitMockFileSystemDelegaterWithConfigFiles(configAsJson, configAsJson)
+	_ = config.GetAllFilePatternsConfigFromProjectConfig()
+	assert.True(t, mockCurrentProcessExiter.WasExited)
 
 }
