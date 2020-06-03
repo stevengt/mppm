@@ -43,7 +43,39 @@ func TestGetProjectConfig(t *testing.T) {
 
 }
 
-func TestGetGlobalConfig(t *testing.T) {}
+func TestGetGlobalConfig(t *testing.T) {
+
+	expectedConfigInfo, configAsJson := configtest.GetTestMppmConfigInfo()
+	mockCurrentProcessExiter := utiltest.InitializeAndReturnNewMockExiter()
+	configtest.InitMockFileSystemDelegaterWithConfigFiles(configAsJson, configAsJson)
+	configManager := config.MppmConfigFileManager
+	actualConfigInfo := configManager.GetGlobalConfig()
+	assert.NotNil(t, actualConfigInfo)
+	assert.Exactly(t, expectedConfigInfo, actualConfigInfo)
+	assert.False(t, mockCurrentProcessExiter.WasExited)
+
+	configAsJson = configtest.TestMppmConfigInfosAsJson["invalid version, no applications"]
+	mockCurrentProcessExiter = utiltest.InitializeAndReturnNewMockExiter()
+	configtest.InitMockFileSystemDelegaterWithConfigFiles(configAsJson, configAsJson)
+	configManager = config.MppmConfigFileManager
+	actualConfigInfo = configManager.GetGlobalConfig()
+	assert.True(t, mockCurrentProcessExiter.WasExited)
+
+	configAsJson = configtest.TestMppmConfigInfosAsJson["valid version, invalid application name"]
+	mockCurrentProcessExiter = utiltest.InitializeAndReturnNewMockExiter()
+	configtest.InitMockFileSystemDelegaterWithConfigFiles(configAsJson, configAsJson)
+	configManager = config.MppmConfigFileManager
+	actualConfigInfo = configManager.GetGlobalConfig()
+	assert.True(t, mockCurrentProcessExiter.WasExited)
+
+	configAsJson = configtest.TestMppmConfigInfosAsJson["valid version, valid application name, invalid application version"]
+	mockCurrentProcessExiter = utiltest.InitializeAndReturnNewMockExiter()
+	configtest.InitMockFileSystemDelegaterWithConfigFiles(configAsJson, configAsJson)
+	configManager = config.MppmConfigFileManager
+	actualConfigInfo = configManager.GetGlobalConfig()
+	assert.True(t, mockCurrentProcessExiter.WasExited)
+
+}
 
 func TestGetDefaultMppmConfig(t *testing.T) {}
 
