@@ -3,7 +3,6 @@ package config_test
 import (
 	"testing"
 
-	"github.com/stevengt/mppm/util"
 	"github.com/stevengt/mppm/util/utiltest"
 
 	"github.com/stretchr/testify/assert"
@@ -17,8 +16,7 @@ import (
 func TestGetFilePatternsConfigListFromProjectConfig(t *testing.T) {
 
 	configAsJson := configtest.TestMppmConfigInfosAsJson["valid version, valid application name, valid application version"]
-	mockCurrentProcessExiter := utiltest.NewMockExiter()
-	util.CurrentProcessExiter = mockCurrentProcessExiter
+	mockCurrentProcessExiter := utiltest.InitializeAndReturnNewMockExiter()
 	configtest.InitMockFileSystemDelegaterWithConfigFiles(configAsJson, configAsJson)
 	expectedFilePatternsConfigList := []*applications.FilePatternsConfig{
 		applications.AudioFilePatternsConfig,
@@ -30,8 +28,7 @@ func TestGetFilePatternsConfigListFromProjectConfig(t *testing.T) {
 	assert.False(t, mockCurrentProcessExiter.WasExited)
 
 	configAsJson = configtest.TestMppmConfigInfosAsJson["valid version, no applications"]
-	mockCurrentProcessExiter = utiltest.NewMockExiter()
-	util.CurrentProcessExiter = mockCurrentProcessExiter
+	mockCurrentProcessExiter = utiltest.InitializeAndReturnNewMockExiter()
 	configtest.InitMockFileSystemDelegaterWithConfigFiles(configAsJson, configAsJson)
 	expectedFilePatternsConfigList = []*applications.FilePatternsConfig{
 		applications.AudioFilePatternsConfig,
@@ -42,22 +39,19 @@ func TestGetFilePatternsConfigListFromProjectConfig(t *testing.T) {
 	assert.False(t, mockCurrentProcessExiter.WasExited)
 
 	configAsJson = configtest.TestMppmConfigInfosAsJson["invalid version, no applications"]
-	mockCurrentProcessExiter = utiltest.NewMockExiter()
-	util.CurrentProcessExiter = mockCurrentProcessExiter
+	mockCurrentProcessExiter = utiltest.InitializeAndReturnNewMockExiter()
 	configtest.InitMockFileSystemDelegaterWithConfigFiles(configAsJson, configAsJson)
 	_ = config.GetFilePatternsConfigListFromProjectConfig()
 	assert.True(t, mockCurrentProcessExiter.WasExited)
 
 	configAsJson = configtest.TestMppmConfigInfosAsJson["valid version, invalid application name"]
-	mockCurrentProcessExiter = utiltest.NewMockExiter()
-	util.CurrentProcessExiter = mockCurrentProcessExiter
+	mockCurrentProcessExiter = utiltest.InitializeAndReturnNewMockExiter()
 	configtest.InitMockFileSystemDelegaterWithConfigFiles(configAsJson, configAsJson)
 	_ = config.GetFilePatternsConfigListFromProjectConfig()
 	assert.True(t, mockCurrentProcessExiter.WasExited)
 
 	configAsJson = configtest.TestMppmConfigInfosAsJson["valid version, valid application name, invalid application version"]
-	mockCurrentProcessExiter = utiltest.NewMockExiter()
-	util.CurrentProcessExiter = mockCurrentProcessExiter
+	mockCurrentProcessExiter = utiltest.InitializeAndReturnNewMockExiter()
 	configtest.InitMockFileSystemDelegaterWithConfigFiles(configAsJson, configAsJson)
 	_ = config.GetFilePatternsConfigListFromProjectConfig()
 	assert.True(t, mockCurrentProcessExiter.WasExited)
@@ -67,8 +61,7 @@ func TestGetFilePatternsConfigListFromProjectConfig(t *testing.T) {
 func TestGetAllFilePatternsConfigFromProjectConfig(t *testing.T) {
 
 	configAsJson := configtest.TestMppmConfigInfosAsJson["valid version, valid application name, valid application version"]
-	mockCurrentProcessExiter := utiltest.NewMockExiter()
-	util.CurrentProcessExiter = mockCurrentProcessExiter
+	mockCurrentProcessExiter := utiltest.InitializeAndReturnNewMockExiter()
 	configtest.InitMockFileSystemDelegaterWithConfigFiles(configAsJson, configAsJson)
 	expectedFilePatternsConfig := &applications.FilePatternsConfig{
 		Name:              "",
@@ -91,8 +84,7 @@ func TestGetAllFilePatternsConfigFromProjectConfig(t *testing.T) {
 	assert.False(t, mockCurrentProcessExiter.WasExited)
 
 	configAsJson = configtest.TestMppmConfigInfosAsJson["valid version, no applications"]
-	mockCurrentProcessExiter = utiltest.NewMockExiter()
-	util.CurrentProcessExiter = mockCurrentProcessExiter
+	mockCurrentProcessExiter = utiltest.InitializeAndReturnNewMockExiter()
 	configtest.InitMockFileSystemDelegaterWithConfigFiles(configAsJson, configAsJson)
 	expectedFilePatternsConfig = &applications.FilePatternsConfig{
 		Name:              "",
@@ -114,22 +106,19 @@ func TestGetAllFilePatternsConfigFromProjectConfig(t *testing.T) {
 	assert.False(t, mockCurrentProcessExiter.WasExited)
 
 	configAsJson = configtest.TestMppmConfigInfosAsJson["invalid version, no applications"]
-	mockCurrentProcessExiter = utiltest.NewMockExiter()
-	util.CurrentProcessExiter = mockCurrentProcessExiter
+	mockCurrentProcessExiter = utiltest.InitializeAndReturnNewMockExiter()
 	configtest.InitMockFileSystemDelegaterWithConfigFiles(configAsJson, configAsJson)
 	_ = config.GetAllFilePatternsConfigFromProjectConfig()
 	assert.True(t, mockCurrentProcessExiter.WasExited)
 
 	configAsJson = configtest.TestMppmConfigInfosAsJson["valid version, invalid application name"]
-	mockCurrentProcessExiter = utiltest.NewMockExiter()
-	util.CurrentProcessExiter = mockCurrentProcessExiter
+	mockCurrentProcessExiter = utiltest.InitializeAndReturnNewMockExiter()
 	configtest.InitMockFileSystemDelegaterWithConfigFiles(configAsJson, configAsJson)
 	_ = config.GetAllFilePatternsConfigFromProjectConfig()
 	assert.True(t, mockCurrentProcessExiter.WasExited)
 
 	configAsJson = configtest.TestMppmConfigInfosAsJson["valid version, valid application name, invalid application version"]
-	mockCurrentProcessExiter = utiltest.NewMockExiter()
-	util.CurrentProcessExiter = mockCurrentProcessExiter
+	mockCurrentProcessExiter = utiltest.InitializeAndReturnNewMockExiter()
 	configtest.InitMockFileSystemDelegaterWithConfigFiles(configAsJson, configAsJson)
 	_ = config.GetAllFilePatternsConfigFromProjectConfig()
 	assert.True(t, mockCurrentProcessExiter.WasExited)
