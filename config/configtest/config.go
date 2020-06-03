@@ -7,6 +7,14 @@ import (
 	"github.com/stevengt/mppm/util/utiltest"
 )
 
+var TestMppmConfigInfosAsJson map[string][]byte = map[string][]byte{
+	"valid version, valid application name, valid application version":   []byte(`{"version":"1.0.0","applications":[{"name":"Ableton","version":"10"}]}`),
+	"valid version, no applications":                                     []byte(`{"version":"1.0.0","applications":[]}`),
+	"invalid version, no applications":                                   []byte(`{"version":"0.0.0","applications":[]}`),
+	"valid version, invalid application name":                            []byte(`{"version":"1.0.0","applications":[{"name":"Fake Application","version":"1"}]}`),
+	"valid version, valid application name, invalid application version": []byte(`{"version":"1.0.0","applications":[{"name":"Ableton","version":"-1"}]}`),
+}
+
 func InitMockFileSystemDelegaterWithDefaultConfigFiles() {
 
 	_, projectConfigAsJson := GetTestMppmConfigInfo()
