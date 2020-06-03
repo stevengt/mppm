@@ -37,13 +37,18 @@ func removeLibrary(libraryFilePath string) (err error) {
 
 	currentLibraries := make([]*config.LibraryConfig, 0)
 
-	for _, libraryConfig := range configManager.GetGlobalConfig().Libraries {
+	globalConfig, err := configManager.GetGlobalConfig()
+	if err != nil {
+		return
+	}
+
+	for _, libraryConfig := range globalConfig.Libraries {
 		if libraryConfig.FilePath != libraryFilePath {
 			currentLibraries = append(currentLibraries, libraryConfig)
 		}
 	}
 
-	configManager.GetGlobalConfig().Libraries = currentLibraries
+	globalConfig.Libraries = currentLibraries
 	err = configManager.SaveGlobalConfig()
 	if err != nil {
 		return

@@ -98,12 +98,16 @@ func (config *MppmConfigInfo) checkIfCompatibleWithSupportedApplications() (err 
 
 // Returns a list of *applications.FilePatternsConfig, including all non-application-specific configs
 // and any supported application-specific configs specified in the project config file.
-func GetFilePatternsConfigListFromProjectConfig() (filePatternsConfigList []*applications.FilePatternsConfig) {
+func GetFilePatternsConfigListFromProjectConfig() (filePatternsConfigList []*applications.FilePatternsConfig, err error) {
 
 	configManager := MppmConfigFileManager
 
 	filePatternsConfigList = applications.GetNonApplicationSpecificFilePatternsConfigList()
-	projectApplicationConfigs := configManager.GetProjectConfig().Applications
+	projectConfig, err := configManager.GetProjectConfig()
+	if err != nil {
+		return
+	}
+	projectApplicationConfigs := projectConfig.Applications
 
 	for _, projectApplicationConfig := range projectApplicationConfigs {
 		for _, supportedApplication := range applications.SupportedApplications {
@@ -122,10 +126,19 @@ func GetFilePatternsConfigListFromProjectConfig() (filePatternsConfigList []*app
 // Returns a single *applications.FilePatternsConfig containing the aggregate of all file patterns,
 // including all non-application-specific configs and any supported application-specific configs
 // specified in the project config file.
-func GetAllFilePatternsConfigFromProjectConfig() (allFilePatternsConfig *applications.FilePatternsConfig) {
+func GetAllFilePatternsConfigFromProjectConfig() (allFilePatternsConfig *applications.FilePatternsConfig, err error) {
+
 	allFilePatternsConfig = applications.NewFilePatternsConfig()
-	for _, filePatternsConfig := range GetFilePatternsConfigListFromProjectConfig() {
+
+	filePatternsConfigList, err := GetFilePatternsConfigListFromProjectConfig()
+	if err != nil {
+		return
+	}
+
+	for _, filePatternsConfig := range filePatternsConfigList {
 		allFilePatternsConfig = allFilePatternsConfig.AppendAll(filePatternsConfig)
 	}
+
 	return
+
 }

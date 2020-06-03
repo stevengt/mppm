@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/spf13/cobra"
 	"github.com/stevengt/mppm/config"
@@ -30,15 +29,17 @@ To restore the original files, run 'mppm project restore'.`,
 
 	Run: func(cmd *cobra.Command, args []string) {
 		if err := extractAllCompressedFiles(); err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			util.ExitWithError(err)
 		}
 	},
 }
 
 func extractAllCompressedFiles() (err error) {
 
-	filePatternsConfig := config.GetAllFilePatternsConfigFromProjectConfig()
+	filePatternsConfig, err := config.GetAllFilePatternsConfigFromProjectConfig()
+	if err != nil {
+		return
+	}
 
 	err = extractAllGzippedXmlFiles(filePatternsConfig)
 	if err != nil {

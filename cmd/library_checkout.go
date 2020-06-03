@@ -64,7 +64,11 @@ var isCheckoutProjectSpecifiedLibrariesCommand bool
 
 func checkoutMostRecentLibraries() (err error) {
 
-	libraryConfigList := configManager.GetGlobalConfig().Libraries
+	globalConfig, err := configManager.GetGlobalConfig()
+	if err != nil {
+		return
+	}
+	libraryConfigList := globalConfig.Libraries
 
 	for _, libraryConfig := range libraryConfigList {
 
@@ -89,8 +93,12 @@ func checkoutMostRecentLibraries() (err error) {
 
 func checkoutProjectSpecifiedLibraries() (err error) {
 
-	libraryProjectConfigList := configManager.GetProjectConfig().Libraries
-	libraryGlobalConfigList := configManager.GetGlobalConfig().Libraries
+	projectConfig, globalConfig, err := configManager.GetProjectAndGlobalConfigs()
+	if err != nil {
+		return
+	}
+	libraryProjectConfigList := projectConfig.Libraries
+	libraryGlobalConfigList := globalConfig.Libraries
 
 	for _, libraryProjectConfig := range libraryProjectConfigList {
 

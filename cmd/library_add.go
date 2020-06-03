@@ -32,7 +32,8 @@ var libraryAddCmd = &cobra.Command{
 
 func addLibrary(libraryFilePath string) (err error) {
 
-	if isLibraryPreviouslyAdded(libraryFilePath) {
+	isLibraryPreviouslyAdded, err := isLibraryPreviouslyAdded(libraryFilePath)
+	if isLibraryPreviouslyAdded || err != nil {
 		return
 	}
 
@@ -72,7 +73,12 @@ func addLibrary(libraryFilePath string) (err error) {
 	}
 	libraryConfig.MostRecentGitCommitId = libraryConfig.CurrentGitCommitId
 
-	configManager.GetGlobalConfig().Libraries = append(configManager.GetGlobalConfig().Libraries, libraryConfig)
+	globalConfig, err := configManager.GetGlobalConfig()
+	if err != nil {
+		return
+	}
+	globalConfig.Libraries = append(globalConfig.Libraries, libraryConfig)
+
 	err = configManager.SaveGlobalConfig()
 	if err != nil {
 		return
@@ -88,11 +94,18 @@ func isGitRepository(libraryFilePath string) bool {
 	return err == nil
 }
 
-func isLibraryPreviouslyAdded(libraryFilePath string) bool {
-	for _, libraryConfig := range configManager.GetGlobalConfig().Libraries {
+func isLibraryPreviouslyAdded(libraryFilePath string) (bool, error) {
+
+	globalConfig, err := configManager.GetGlobalConfig()
+	if err != nil {
+		return false, err
+	}
+
+	for _, libraryConfig := range globalConfig.Libraries {
 		if libraryConfig.FilePath == libraryFilePath {
-			return true
+			return true, nil
 		}
 	}
-	return false
+	return false, nil
+
 }

@@ -2,6 +2,7 @@ package config
 
 import (
 	"encoding/json"
+	"errors"
 
 	"github.com/stevengt/mppm/config/applications"
 	"github.com/stevengt/mppm/util"
@@ -10,10 +11,11 @@ import (
 var MppmConfigFileManager MppmConfigManager = &mppmConfigFileManager{}
 
 type MppmConfigManager interface {
-	GetProjectConfig() *MppmConfigInfo
-	GetGlobalConfig() *MppmConfigInfo
+	GetProjectConfig() (projectConfig *MppmConfigInfo, err error)
+	GetGlobalConfig() (globalConfig *MppmConfigInfo, err error)
+	GetProjectAndGlobalConfigs() (projectConfig *MppmConfigInfo, globalConfig *MppmConfigInfo, err error)
 	GetDefaultMppmConfig() (mppmConfig *MppmConfigInfo)
-	GetMppmGlobalConfigFilePath() (filePath string)
+	GetMppmGlobalConfigFilePath() (filePath string, err error)
 	SaveProjectConfig() (err error)
 	SaveGlobalConfig() (err error)
 	SaveDefaultProjectConfig() (err error)
@@ -28,27 +30,56 @@ func NewMppmConfigFileManager() *mppmConfigFileManager {
 	return &mppmConfigFileManager{}
 }
 
-func (configFileManager *mppmConfigFileManager) GetProjectConfig() *MppmConfigInfo {
+func (configFileManager *mppmConfigFileManager) GetProjectConfig() (projectConfig *MppmConfigInfo, err error) {
 	if configFileManager.projectConfig == nil {
 		configFileManager.projectConfig = &MppmConfigInfo{}
-		configFileManager.loadMppmConfig(
-			configFileManager.projectConfig,
-			MppmConfigFileName,
-		)
+		err = configFileManager.loadMppmConfig(configFileManager.projectConfig, MppmConfigFileName)
+		if err != nil {
+			return
+		}
 	}
-	return configFileManager.projectConfig
+	projectConfig = configFileManager.projectConfig
+	return
 }
 
-func (configFileManager *mppmConfigFileManager) GetGlobalConfig() *MppmConfigInfo {
+func (configFileManager *mppmConfigFileManager) GetGlobalConfig() (globalConfig *MppmConfigInfo, err error) {
 	if configFileManager.globalConfig == nil {
 		configFileManager.globalConfig = &MppmConfigInfo{}
-		configFileManager.createMppmGlobalConfigFileIfNotExists()
-		configFileManager.loadMppmConfig(
-			configFileManager.globalConfig,
-			configFileManager.GetMppmGlobalConfigFilePath(),
-		)
+
+		err = configFileManager.createMppmGlobalConfigFileIfNotExists()
+		if err != nil {
+			return nil, err
+		}
+
+		globalConfigFilePath, err := configFileManager.GetMppmGlobalConfigFilePath()
+		if err != nil {
+			return nil, err
+		}
+
+		err = configFileManager.loadMppmConfig(configFileManager.globalConfig, globalConfigFilePath)
+		if err != nil {
+			return nil, err
+		}
+
 	}
-	return configFileManager.globalConfig
+	globalConfig = configFileManager.globalConfig
+	return
+}
+
+func (configFileManager *mppmConfigFileManager) GetProjectAndGlobalConfigs() (projectConfig *MppmConfigInfo, globalConfig *MppmConfigInfo, err error) {
+
+	projectConfig, err = configFileManager.GetProjectConfig()
+	if err != nil {
+		return
+	}
+
+	globalConfig, err = configFileManager.GetGlobalConfig()
+	if err != nil {
+		return
+	}
+
+	return
+
 }
 
 func (configFileManager *mppmConfigFileManager) GetDefaultMppmConfig() (mppmConfig *MppmConfigInfo) {
@@ -74,21 +105,37 @@ func (configFileManager *mppmConfigFileManager) GetDefaultMppmConfig() (mppmConf
 
 }
 
-func (configFileManager *mppmConfigFileManager) GetMppmGlobalConfigFilePath() (filePath string) {
-	homeDirectoryPath, _ := util.UserHomeDir()
+func (configFileManager *mppmConfigFileManager) GetMppmGlobalConfigFilePath() (filePath string, err error) {
+	homeDirectoryPath, err := util.UserHomeDir()
+	if err != nil {
+		return
+	}
 	filePath = util.JoinFilePath(homeDirectoryPath, MppmConfigFileName)
 	return
 }
 
 func (configFileManager *mppmConfigFileManager) SaveProjectConfig() (err error) {
-	err = configFileManager.GetProjectConfig().save(MppmConfigFileName)
+	projectConfig, err := configFileManager.GetProjectConfig()
+	if err != nil {
+		return
+	}
+	err = projectConfig.save(MppmConfigFileName)
 	return
 }
 
 func (configFileManager *mppmConfigFileManager) SaveGlobalConfig() (err error) {
 
-	configFilePath := configFileManager.GetMppmGlobalConfigFilePath()
-	err = configFileManager.GetGlobalConfig().save(configFilePath)
+	configFilePath, err := configFileManager.GetMppmGlobalConfigFilePath()
+	if err != nil {
+		return
+	}
+
+	globalConfig, err := configFileManager.GetGlobalConfig()
+	if err != nil {
+		return
+	}
+
+	err = globalConfig.save(configFilePath)
 	if err != nil {
 		return
 	}
@@ -102,12 +149,13 @@ func (configFileManager *mppmConfigFileManager) SaveDefaultProjectConfig() (err 
 	return
 }
 
-func (configFileManager *mppmConfigFileManager) loadMppmConfig(config *MppmConfigInfo, configFilePath string) {
+func (configFileManager *mppmConfigFileManager) loadMppmConfig(config *MppmConfigInfo, configFilePath string) (err error) {
 
 	configFile, err := util.OpenFile(configFilePath)
 	if err != nil {
 		errorMessage := getOpeningMppmProjectConfigFileErrorMessage(err)
-		util.ExitWithErrorMessage(errorMessage)
+		err = errors.New(errorMessage)
+		return
 	}
 	defer configFile.Close()
 
@@ -117,28 +165,39 @@ func (configFileManager *mppmConfigFileManager) loadMppmConfig(config *MppmConfi
 	err = jsonDecoder.Decode(config)
 	if err != nil {
 		errorMessage := getInvalidMppmProjectConfigFileErrorMessage(err)
-		util.ExitWithErrorMessage(errorMessage)
+		err = errors.New(errorMessage)
+		return
 	}
 
 	err = config.checkIfCompatibleWithInstalledMppmVersion()
 	if err != nil {
-		util.ExitWithError(err)
+		return
 	}
 
 	err = config.checkIfCompatibleWithSupportedApplications()
 	if err != nil {
-		util.ExitWithError(err)
+		return
 	}
+
+	return
 
 }
 
-func (configFileManager *mppmConfigFileManager) createMppmGlobalConfigFileIfNotExists() {
-	mppmGlobalConfigFilePath := configFileManager.GetMppmGlobalConfigFilePath()
+func (configFileManager *mppmConfigFileManager) createMppmGlobalConfigFileIfNotExists() (err error) {
+
+	mppmGlobalConfigFilePath, err := configFileManager.GetMppmGlobalConfigFilePath()
+	if err != nil {
+		return
+	}
+
 	if !util.DoesFileExist(mppmGlobalConfigFilePath) {
 		configFileManager.globalConfig = configFileManager.GetDefaultMppmConfig()
-		err := configFileManager.SaveGlobalConfig()
+		err = configFileManager.SaveGlobalConfig()
 		if err != nil {
-			util.ExitWithError(err)
+			return
 		}
 	}
+
+	return
+
 }

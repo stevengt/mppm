@@ -109,7 +109,13 @@ func commitAll(commitMessage string) (err error) {
 }
 
 func updateProjectLibraryGitCommitIds() (err error) {
-	configManager.GetProjectConfig().Libraries = configManager.GetGlobalConfig().Libraries
+
+	projectConfig, globalConfig, err := configManager.GetProjectAndGlobalConfigs()
+	if err != nil {
+		return
+	}
+
+	projectConfig.Libraries = globalConfig.Libraries
 	err = configManager.SaveProjectConfig()
 	return
 }

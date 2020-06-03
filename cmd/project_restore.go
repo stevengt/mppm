@@ -31,15 +31,17 @@ To extract them into plain-text files for use in git, run 'mppm project extract'
 
 	Run: func(cmd *cobra.Command, args []string) {
 		if err := restoreAllUncompressedFilesToOriginalCompressedFiles(); err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			util.ExitWithError(err)
 		}
 	},
 }
 
 func restoreAllUncompressedFilesToOriginalCompressedFiles() (err error) {
 
-	filePatternsConfig := config.GetAllFilePatternsConfigFromProjectConfig()
+	filePatternsConfig, err := config.GetAllFilePatternsConfigFromProjectConfig()
+	if err != nil {
+		return
+	}
 
 	err = restoreAllGzippedXmlFiles(filePatternsConfig)
 	if err != nil {

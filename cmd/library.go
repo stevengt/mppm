@@ -60,35 +60,56 @@ Libraries can be any collection of audio samples, plugins, presets, etc. that:
 	Args: cobra.OnlyValidArgs,
 
 	Run: func(cmd *cobra.Command, args []string) {
+
+		var err error
+
 		if isListAllLibrariesCommand {
-			listAllLibraries()
+			err = listAllLibraries()
 		} else if isCommitAllLibrariesCommand {
-			err := commitAllLibraries()
-			if err != nil {
-				util.ExitWithError(err)
-			}
+			err = commitAllLibraries()
 		} else {
 			cmd.Help()
 		}
+
+		if err != nil {
+			util.ExitWithError(err)
+		}
+
 	},
 }
 
 var isListAllLibrariesCommand bool
 var isCommitAllLibrariesCommand bool
 
-func listAllLibraries() {
-	for _, libraryConfig := range configManager.GetGlobalConfig().Libraries {
+func listAllLibraries() (err error) {
+
+	globalConfig, err := configManager.GetGlobalConfig()
+	if err != nil {
+		return
+	}
+
+	for _, libraryConfig := range globalConfig.Libraries {
 		libraryConfig.Print()
 	}
+
+	return
+
 }
 
 func commitAllLibraries() (err error) {
-	for _, libraryConfig := range configManager.GetGlobalConfig().Libraries {
+
+	globalConfig, err := configManager.GetGlobalConfig()
+	if err != nil {
+		return
+	}
+
+	for _, libraryConfig := range globalConfig.Libraries {
 		err = commitLibrary(libraryConfig)
 		if err != nil {
 			return
 		}
 	}
+
 	return
 }
 
