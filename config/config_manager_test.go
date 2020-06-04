@@ -19,7 +19,7 @@ func TestGetProjectConfig(t *testing.T) {
 	for _, testCase := range configtest.TestMppmConfigInfoAndExpectedConfigFunctionResponses {
 
 		configAsJson := testCase.ConfigAsJson
-		configtest.InitMockFileSystemDelegaterWithConfigFiles(configAsJson, configAsJson)
+		mockFileSystemDelegater := configtest.InitAndReturnMockFileSystemDelegaterWithConfigFiles(configAsJson, configAsJson)
 		configManager := config.MppmConfigFileManager
 
 		expectedConfigInfo := testCase.ConfigInfo
@@ -29,10 +29,11 @@ func TestGetProjectConfig(t *testing.T) {
 
 		assert.Exactly(t, expectedConfigInfo, actualConfigInfo)
 		assert.Exactly(t, expectedError, actualError)
+		assert.True(t, mockFileSystemDelegater.Files[".mppm.json"].WasClosed)
 
 	}
 
-	configtest.InitMockFileSystemDelegaterWithNoConfigFiles()
+	_ = configtest.InitAndReturnMockFileSystemDelegaterWithNoConfigFiles()
 	configManager := config.MppmConfigFileManager
 	expectedError := errors.New(`
 There was a problem while opening the mppm config file.
@@ -50,7 +51,7 @@ func TestGetGlobalConfig(t *testing.T) {
 	for _, testCase := range configtest.TestMppmConfigInfoAndExpectedConfigFunctionResponses {
 
 		configAsJson := testCase.ConfigAsJson
-		configtest.InitMockFileSystemDelegaterWithConfigFiles(configAsJson, configAsJson)
+		mockFileSystemDelegater := configtest.InitAndReturnMockFileSystemDelegaterWithConfigFiles(configAsJson, configAsJson)
 		configManager := config.MppmConfigFileManager
 
 		expectedConfigInfo := testCase.ConfigInfo
@@ -60,25 +61,27 @@ func TestGetGlobalConfig(t *testing.T) {
 
 		assert.Exactly(t, expectedConfigInfo, actualConfigInfo)
 		assert.Exactly(t, expectedError, actualError)
+		assert.True(t, mockFileSystemDelegater.Files["/home/testuser/.mppm.json"].WasClosed)
 
 	}
 
-	configtest.InitMockFileSystemDelegaterWithNoConfigFiles()
+	mockFileSystemDelegater := configtest.InitAndReturnMockFileSystemDelegaterWithNoConfigFiles()
 	configManager := config.MppmConfigFileManager
 	expectedConfigInfo := configManager.GetDefaultMppmConfig()
 	actualConfigInfo, actualError := configManager.GetGlobalConfig()
 	assert.Exactly(t, expectedConfigInfo, actualConfigInfo)
 	assert.Nil(t, actualError)
+	assert.True(t, mockFileSystemDelegater.DoesFileExist("/home/testuser/.mppm.json"))
+	assert.True(t, mockFileSystemDelegater.Files["/home/testuser/.mppm.json"].WasClosed)
 	config.MppmConfigFileManager = config.NewMppmConfigFileManager()
 	configManager = config.MppmConfigFileManager
 	actualConfigInfo, actualError = configManager.GetGlobalConfig()
 	assert.Exactly(t, expectedConfigInfo, actualConfigInfo)
 	assert.Nil(t, actualError)
 
-	mockFileSystemDelegater := &utiltest.MockFileSystemDelegater{
-		Files:         make(map[string]*utiltest.MockFile),
-		OpenFileError: errors.New("There was a problem opening the file."),
-	}
+	mockFileSystemDelegater = (&utiltest.MockFileSystemDelegaterBuilder{
+		UseDefaultOpenFileError: true,
+	}).Build()
 	util.FileSystemProxy = mockFileSystemDelegater
 	config.MppmConfigFileManager = config.NewMppmConfigFileManager()
 	configManager = config.MppmConfigFileManager
@@ -126,9 +129,9 @@ func TestGetMppmGlobalConfigFilePath(t *testing.T) {
 	assert.Exactly(t, expectedFilePath, actualFilePath)
 	assert.Exactly(t, expectedError, actualError)
 
-	mockFileSystemDelegater = &utiltest.MockFileSystemDelegater{
-		UserHomeDirError: errors.New("There was a problem getting the user's home directory."),
-	}
+	mockFileSystemDelegater = (&utiltest.MockFileSystemDelegaterBuilder{
+		UseDefaultUserHomeDirError: true,
+	}).Build()
 	util.FileSystemProxy = mockFileSystemDelegater
 	configManager = config.MppmConfigFileManager
 	expectedFilePath = ""
@@ -141,17 +144,18 @@ func TestGetMppmGlobalConfigFilePath(t *testing.T) {
 
 func TestSaveProjectConfig(t *testing.T) {
 
-	configtest.InitMockFileSystemDelegaterWithDefaultConfigFiles()
+	mockFileSystemDelegater := configtest.InitAndReturnMockFileSystemDelegaterWithDefaultConfigFiles()
 	configManager := config.MppmConfigFileManager
 	expectedError := errors.New("Unable to save uninitialized project config.")
 	actualError := configManager.SaveProjectConfig()
 	assert.Exactly(t, expectedError, actualError)
 
-	configtest.InitMockFileSystemDelegaterWithDefaultConfigFiles()
+	mockFileSystemDelegater = configtest.InitAndReturnMockFileSystemDelegaterWithDefaultConfigFiles()
 	configManager = config.MppmConfigFileManager
 	projectConfig, actualError := configManager.GetProjectConfig()
 	assert.Nil(t, actualError)
 	assert.NotNil(t, projectConfig)
+	assert.True(t, mockFileSystemDelegater.Files[".mppm.json"].WasClosed)
 	projectConfig.Version = "1.9999.9999"
 	expectedError = nil
 	actualError = configManager.SaveProjectConfig()
@@ -167,17 +171,18 @@ func TestSaveProjectConfig(t *testing.T) {
 
 func TestSaveGlobalConfig(t *testing.T) {
 
-	configtest.InitMockFileSystemDelegaterWithDefaultConfigFiles()
+	mockFileSystemDelegater := configtest.InitAndReturnMockFileSystemDelegaterWithDefaultConfigFiles()
 	configManager := config.MppmConfigFileManager
 	expectedError := errors.New("Unable to save uninitialized global config.")
 	actualError := configManager.SaveGlobalConfig()
 	assert.Exactly(t, expectedError, actualError)
 
-	configtest.InitMockFileSystemDelegaterWithDefaultConfigFiles()
+	mockFileSystemDelegater = configtest.InitAndReturnMockFileSystemDelegaterWithDefaultConfigFiles()
 	configManager = config.MppmConfigFileManager
 	globalConfig, actualError := configManager.GetGlobalConfig()
 	assert.Nil(t, actualError)
 	assert.NotNil(t, globalConfig)
+	assert.True(t, mockFileSystemDelegater.Files["/home/testuser/.mppm.json"].WasClosed)
 	globalConfig.Version = "1.9999.9999"
 	expectedError = nil
 	actualError = configManager.SaveGlobalConfig()

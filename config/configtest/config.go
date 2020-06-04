@@ -104,23 +104,22 @@ To see what applications are supported, please run 'mppm --show-supported'.
 	},
 }
 
-func InitMockFileSystemDelegaterWithNoConfigFiles() {
+func InitAndReturnMockFileSystemDelegaterWithNoConfigFiles() *utiltest.MockFileSystemDelegater {
 	mockFileSystemDelegater := &utiltest.MockFileSystemDelegater{
 		Files: make(map[string]*utiltest.MockFile),
 	}
 	util.FileSystemProxy = mockFileSystemDelegater
 	config.MppmConfigFileManager = config.NewMppmConfigFileManager()
+	return mockFileSystemDelegater
 }
 
-func InitMockFileSystemDelegaterWithDefaultConfigFiles() {
-
+func InitAndReturnMockFileSystemDelegaterWithDefaultConfigFiles() *utiltest.MockFileSystemDelegater {
 	_, projectConfigAsJson := GetTestMppmConfigInfo()
 	_, globalConfigAsJson := GetTestMppmConfigInfo()
-	InitMockFileSystemDelegaterWithConfigFiles(projectConfigAsJson, globalConfigAsJson)
-
+	return InitAndReturnMockFileSystemDelegaterWithConfigFiles(projectConfigAsJson, globalConfigAsJson)
 }
 
-func InitMockFileSystemDelegaterWithConfigFiles(projectConfigAsJson []byte, globalConfigAsJson []byte) {
+func InitAndReturnMockFileSystemDelegaterWithConfigFiles(projectConfigAsJson []byte, globalConfigAsJson []byte) *utiltest.MockFileSystemDelegater {
 
 	mockFileSystemDelegater := &utiltest.MockFileSystemDelegater{}
 
@@ -138,6 +137,8 @@ func InitMockFileSystemDelegaterWithConfigFiles(projectConfigAsJson []byte, glob
 
 	util.FileSystemProxy = mockFileSystemDelegater
 	config.MppmConfigFileManager = config.NewMppmConfigFileManager()
+
+	return mockFileSystemDelegater
 
 }
 

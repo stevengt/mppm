@@ -16,7 +16,7 @@ func TestGetFilePatternsConfigListFromProjectConfig(t *testing.T) {
 	for _, testCase := range configtest.TestMppmConfigInfoAndExpectedConfigFunctionResponses {
 
 		configAsJson := testCase.ConfigAsJson
-		configtest.InitMockFileSystemDelegaterWithConfigFiles(configAsJson, configAsJson)
+		mockFileSystemDelegater := configtest.InitAndReturnMockFileSystemDelegaterWithConfigFiles(configAsJson, configAsJson)
 
 		expectedError := testCase.ExpectedError
 		expectedFilePatternsConfigList := testCase.ExpectedFilePatternsConfigList
@@ -35,10 +35,11 @@ func TestGetFilePatternsConfigListFromProjectConfig(t *testing.T) {
 
 		assert.Exactly(t, expectedFilePatternsConfigList, actualFilePatternsConfigList)
 		assert.Exactly(t, expectedError, actualError)
+		assert.True(t, mockFileSystemDelegater.Files[".mppm.json"].WasClosed)
 
 	}
 
-	configtest.InitMockFileSystemDelegaterWithNoConfigFiles()
+	_ = configtest.InitAndReturnMockFileSystemDelegaterWithNoConfigFiles()
 	expectedError := errors.New(`
 There was a problem while opening the mppm config file.
 If the file doesn't exist, try running 'mppm project init' first.
@@ -55,7 +56,7 @@ func TestGetAllFilePatternsConfigFromProjectConfig(t *testing.T) {
 	for _, testCase := range configtest.TestMppmConfigInfoAndExpectedConfigFunctionResponses {
 
 		configAsJson := testCase.ConfigAsJson
-		configtest.InitMockFileSystemDelegaterWithConfigFiles(configAsJson, configAsJson)
+		mockFileSystemDelegater := configtest.InitAndReturnMockFileSystemDelegaterWithConfigFiles(configAsJson, configAsJson)
 
 		expectedError := testCase.ExpectedError
 		expectedFilePatternsConfig := testCase.ExpectedFilePatternsConfig
@@ -70,10 +71,11 @@ func TestGetAllFilePatternsConfigFromProjectConfig(t *testing.T) {
 
 		assert.Exactly(t, expectedFilePatternsConfig, actualFilePatternsConfig)
 		assert.Exactly(t, expectedError, actualError)
+		assert.True(t, mockFileSystemDelegater.Files[".mppm.json"].WasClosed)
 
 	}
 
-	configtest.InitMockFileSystemDelegaterWithNoConfigFiles()
+	_ = configtest.InitAndReturnMockFileSystemDelegaterWithNoConfigFiles()
 	expectedError := errors.New(`
 There was a problem while opening the mppm config file.
 If the file doesn't exist, try running 'mppm project init' first.

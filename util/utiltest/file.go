@@ -37,6 +37,51 @@ func GetTestFileNamesAndContents() map[string][]byte {
 
 // ------------------------------------------------------------------------------
 
+type MockFileSystemDelegaterBuilder struct {
+	Files                       map[string]*MockFile
+	UseDefaultOpenFileError     bool
+	UseDefaultCreateFileError   bool
+	UseDefaultRemoveFileError   bool
+	UseDefaultWalkFilePathError bool
+	UseDefaultUserHomeDirError  bool
+}
+
+func (builder *MockFileSystemDelegaterBuilder) Build() *MockFileSystemDelegater {
+
+	mockFileSystemDelegater := &MockFileSystemDelegater{}
+
+	if builder.Files != nil {
+		mockFileSystemDelegater.Files = builder.Files
+	} else {
+		mockFileSystemDelegater.Files = make(map[string]*MockFile)
+	}
+
+	if builder.UseDefaultOpenFileError {
+		mockFileSystemDelegater.OpenFileError = errors.New("There was a problem opening the file.")
+	}
+
+	if builder.UseDefaultCreateFileError {
+		mockFileSystemDelegater.CreateFileError = errors.New("There was a problem creating the file.")
+	}
+
+	if builder.UseDefaultRemoveFileError {
+		mockFileSystemDelegater.RemoveFileError = errors.New("There was a problem removing the file.")
+	}
+
+	if builder.UseDefaultWalkFilePathError {
+		mockFileSystemDelegater.WalkFilePathError = errors.New("There was a problem walking the file path.")
+	}
+
+	if builder.UseDefaultUserHomeDirError {
+		mockFileSystemDelegater.UserHomeDirError = errors.New("There was a problem getting the user's home directory.")
+	}
+
+	return mockFileSystemDelegater
+
+}
+
+// ------------------------------------------------------------------------------
+
 type MockFileSystemDelegater struct {
 	Files             map[string]*MockFile // Map of file names to mocked file instances.
 	OpenFileError     error
