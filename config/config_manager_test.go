@@ -102,6 +102,7 @@ func TestGetMppmGlobalConfigFilePath(t *testing.T) {
 
 func TestSaveProjectConfig(t *testing.T) {
 
+	configtest.InitMockFileSystemDelegaterWithDefaultConfigFiles()
 	configManager := config.MppmConfigFileManager
 	expectedError := errors.New("Unable to save uninitialized project config.")
 	actualError := configManager.SaveProjectConfig()
@@ -125,6 +126,30 @@ func TestSaveProjectConfig(t *testing.T) {
 
 }
 
-// func TestSaveGlobalConfig(t *testing.T) {}
+func TestSaveGlobalConfig(t *testing.T) {
+
+	configtest.InitMockFileSystemDelegaterWithDefaultConfigFiles()
+	configManager := config.MppmConfigFileManager
+	expectedError := errors.New("Unable to save uninitialized global config.")
+	actualError := configManager.SaveGlobalConfig()
+	assert.Exactly(t, expectedError, actualError)
+
+	configtest.InitMockFileSystemDelegaterWithDefaultConfigFiles()
+	configManager = config.MppmConfigFileManager
+	globalConfig, actualError := configManager.GetGlobalConfig()
+	assert.Nil(t, actualError)
+	assert.NotNil(t, globalConfig)
+	globalConfig.Version = "1.9999.9999"
+	expectedError = nil
+	actualError = configManager.SaveGlobalConfig()
+	assert.Exactly(t, expectedError, actualError)
+	config.MppmConfigFileManager = config.NewMppmConfigFileManager()
+	configManager = config.MppmConfigFileManager
+	globalConfig, actualError = configManager.GetGlobalConfig()
+	assert.Nil(t, actualError)
+	assert.NotNil(t, globalConfig)
+	assert.Equal(t, "1.9999.9999", globalConfig.Version)
+
+}
 
 // func TestSaveDefaultProjectConfig(t *testing.T) {}
