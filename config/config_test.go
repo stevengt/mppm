@@ -1,6 +1,7 @@
 package config_test
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -37,6 +38,16 @@ func TestGetFilePatternsConfigListFromProjectConfig(t *testing.T) {
 
 	}
 
+	configtest.InitMockFileSystemDelegaterWithNoConfigFiles()
+	expectedError := errors.New(`
+There was a problem while opening the mppm config file.
+If the file doesn't exist, try running 'mppm project init' first.
+Unable to open file.mppm.json
+`)
+	actualFilePatternsConfigList, actualError := config.GetFilePatternsConfigListFromProjectConfig()
+	assert.Nil(t, actualFilePatternsConfigList)
+	assert.Exactly(t, expectedError, actualError)
+
 }
 
 func TestGetAllFilePatternsConfigFromProjectConfig(t *testing.T) {
@@ -61,5 +72,15 @@ func TestGetAllFilePatternsConfigFromProjectConfig(t *testing.T) {
 		assert.Exactly(t, expectedError, actualError)
 
 	}
+
+	configtest.InitMockFileSystemDelegaterWithNoConfigFiles()
+	expectedError := errors.New(`
+There was a problem while opening the mppm config file.
+If the file doesn't exist, try running 'mppm project init' first.
+Unable to open file.mppm.json
+`)
+	actualFilePatternsConfig, actualError := config.GetAllFilePatternsConfigFromProjectConfig()
+	assert.Nil(t, actualFilePatternsConfig)
+	assert.Exactly(t, expectedError, actualError)
 
 }

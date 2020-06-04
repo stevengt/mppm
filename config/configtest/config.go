@@ -104,6 +104,14 @@ To see what applications are supported, please run 'mppm --show-supported'.
 	},
 }
 
+func InitMockFileSystemDelegaterWithNoConfigFiles() {
+	mockFileSystemDelegater := &utiltest.MockFileSystemDelegater{
+		Files: make(map[string]*utiltest.MockFile),
+	}
+	util.FileSystemProxy = mockFileSystemDelegater
+	config.MppmConfigFileManager = config.NewMppmConfigFileManager()
+}
+
 func InitMockFileSystemDelegaterWithDefaultConfigFiles() {
 
 	_, projectConfigAsJson := GetTestMppmConfigInfo()

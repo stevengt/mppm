@@ -32,6 +32,17 @@ func TestGetProjectConfig(t *testing.T) {
 
 	}
 
+	configtest.InitMockFileSystemDelegaterWithNoConfigFiles()
+	configManager := config.MppmConfigFileManager
+	expectedError := errors.New(`
+There was a problem while opening the mppm config file.
+If the file doesn't exist, try running 'mppm project init' first.
+Unable to open file.mppm.json
+`)
+	actualConfigInfo, actualError := configManager.GetProjectConfig()
+	assert.Nil(t, actualConfigInfo)
+	assert.Exactly(t, expectedError, actualError)
+
 }
 
 func TestGetGlobalConfig(t *testing.T) {
@@ -51,6 +62,34 @@ func TestGetGlobalConfig(t *testing.T) {
 		assert.Exactly(t, expectedError, actualError)
 
 	}
+
+	configtest.InitMockFileSystemDelegaterWithNoConfigFiles()
+	configManager := config.MppmConfigFileManager
+	expectedConfigInfo := configManager.GetDefaultMppmConfig()
+	actualConfigInfo, actualError := configManager.GetGlobalConfig()
+	assert.Exactly(t, expectedConfigInfo, actualConfigInfo)
+	assert.Nil(t, actualError)
+	config.MppmConfigFileManager = config.NewMppmConfigFileManager()
+	configManager = config.MppmConfigFileManager
+	actualConfigInfo, actualError = configManager.GetGlobalConfig()
+	assert.Exactly(t, expectedConfigInfo, actualConfigInfo)
+	assert.Nil(t, actualError)
+
+	mockFileSystemDelegater := &utiltest.MockFileSystemDelegater{
+		Files:         make(map[string]*utiltest.MockFile),
+		OpenFileError: errors.New("There was a problem opening the file."),
+	}
+	util.FileSystemProxy = mockFileSystemDelegater
+	config.MppmConfigFileManager = config.NewMppmConfigFileManager()
+	configManager = config.MppmConfigFileManager
+	expectedError := errors.New(`
+There was a problem while opening the mppm config file.
+If the file doesn't exist, try running 'mppm project init' first.
+There was a problem opening the file.
+`)
+	actualConfigInfo, actualError = configManager.GetGlobalConfig()
+	assert.Nil(t, actualConfigInfo)
+	assert.Exactly(t, expectedError, actualError)
 
 }
 
