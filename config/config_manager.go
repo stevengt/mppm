@@ -115,11 +115,11 @@ func (configFileManager *mppmConfigFileManager) GetMppmGlobalConfigFilePath() (f
 }
 
 func (configFileManager *mppmConfigFileManager) SaveProjectConfig() (err error) {
-	projectConfig, err := configFileManager.GetProjectConfig()
-	if err != nil {
+	if configFileManager.projectConfig == nil {
+		err = errors.New("Unable to save uninitialized project config.")
 		return
 	}
-	err = projectConfig.save(MppmConfigFileName)
+	err = configFileManager.projectConfig.save(MppmConfigFileName)
 	return
 }
 

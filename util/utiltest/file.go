@@ -130,14 +130,12 @@ type MockFile struct {
 }
 
 func NewMockFile(contents []byte) *MockFile {
-	buffer := bytes.NewBuffer(contents)
-	bufferReader := bufio.NewReader(buffer)
-	bufferWriter := bufio.NewWriter(buffer)
-	return &MockFile{
-		Contents:         contents,
-		bufferReadWriter: bufio.NewReadWriter(bufferReader, bufferWriter),
-		WasClosed:        false,
+	mockFile := &MockFile{
+		Contents:  contents,
+		WasClosed: false,
 	}
+	mockFile.resetBuffer()
+	return mockFile
 }
 
 func (mockFile *MockFile) Read(p []byte) (n int, err error) {
@@ -151,7 +149,15 @@ func (mockFile *MockFile) Write(p []byte) (n int, err error) {
 
 func (mockFile *MockFile) Close() error {
 	mockFile.WasClosed = true
+	mockFile.resetBuffer()
 	return nil
+}
+
+func (mockFile *MockFile) resetBuffer() {
+	buffer := bytes.NewBuffer(mockFile.Contents)
+	bufferReader := bufio.NewReader(buffer)
+	bufferWriter := bufio.NewWriter(buffer)
+	mockFile.bufferReadWriter = bufio.NewReadWriter(bufferReader, bufferWriter)
 }
 
 // ------------------------------------------------------------------------------
