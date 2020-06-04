@@ -73,9 +73,7 @@ func TestGetGlobalConfig(t *testing.T) {
 	assert.Nil(t, actualError)
 	assert.True(t, mockFileSystemDelegater.DoesFileExist("/home/testuser/.mppm.json"))
 	assert.True(t, mockFileSystemDelegater.Files["/home/testuser/.mppm.json"].WasClosed)
-	config.MppmConfigFileManager = config.NewMppmConfigFileManager()
-	configManager = config.MppmConfigFileManager
-	actualConfigInfo, actualError = configManager.GetGlobalConfig()
+	actualConfigInfo, actualError = config.NewMppmConfigInfoFromJsonReader(mockFileSystemDelegater.Files["/home/testuser/.mppm.json"])
 	assert.Exactly(t, expectedConfigInfo, actualConfigInfo)
 	assert.Nil(t, actualError)
 
@@ -160,12 +158,12 @@ func TestSaveProjectConfig(t *testing.T) {
 	expectedError = nil
 	actualError = configManager.SaveProjectConfig()
 	assert.Exactly(t, expectedError, actualError)
-	config.MppmConfigFileManager = config.NewMppmConfigFileManager()
-	configManager = config.MppmConfigFileManager
-	projectConfig, actualError = configManager.GetProjectConfig()
+	expectedConfigInfo := projectConfig
+	actualConfigInfo, actualError := config.NewMppmConfigInfoFromJsonReader(mockFileSystemDelegater.Files[".mppm.json"])
 	assert.Nil(t, actualError)
 	assert.NotNil(t, projectConfig)
 	assert.Equal(t, "1.9999.9999", projectConfig.Version)
+	assert.Exactly(t, expectedConfigInfo, actualConfigInfo)
 
 }
 
@@ -179,20 +177,21 @@ func TestSaveGlobalConfig(t *testing.T) {
 
 	mockFileSystemDelegater = configtest.InitAndReturnMockFileSystemDelegaterWithDefaultConfigFiles()
 	configManager = config.MppmConfigFileManager
-	globalConfig, actualError := configManager.GetGlobalConfig()
+	actualConfigInfo, actualError := configManager.GetGlobalConfig()
 	assert.Nil(t, actualError)
-	assert.NotNil(t, globalConfig)
+	assert.NotNil(t, actualConfigInfo)
 	assert.True(t, mockFileSystemDelegater.Files["/home/testuser/.mppm.json"].WasClosed)
-	globalConfig.Version = "1.9999.9999"
+	actualConfigInfo.Version = "1.9999.9999"
 	expectedError = nil
 	actualError = configManager.SaveGlobalConfig()
 	assert.Exactly(t, expectedError, actualError)
-	config.MppmConfigFileManager = config.NewMppmConfigFileManager()
-	configManager = config.MppmConfigFileManager
-	globalConfig, actualError = configManager.GetGlobalConfig()
+	expectedConfigInfo := actualConfigInfo
+	expectedError = nil
+	actualConfigInfo, actualError = config.NewMppmConfigInfoFromJsonReader(mockFileSystemDelegater.Files["/home/testuser/.mppm.json"])
 	assert.Nil(t, actualError)
-	assert.NotNil(t, globalConfig)
-	assert.Equal(t, "1.9999.9999", globalConfig.Version)
+	assert.NotNil(t, actualConfigInfo)
+	assert.Equal(t, "1.9999.9999", actualConfigInfo.Version)
+	assert.Exactly(t, expectedConfigInfo, actualConfigInfo)
 
 }
 
