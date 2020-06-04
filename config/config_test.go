@@ -12,7 +12,7 @@ import (
 
 func TestGetFilePatternsConfigListFromProjectConfig(t *testing.T) {
 
-	for _, testCase := range configtest.TestMppmConfigInfoAsJsonAndExpectedConfigFunctionResponses {
+	for _, testCase := range configtest.TestMppmConfigInfoAndExpectedConfigFunctionResponses {
 
 		configAsJson := testCase.ConfigAsJson
 		configtest.InitMockFileSystemDelegaterWithConfigFiles(configAsJson, configAsJson)
@@ -41,7 +41,7 @@ func TestGetFilePatternsConfigListFromProjectConfig(t *testing.T) {
 
 func TestGetAllFilePatternsConfigFromProjectConfig(t *testing.T) {
 
-	for _, testCase := range configtest.TestMppmConfigInfoAsJsonAndExpectedConfigFunctionResponses {
+	for _, testCase := range configtest.TestMppmConfigInfoAndExpectedConfigFunctionResponses {
 
 		configAsJson := testCase.ConfigAsJson
 		configtest.InitMockFileSystemDelegaterWithConfigFiles(configAsJson, configAsJson)

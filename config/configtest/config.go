@@ -9,11 +9,21 @@ import (
 	"github.com/stevengt/mppm/util/utiltest"
 )
 
-var TestMppmConfigInfoAsJsonAndExpectedConfigFunctionResponses []*MppmConfigInfoAsJsonAndExpectedConfigFunctionResponses = []*MppmConfigInfoAsJsonAndExpectedConfigFunctionResponses{
+var TestMppmConfigInfoAndExpectedConfigFunctionResponses []*MppmConfigInfoAndExpectedConfigFunctionResponses = []*MppmConfigInfoAndExpectedConfigFunctionResponses{
 
 	// valid version, valid application name, valid application version
-	&MppmConfigInfoAsJsonAndExpectedConfigFunctionResponses{
-		ConfigAsJson:  []byte(`{"version":"1.0.0","applications":[{"name":"Ableton","version":"10"}]}`),
+	&MppmConfigInfoAndExpectedConfigFunctionResponses{
+		ConfigAsJson: []byte(`{"version":"1.0.0","applications":[{"name":"Ableton","version":"10"}]}`),
+		ConfigInfo: &config.MppmConfigInfo{
+			Version: "1.0.0",
+			Applications: []*applications.ApplicationConfig{
+				&applications.ApplicationConfig{
+					Name:    "Ableton",
+					Version: "10",
+				},
+			},
+			Libraries: nil,
+		},
 		ExpectedError: nil,
 		ExpectedFilePatternsConfigList: []*applications.FilePatternsConfig{
 			applications.AudioFilePatternsConfig,
@@ -35,8 +45,13 @@ var TestMppmConfigInfoAsJsonAndExpectedConfigFunctionResponses []*MppmConfigInfo
 	},
 
 	// valid version, no applications
-	&MppmConfigInfoAsJsonAndExpectedConfigFunctionResponses{
-		ConfigAsJson:  []byte(`{"version":"1.0.0","applications":[]}`),
+	&MppmConfigInfoAndExpectedConfigFunctionResponses{
+		ConfigAsJson: []byte(`{"version":"1.0.0","applications":[]}`),
+		ConfigInfo: &config.MppmConfigInfo{
+			Version:      "1.0.0",
+			Applications: []*applications.ApplicationConfig{},
+			Libraries:    nil,
+		},
 		ExpectedError: nil,
 		ExpectedFilePatternsConfigList: []*applications.FilePatternsConfig{
 			applications.AudioFilePatternsConfig,
@@ -56,16 +71,18 @@ var TestMppmConfigInfoAsJsonAndExpectedConfigFunctionResponses []*MppmConfigInfo
 	},
 
 	// invalid version, no applications
-	&MppmConfigInfoAsJsonAndExpectedConfigFunctionResponses{
+	&MppmConfigInfoAndExpectedConfigFunctionResponses{
 		ConfigAsJson:                   []byte(`{"version":"0.0.0","applications":[]}`),
+		ConfigInfo:                     nil,
 		ExpectedError:                  errors.New("Installed mppm version 1.2.1 is not compatible with this project's configured version 0.0.0"),
 		ExpectedFilePatternsConfigList: nil,
 		ExpectedFilePatternsConfig:     nil,
 	},
 
 	// valid version, invalid application name
-	&MppmConfigInfoAsJsonAndExpectedConfigFunctionResponses{
+	&MppmConfigInfoAndExpectedConfigFunctionResponses{
 		ConfigAsJson: []byte(`{"version":"1.0.0","applications":[{"name":"Fake Application","version":"1"}]}`),
+		ConfigInfo:   nil,
 		ExpectedError: errors.New(`
 Found unsupported application Fake Application 1 in config file .mppm.json
 To see what applications are supported, please run 'mppm --show-supported'.
@@ -75,8 +92,9 @@ To see what applications are supported, please run 'mppm --show-supported'.
 	},
 
 	// valid version, valid application name, invalid application version
-	&MppmConfigInfoAsJsonAndExpectedConfigFunctionResponses{
+	&MppmConfigInfoAndExpectedConfigFunctionResponses{
 		ConfigAsJson: []byte(`{"version":"1.0.0","applications":[{"name":"Ableton","version":"1"}]}`),
+		ConfigInfo:   nil,
 		ExpectedError: errors.New(`
 Found unsupported application Ableton 1 in config file .mppm.json
 To see what applications are supported, please run 'mppm --show-supported'.
@@ -140,10 +158,11 @@ func GetTestMppmConfigInfo() (testMppmConfigInfo *config.MppmConfigInfo, configA
 
 }
 
-// Contains the contents of a config file as a JSON byte-array, and the
+// Contains the contents of a config file, and the
 // expected responses for functions that read from the config file.
-type MppmConfigInfoAsJsonAndExpectedConfigFunctionResponses struct {
+type MppmConfigInfoAndExpectedConfigFunctionResponses struct {
 	ConfigAsJson                   []byte
+	ConfigInfo                     *config.MppmConfigInfo
 	ExpectedError                  error
 	ExpectedFilePatternsConfigList []*applications.FilePatternsConfig // Expected response from config.GetFilePatternsConfigListFromProjectConfig().
 	ExpectedFilePatternsConfig     *applications.FilePatternsConfig   // Expected response from config.GetAllFilePatternsConfigFromProjectConfig().

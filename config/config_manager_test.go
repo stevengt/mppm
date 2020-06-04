@@ -10,24 +10,18 @@ import (
 
 func TestGetProjectConfig(t *testing.T) {
 
-	expectedConfigInfo, configAsJson := configtest.GetTestMppmConfigInfo()
-	configtest.InitMockFileSystemDelegaterWithConfigFiles(configAsJson, configAsJson)
-	configManager := config.MppmConfigFileManager
-	actualConfigInfo, actualError := configManager.GetProjectConfig()
-	assert.Nil(t, actualError)
-	assert.NotNil(t, actualConfigInfo)
-	assert.Exactly(t, expectedConfigInfo, actualConfigInfo)
+	for _, testCase := range configtest.TestMppmConfigInfoAndExpectedConfigFunctionResponses {
 
-	for _, testCase := range configtest.TestMppmConfigInfoAsJsonAndExpectedConfigFunctionResponses {
-
-		configAsJson = testCase.ConfigAsJson
+		configAsJson := testCase.ConfigAsJson
 		configtest.InitMockFileSystemDelegaterWithConfigFiles(configAsJson, configAsJson)
-		configManager = config.MppmConfigFileManager
+		configManager := config.MppmConfigFileManager
 
+		expectedConfigInfo := testCase.ConfigInfo
 		expectedError := testCase.ExpectedError
 
-		_, actualError = configManager.GetProjectConfig()
+		actualConfigInfo, actualError := configManager.GetProjectConfig()
 
+		assert.Exactly(t, expectedConfigInfo, actualConfigInfo)
 		assert.Exactly(t, expectedError, actualError)
 
 	}
@@ -36,23 +30,18 @@ func TestGetProjectConfig(t *testing.T) {
 
 func TestGetGlobalConfig(t *testing.T) {
 
-	expectedConfigInfo, configAsJson := configtest.GetTestMppmConfigInfo()
-	configtest.InitMockFileSystemDelegaterWithConfigFiles(configAsJson, configAsJson)
-	configManager := config.MppmConfigFileManager
-	actualConfigInfo, actualError := configManager.GetGlobalConfig()
-	assert.Nil(t, actualError)
-	assert.NotNil(t, actualConfigInfo)
-	assert.Exactly(t, expectedConfigInfo, actualConfigInfo)
+	for _, testCase := range configtest.TestMppmConfigInfoAndExpectedConfigFunctionResponses {
 
-	for _, testCase := range configtest.TestMppmConfigInfoAsJsonAndExpectedConfigFunctionResponses {
-
-		configAsJson = testCase.ConfigAsJson
+		configAsJson := testCase.ConfigAsJson
 		configtest.InitMockFileSystemDelegaterWithConfigFiles(configAsJson, configAsJson)
-		configManager = config.MppmConfigFileManager
+		configManager := config.MppmConfigFileManager
 
+		expectedConfigInfo := testCase.ConfigInfo
 		expectedError := testCase.ExpectedError
-		_, actualError = configManager.GetGlobalConfig()
 
+		actualConfigInfo, actualError := configManager.GetGlobalConfig()
+
+		assert.Exactly(t, expectedConfigInfo, actualConfigInfo)
 		assert.Exactly(t, expectedError, actualError)
 
 	}
