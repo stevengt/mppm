@@ -152,4 +152,25 @@ func TestSaveGlobalConfig(t *testing.T) {
 
 }
 
-// func TestSaveDefaultProjectConfig(t *testing.T) {}
+func TestSaveDefaultProjectConfig(t *testing.T) {
+
+	mockFileSystemDelegater := &utiltest.MockFileSystemDelegater{
+		Files: make(map[string]*utiltest.MockFile),
+	}
+	util.FileSystemProxy = mockFileSystemDelegater
+	configManager := config.MppmConfigFileManager
+
+	_, actualError := configManager.GetProjectConfig()
+	assert.NotNil(t, actualError)
+	actualError = configManager.SaveDefaultProjectConfig()
+	assert.Nil(t, actualError)
+
+	config.MppmConfigFileManager = config.NewMppmConfigFileManager()
+	configManager = config.MppmConfigFileManager
+
+	expectedProjectConfig := configManager.GetDefaultMppmConfig()
+	actualProjectConfig, actualError := configManager.GetProjectConfig()
+	assert.Exactly(t, expectedProjectConfig, actualProjectConfig)
+	assert.Nil(t, actualError)
+
+}
