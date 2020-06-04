@@ -1,7 +1,6 @@
 package config
 
 import (
-	"encoding/json"
 	"errors"
 
 	"github.com/stevengt/mppm/config/applications"
@@ -32,8 +31,7 @@ func NewMppmConfigFileManager() *mppmConfigFileManager {
 
 func (configFileManager *mppmConfigFileManager) GetProjectConfig() (projectConfig *MppmConfigInfo, err error) {
 	if configFileManager.projectConfig == nil {
-		configFileManager.projectConfig = &MppmConfigInfo{}
-		err = configFileManager.loadMppmConfig(configFileManager.projectConfig, MppmConfigFileName)
+		configFileManager.projectConfig, err = configFileManager.loadMppmConfig(MppmConfigFileName)
 		if err != nil {
 			return
 		}
@@ -56,7 +54,7 @@ func (configFileManager *mppmConfigFileManager) GetGlobalConfig() (globalConfig 
 			return nil, err
 		}
 
-		err = configFileManager.loadMppmConfig(configFileManager.globalConfig, globalConfigFilePath)
+		configFileManager.globalConfig, err = configFileManager.loadMppmConfig(globalConfigFilePath)
 		if err != nil {
 			return nil, err
 		}
@@ -149,7 +147,7 @@ func (configFileManager *mppmConfigFileManager) SaveDefaultProjectConfig() (err 
 	return
 }
 
-func (configFileManager *mppmConfigFileManager) loadMppmConfig(config *MppmConfigInfo, configFilePath string) (err error) {
+func (configFileManager *mppmConfigFileManager) loadMppmConfig(configFilePath string) (mppmConfig *MppmConfigInfo, err error) {
 
 	configFile, err := util.OpenFile(configFilePath)
 	if err != nil {
@@ -159,22 +157,17 @@ func (configFileManager *mppmConfigFileManager) loadMppmConfig(config *MppmConfi
 	}
 	defer configFile.Close()
 
-	jsonDecoder := json.NewDecoder(configFile)
-	jsonDecoder.DisallowUnknownFields()
-
-	err = jsonDecoder.Decode(config)
-	if err != nil {
-		errorMessage := getInvalidMppmProjectConfigFileErrorMessage(err)
-		err = errors.New(errorMessage)
-		return
-	}
-
-	err = config.checkIfCompatibleWithInstalledMppmVersion()
+	mppmConfig, err = NewMppmConfigInfoFromJsonReader(configFile)
 	if err != nil {
 		return
 	}
 
-	err = config.checkIfCompatibleWithSupportedApplications()
+	err = mppmConfig.checkIfCompatibleWithInstalledMppmVersion()
+	if err != nil {
+		return
+	}
+
+	err = mppmConfig.checkIfCompatibleWithSupportedApplications()
 	if err != nil {
 		return
 	}

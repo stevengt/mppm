@@ -21,9 +21,29 @@ type MppmConfigInfo struct {
 	Libraries    []*LibraryConfig                  `json:"libraries"`
 }
 
+func (config *MppmConfigInfo) AsJson() (configAsJson []byte, err error) {
+	return json.Marshal(config)
+}
+
+func NewMppmConfigInfoFromJsonReader(jsonReader io.Reader) (mppmConfig *MppmConfigInfo, err error) {
+
+	mppmConfig = &MppmConfigInfo{}
+
+	jsonDecoder := json.NewDecoder(jsonReader)
+	jsonDecoder.DisallowUnknownFields()
+
+	err = jsonDecoder.Decode(mppmConfig)
+	if err != nil {
+		errorMessage := getInvalidMppmProjectConfigFileErrorMessage(err)
+		err = errors.New(errorMessage)
+		return
+	}
+	return
+}
+
 func (config *MppmConfigInfo) save(filePath string) (err error) {
 
-	configAsJson, err := json.Marshal(config)
+	configAsJson, err := config.AsJson()
 	if err != nil {
 		return
 	}
