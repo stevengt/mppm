@@ -55,6 +55,7 @@ func GetMockFileSystemDelegaterFromBuilderOrNil(mockFileSystemDelegaterBuilder *
 
 type MockFileSystemDelegaterBuilder struct {
 	Files                       map[string]*MockFile
+	FileNamesAndContentsAsBytes map[string][]byte // Use this if you want the builder to create MockFile instances for you.
 	UseDefaultOpenFileError     bool
 	UseDefaultCreateFileError   bool
 	UseDefaultRemoveFileError   bool
@@ -70,6 +71,12 @@ func (builder *MockFileSystemDelegaterBuilder) Build() *MockFileSystemDelegater 
 		mockFileSystemDelegater.Files = builder.Files
 	} else {
 		mockFileSystemDelegater.Files = make(map[string]*MockFile)
+	}
+
+	if builder.FileNamesAndContentsAsBytes != nil {
+		for fileName, fileContents := range builder.FileNamesAndContentsAsBytes {
+			mockFileSystemDelegater.Files[fileName] = NewMockFile(fileContents)
+		}
 	}
 
 	if builder.UseDefaultOpenFileError {

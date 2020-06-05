@@ -16,60 +16,64 @@ func TestCopyFile(t *testing.T) {
 
 	testCases := []*CopyFileTestCase{
 		&CopyFileTestCase{
-			SourceFileName:       "file1.txt",
-			TargetFileName:       "file2.bin",
-			FileNamesAndContents: utiltest.GetTestFileNamesAndContents(),
-			OpenFileError:        nil,
-			CreateFileError:      nil,
+			sourceFileName: "file1.txt",
+			targetFileName: "file2.bin",
+			mockFileSystemDelegaterBuilder: &utiltest.MockFileSystemDelegaterBuilder{
+				FileNamesAndContentsAsBytes: utiltest.GetTestFileNamesAndContents(),
+			},
 		},
 		&CopyFileTestCase{
-			SourceFileName:       "file1.txt",
-			TargetFileName:       "file2.bin",
-			FileNamesAndContents: utiltest.GetTestFileNamesAndContents(),
-			OpenFileError:        errors.New("There was a problem opening the file."),
-			CreateFileError:      nil,
+			sourceFileName: "file1.txt",
+			targetFileName: "file2.bin",
+			mockFileSystemDelegaterBuilder: &utiltest.MockFileSystemDelegaterBuilder{
+				FileNamesAndContentsAsBytes: utiltest.GetTestFileNamesAndContents(),
+				UseDefaultOpenFileError:     true,
+			},
 		},
 		&CopyFileTestCase{
-			SourceFileName:       "file1.txt",
-			TargetFileName:       "file2.bin",
-			FileNamesAndContents: utiltest.GetTestFileNamesAndContents(),
-			OpenFileError:        nil,
-			CreateFileError:      errors.New("There was a problem creating the file."),
+			sourceFileName: "file1.txt",
+			targetFileName: "file2.bin",
+			mockFileSystemDelegaterBuilder: &utiltest.MockFileSystemDelegaterBuilder{
+				FileNamesAndContentsAsBytes: utiltest.GetTestFileNamesAndContents(),
+				UseDefaultCreateFileError:   true,
+			},
 		},
 		&CopyFileTestCase{
-			SourceFileName:       "file1.txt",
-			TargetFileName:       "new-file",
-			FileNamesAndContents: utiltest.GetTestFileNamesAndContents(),
-			OpenFileError:        nil,
-			CreateFileError:      nil,
+			sourceFileName: "file1.txt",
+			targetFileName: "new-file",
+			mockFileSystemDelegaterBuilder: &utiltest.MockFileSystemDelegaterBuilder{
+				FileNamesAndContentsAsBytes: utiltest.GetTestFileNamesAndContents(),
+			},
 		},
 		&CopyFileTestCase{
-			SourceFileName:       "file1.txt",
-			TargetFileName:       "new-file",
-			FileNamesAndContents: utiltest.GetTestFileNamesAndContents(),
-			OpenFileError:        errors.New("There was a problem opening the file."),
-			CreateFileError:      nil,
+			sourceFileName: "file1.txt",
+			targetFileName: "new-file",
+			mockFileSystemDelegaterBuilder: &utiltest.MockFileSystemDelegaterBuilder{
+				FileNamesAndContentsAsBytes: utiltest.GetTestFileNamesAndContents(),
+				UseDefaultOpenFileError:     true,
+			},
 		},
 		&CopyFileTestCase{
-			SourceFileName:       "file1.txt",
-			TargetFileName:       "new-file",
-			FileNamesAndContents: utiltest.GetTestFileNamesAndContents(),
-			OpenFileError:        nil,
-			CreateFileError:      errors.New("There was a problem creating the file."),
+			sourceFileName: "file1.txt",
+			targetFileName: "new-file",
+			mockFileSystemDelegaterBuilder: &utiltest.MockFileSystemDelegaterBuilder{
+				FileNamesAndContentsAsBytes: utiltest.GetTestFileNamesAndContents(),
+				UseDefaultCreateFileError:   true,
+			},
 		},
 		&CopyFileTestCase{
-			SourceFileName:       "does-not-exist",
-			TargetFileName:       "new-file",
-			FileNamesAndContents: utiltest.GetTestFileNamesAndContents(),
-			OpenFileError:        nil,
-			CreateFileError:      nil,
+			sourceFileName: "does-not-exist",
+			targetFileName: "new-file",
+			mockFileSystemDelegaterBuilder: &utiltest.MockFileSystemDelegaterBuilder{
+				FileNamesAndContentsAsBytes: utiltest.GetTestFileNamesAndContents(),
+			},
 		},
 		&CopyFileTestCase{
-			SourceFileName:       "empty-file.bin",
-			TargetFileName:       "new-file",
-			FileNamesAndContents: utiltest.GetTestFileNamesAndContents(),
-			OpenFileError:        nil,
-			CreateFileError:      nil,
+			sourceFileName: "empty-file.bin",
+			targetFileName: "new-file",
+			mockFileSystemDelegaterBuilder: &utiltest.MockFileSystemDelegaterBuilder{
+				FileNamesAndContentsAsBytes: utiltest.GetTestFileNamesAndContents(),
+			},
 		},
 	}
 
@@ -83,60 +87,64 @@ func TestGzipFile(t *testing.T) {
 
 	testCases := []*GzipFileTestCase{
 		&GzipFileTestCase{
-			FileName:                       "file1.txt",
-			ExpectedCompressedFileContents: []byte{0x4e, 0xb0, 0xa0, 0xe3, 0xf, 0x0, 0x0, 0x0},
-			FileNamesAndContents:           utiltest.GetTestFileNamesAndContents(),
-			OpenFileError:                  nil,
-			CreateFileError:                nil,
+			fileName:                       "file1.txt",
+			expectedCompressedFileContents: []byte{0x4e, 0xb0, 0xa0, 0xe3, 0xf, 0x0, 0x0, 0x0},
+			mockFileSystemDelegaterBuilder: &utiltest.MockFileSystemDelegaterBuilder{
+				FileNamesAndContentsAsBytes: utiltest.GetTestFileNamesAndContents(),
+			},
 		},
 		&GzipFileTestCase{
-			FileName:                       "file1.txt",
-			ExpectedCompressedFileContents: nil,
-			FileNamesAndContents:           utiltest.GetTestFileNamesAndContents(),
-			OpenFileError:                  errors.New("There was a problem opening the file."),
-			CreateFileError:                nil,
+			fileName:                       "file1.txt",
+			expectedCompressedFileContents: nil,
+			mockFileSystemDelegaterBuilder: &utiltest.MockFileSystemDelegaterBuilder{
+				FileNamesAndContentsAsBytes: utiltest.GetTestFileNamesAndContents(),
+				UseDefaultOpenFileError:     true,
+			},
 		},
 		&GzipFileTestCase{
-			FileName:                       "file1.txt",
-			ExpectedCompressedFileContents: nil,
-			FileNamesAndContents:           utiltest.GetTestFileNamesAndContents(),
-			OpenFileError:                  nil,
-			CreateFileError:                errors.New("There was a problem creating the file."),
+			fileName:                       "file1.txt",
+			expectedCompressedFileContents: nil,
+			mockFileSystemDelegaterBuilder: &utiltest.MockFileSystemDelegaterBuilder{
+				FileNamesAndContentsAsBytes: utiltest.GetTestFileNamesAndContents(),
+				UseDefaultCreateFileError:   true,
+			},
 		},
 		&GzipFileTestCase{
-			FileName:                       "file2.bin",
-			ExpectedCompressedFileContents: []byte{0x5a, 0xa3, 0x9c, 0x7c, 0x4, 0x0, 0x0, 0x0},
-			FileNamesAndContents:           utiltest.GetTestFileNamesAndContents(),
-			OpenFileError:                  nil,
-			CreateFileError:                nil,
+			fileName:                       "file2.bin",
+			expectedCompressedFileContents: []byte{0x5a, 0xa3, 0x9c, 0x7c, 0x4, 0x0, 0x0, 0x0},
+			mockFileSystemDelegaterBuilder: &utiltest.MockFileSystemDelegaterBuilder{
+				FileNamesAndContentsAsBytes: utiltest.GetTestFileNamesAndContents(),
+			},
 		},
 		&GzipFileTestCase{
-			FileName:                       "file2.bin",
-			ExpectedCompressedFileContents: nil,
-			FileNamesAndContents:           utiltest.GetTestFileNamesAndContents(),
-			OpenFileError:                  errors.New("There was a problem opening the file."),
-			CreateFileError:                nil,
+			fileName:                       "file2.bin",
+			expectedCompressedFileContents: nil,
+			mockFileSystemDelegaterBuilder: &utiltest.MockFileSystemDelegaterBuilder{
+				FileNamesAndContentsAsBytes: utiltest.GetTestFileNamesAndContents(),
+				UseDefaultOpenFileError:     true,
+			},
 		},
 		&GzipFileTestCase{
-			FileName:                       "file2.bin",
-			ExpectedCompressedFileContents: nil,
-			FileNamesAndContents:           utiltest.GetTestFileNamesAndContents(),
-			OpenFileError:                  nil,
-			CreateFileError:                errors.New("There was a problem creating the file."),
+			fileName:                       "file2.bin",
+			expectedCompressedFileContents: nil,
+			mockFileSystemDelegaterBuilder: &utiltest.MockFileSystemDelegaterBuilder{
+				FileNamesAndContentsAsBytes: utiltest.GetTestFileNamesAndContents(),
+				UseDefaultCreateFileError:   true,
+			},
 		},
 		&GzipFileTestCase{
-			FileName:                       "empty-file.bin",
-			ExpectedCompressedFileContents: []byte{0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0},
-			FileNamesAndContents:           utiltest.GetTestFileNamesAndContents(),
-			OpenFileError:                  nil,
-			CreateFileError:                nil,
+			fileName:                       "empty-file.bin",
+			expectedCompressedFileContents: []byte{0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0},
+			mockFileSystemDelegaterBuilder: &utiltest.MockFileSystemDelegaterBuilder{
+				FileNamesAndContentsAsBytes: utiltest.GetTestFileNamesAndContents(),
+			},
 		},
 		&GzipFileTestCase{
-			FileName:                       "does-not-exist",
-			ExpectedCompressedFileContents: nil,
-			FileNamesAndContents:           utiltest.GetTestFileNamesAndContents(),
-			OpenFileError:                  nil,
-			CreateFileError:                nil,
+			fileName:                       "does-not-exist",
+			expectedCompressedFileContents: nil,
+			mockFileSystemDelegaterBuilder: &utiltest.MockFileSystemDelegaterBuilder{
+				FileNamesAndContentsAsBytes: utiltest.GetTestFileNamesAndContents(),
+			},
 		},
 	}
 
@@ -150,60 +158,64 @@ func TestGunzipFile(t *testing.T) {
 
 	testCases := []*GunzipFileTestCase{
 		&GunzipFileTestCase{
-			FileName:                         "file1.txt.gz",
-			ExpectedUncompressedFileContents: append([]byte("file 1 contents"), 0xa),
-			FileNamesAndContents:             utiltest.GetTestFileNamesAndContents(),
-			OpenFileError:                    nil,
-			CreateFileError:                  nil,
+			fileName:                         "file1.txt.gz",
+			expectedUncompressedFileContents: append([]byte("file 1 contents"), 0xa),
+			mockFileSystemDelegaterBuilder: &utiltest.MockFileSystemDelegaterBuilder{
+				FileNamesAndContentsAsBytes: utiltest.GetTestFileNamesAndContents(),
+			},
 		},
 		&GunzipFileTestCase{
-			FileName:                         "file1.txt.gz",
-			ExpectedUncompressedFileContents: nil,
-			FileNamesAndContents:             utiltest.GetTestFileNamesAndContents(),
-			OpenFileError:                    errors.New("There was a problem opening the file."),
-			CreateFileError:                  nil,
+			fileName:                         "file1.txt.gz",
+			expectedUncompressedFileContents: nil,
+			mockFileSystemDelegaterBuilder: &utiltest.MockFileSystemDelegaterBuilder{
+				FileNamesAndContentsAsBytes: utiltest.GetTestFileNamesAndContents(),
+				UseDefaultOpenFileError:     true,
+			},
 		},
 		&GunzipFileTestCase{
-			FileName:                         "file1.txt.gz",
-			ExpectedUncompressedFileContents: nil,
-			FileNamesAndContents:             utiltest.GetTestFileNamesAndContents(),
-			OpenFileError:                    nil,
-			CreateFileError:                  errors.New("There was a problem creating the file."),
+			fileName:                         "file1.txt.gz",
+			expectedUncompressedFileContents: nil,
+			mockFileSystemDelegaterBuilder: &utiltest.MockFileSystemDelegaterBuilder{
+				FileNamesAndContentsAsBytes: utiltest.GetTestFileNamesAndContents(),
+				UseDefaultCreateFileError:   true,
+			},
 		},
 		&GunzipFileTestCase{
-			FileName:                         "does-not-exist.gz",
-			ExpectedUncompressedFileContents: append([]byte("does-not-exist"), 0xa),
-			FileNamesAndContents:             utiltest.GetTestFileNamesAndContents(),
-			OpenFileError:                    nil,
-			CreateFileError:                  nil,
+			fileName:                         "does-not-exist.gz",
+			expectedUncompressedFileContents: append([]byte("does-not-exist"), 0xa),
+			mockFileSystemDelegaterBuilder: &utiltest.MockFileSystemDelegaterBuilder{
+				FileNamesAndContentsAsBytes: utiltest.GetTestFileNamesAndContents(),
+			},
 		},
 		&GunzipFileTestCase{
-			FileName:                         "does-not-exist.gz",
-			ExpectedUncompressedFileContents: nil,
-			FileNamesAndContents:             utiltest.GetTestFileNamesAndContents(),
-			OpenFileError:                    errors.New("There was a problem opening the file."),
-			CreateFileError:                  nil,
+			fileName:                         "does-not-exist.gz",
+			expectedUncompressedFileContents: nil,
+			mockFileSystemDelegaterBuilder: &utiltest.MockFileSystemDelegaterBuilder{
+				FileNamesAndContentsAsBytes: utiltest.GetTestFileNamesAndContents(),
+				UseDefaultOpenFileError:     true,
+			},
 		},
 		&GunzipFileTestCase{
-			FileName:                         "does-not-exist.gz",
-			ExpectedUncompressedFileContents: nil,
-			FileNamesAndContents:             utiltest.GetTestFileNamesAndContents(),
-			OpenFileError:                    nil,
-			CreateFileError:                  errors.New("There was a problem creating the file."),
+			fileName:                         "does-not-exist.gz",
+			expectedUncompressedFileContents: nil,
+			mockFileSystemDelegaterBuilder: &utiltest.MockFileSystemDelegaterBuilder{
+				FileNamesAndContentsAsBytes: utiltest.GetTestFileNamesAndContents(),
+				UseDefaultCreateFileError:   true,
+			},
 		},
 		&GunzipFileTestCase{
-			FileName:                         "empty-file.bin",
-			ExpectedUncompressedFileContents: make([]byte, 0),
-			FileNamesAndContents:             utiltest.GetTestFileNamesAndContents(),
-			OpenFileError:                    nil,
-			CreateFileError:                  nil,
+			fileName:                         "empty-file.bin",
+			expectedUncompressedFileContents: make([]byte, 0),
+			mockFileSystemDelegaterBuilder: &utiltest.MockFileSystemDelegaterBuilder{
+				FileNamesAndContentsAsBytes: utiltest.GetTestFileNamesAndContents(),
+			},
 		},
 		&GunzipFileTestCase{
-			FileName:                         "does-not-exist",
-			ExpectedUncompressedFileContents: nil,
-			FileNamesAndContents:             utiltest.GetTestFileNamesAndContents(),
-			OpenFileError:                    nil,
-			CreateFileError:                  nil,
+			fileName:                         "does-not-exist",
+			expectedUncompressedFileContents: nil,
+			mockFileSystemDelegaterBuilder: &utiltest.MockFileSystemDelegaterBuilder{
+				FileNamesAndContentsAsBytes: utiltest.GetTestFileNamesAndContents(),
+			},
 		},
 	}
 
@@ -258,24 +270,18 @@ func TestGetAllFileNamesWithExtension(t *testing.T) {
 // ------------------------------------------------------------------------------
 
 type CopyFileTestCase struct {
-	SourceFileName       string
-	TargetFileName       string
-	FileNamesAndContents map[string][]byte
-	OpenFileError        error
-	CreateFileError      error
+	sourceFileName                 string
+	targetFileName                 string
+	mockFileSystemDelegaterBuilder *utiltest.MockFileSystemDelegaterBuilder
 }
 
 func (testCase *CopyFileTestCase) Run(t *testing.T) {
 
-	mockFileSystemDelegater := &utiltest.MockFileSystemDelegater{
-		OpenFileError:   testCase.OpenFileError,
-		CreateFileError: testCase.CreateFileError,
-	}
-	mockFileSystemDelegater.InitFiles(testCase.FileNamesAndContents)
+	mockFileSystemDelegater := utiltest.GetMockFileSystemDelegaterFromBuilderOrNil(testCase.mockFileSystemDelegaterBuilder)
 	util.FileSystemProxy = mockFileSystemDelegater
 
-	sourceFileBeforeCopy := mockFileSystemDelegater.Files[testCase.SourceFileName]
-	targetFileBeforeCopy := mockFileSystemDelegater.Files[testCase.TargetFileName]
+	sourceFileBeforeCopy := mockFileSystemDelegater.Files[testCase.sourceFileName]
+	targetFileBeforeCopy := mockFileSystemDelegater.Files[testCase.targetFileName]
 
 	var sourceFileContentsBeforeCopy, targetFileContentsBeforeCopy []byte
 	if sourceFileBeforeCopy != nil {
@@ -285,15 +291,15 @@ func (testCase *CopyFileTestCase) Run(t *testing.T) {
 		targetFileContentsBeforeCopy = targetFileBeforeCopy.Contents
 	}
 
-	actualError := util.CopyFile(testCase.SourceFileName, testCase.TargetFileName)
+	actualError := util.CopyFile(testCase.sourceFileName, testCase.targetFileName)
 
 	if sourceFileBeforeCopy == nil {
 		assert.NotNil(t, actualError)
 		return
 	}
 
-	sourceFileAfterCopy := mockFileSystemDelegater.Files[testCase.SourceFileName]
-	targetFileAfterCopy := mockFileSystemDelegater.Files[testCase.TargetFileName]
+	sourceFileAfterCopy := mockFileSystemDelegater.Files[testCase.sourceFileName]
+	targetFileAfterCopy := mockFileSystemDelegater.Files[testCase.targetFileName]
 
 	var sourceFileContentsAfterCopy, targetFileContentsAfterCopy []byte
 	if sourceFileAfterCopy != nil {
@@ -303,9 +309,9 @@ func (testCase *CopyFileTestCase) Run(t *testing.T) {
 		targetFileContentsAfterCopy = targetFileAfterCopy.Contents
 	}
 
-	if testCase.OpenFileError != nil {
+	if testCase.mockFileSystemDelegaterBuilder.UseDefaultOpenFileError {
 
-		expectedError := testCase.OpenFileError
+		expectedError := utiltest.DefaultOpenFileError
 		assert.Exactly(t, expectedError, actualError)
 
 		if sourceFileBeforeCopy != nil {
@@ -322,9 +328,9 @@ func (testCase *CopyFileTestCase) Run(t *testing.T) {
 			assert.Nil(t, targetFileAfterCopy)
 		}
 
-	} else if testCase.CreateFileError != nil {
+	} else if testCase.mockFileSystemDelegaterBuilder.UseDefaultCreateFileError {
 
-		expectedError := testCase.CreateFileError
+		expectedError := utiltest.DefaultCreateFileError
 		assert.Exactly(t, expectedError, actualError)
 
 		if sourceFileBeforeCopy != nil {
@@ -361,23 +367,17 @@ func (testCase *CopyFileTestCase) Run(t *testing.T) {
 // ------------------------------------------------------------------------------
 
 type GzipFileTestCase struct {
-	FileName                       string
-	ExpectedCompressedFileContents []byte
-	FileNamesAndContents           map[string][]byte
-	OpenFileError                  error
-	CreateFileError                error
+	fileName                       string
+	expectedCompressedFileContents []byte
+	mockFileSystemDelegaterBuilder *utiltest.MockFileSystemDelegaterBuilder
 }
 
 func (testCase *GzipFileTestCase) Run(t *testing.T) {
 
-	mockFileSystemDelegater := &utiltest.MockFileSystemDelegater{
-		OpenFileError:   testCase.OpenFileError,
-		CreateFileError: testCase.CreateFileError,
-	}
-	mockFileSystemDelegater.InitFiles(testCase.FileNamesAndContents)
+	mockFileSystemDelegater := utiltest.GetMockFileSystemDelegaterFromBuilderOrNil(testCase.mockFileSystemDelegaterBuilder)
 	util.FileSystemProxy = mockFileSystemDelegater
 
-	uncompressedFileName := testCase.FileName
+	uncompressedFileName := testCase.fileName
 	compressedFileName := uncompressedFileName + ".gz"
 
 	uncompressedFileBeforeGzip := mockFileSystemDelegater.Files[uncompressedFileName]
@@ -391,7 +391,7 @@ func (testCase *GzipFileTestCase) Run(t *testing.T) {
 		compressedFileContentsBeforeGzip = compressedFileBeforeGzip.Contents
 	}
 
-	actualError := util.GzipFile(testCase.FileName)
+	actualError := util.GzipFile(testCase.fileName)
 
 	uncompressedFileAfterGzip := mockFileSystemDelegater.Files[uncompressedFileName]
 	compressedFileAfterGzip := mockFileSystemDelegater.Files[compressedFileName]
@@ -414,9 +414,9 @@ func (testCase *GzipFileTestCase) Run(t *testing.T) {
 		return
 	}
 
-	if testCase.OpenFileError != nil {
+	if testCase.mockFileSystemDelegaterBuilder.UseDefaultOpenFileError {
 
-		expectedError := testCase.OpenFileError
+		expectedError := utiltest.DefaultOpenFileError
 		assert.Exactly(t, expectedError, actualError)
 
 		if uncompressedFileBeforeGzip != nil {
@@ -433,9 +433,9 @@ func (testCase *GzipFileTestCase) Run(t *testing.T) {
 			assert.Nil(t, compressedFileAfterGzip)
 		}
 
-	} else if testCase.CreateFileError != nil {
+	} else if testCase.mockFileSystemDelegaterBuilder.UseDefaultCreateFileError {
 
-		expectedError := testCase.CreateFileError
+		expectedError := utiltest.DefaultCreateFileError
 		assert.Exactly(t, expectedError, actualError)
 
 		if uncompressedFileBeforeGzip != nil {
@@ -462,7 +462,7 @@ func (testCase *GzipFileTestCase) Run(t *testing.T) {
 			assert.True(t, uncompressedFileAfterGzip.WasClosed)
 			assert.NotNil(t, compressedFileAfterGzip)
 			assert.True(t, compressedFileAfterGzip.WasClosed)
-			assert.Exactly(t, testCase.ExpectedCompressedFileContents, compressedFileContentsAfterGzip)
+			assert.Exactly(t, testCase.expectedCompressedFileContents, compressedFileContentsAfterGzip)
 		}
 
 	}
@@ -472,23 +472,17 @@ func (testCase *GzipFileTestCase) Run(t *testing.T) {
 // ------------------------------------------------------------------------------
 
 type GunzipFileTestCase struct {
-	FileName                         string
-	ExpectedUncompressedFileContents []byte
-	FileNamesAndContents             map[string][]byte
-	OpenFileError                    error
-	CreateFileError                  error
+	fileName                         string
+	expectedUncompressedFileContents []byte
+	mockFileSystemDelegaterBuilder   *utiltest.MockFileSystemDelegaterBuilder
 }
 
 func (testCase *GunzipFileTestCase) Run(t *testing.T) {
 
-	mockFileSystemDelegater := &utiltest.MockFileSystemDelegater{
-		OpenFileError:   testCase.OpenFileError,
-		CreateFileError: testCase.CreateFileError,
-	}
-	mockFileSystemDelegater.InitFiles(testCase.FileNamesAndContents)
+	mockFileSystemDelegater := utiltest.GetMockFileSystemDelegaterFromBuilderOrNil(testCase.mockFileSystemDelegaterBuilder)
 	util.FileSystemProxy = mockFileSystemDelegater
 
-	compressedFileName := testCase.FileName
+	compressedFileName := testCase.fileName
 	uncompressedFileName := strings.TrimSuffix(compressedFileName, ".gz")
 
 	uncompressedFileBeforeGunzip := mockFileSystemDelegater.Files[uncompressedFileName]
@@ -502,7 +496,7 @@ func (testCase *GunzipFileTestCase) Run(t *testing.T) {
 		compressedFileContentsBeforeGunzip = compressedFileBeforeGunzip.Contents
 	}
 
-	actualError := util.GunzipFile(testCase.FileName)
+	actualError := util.GunzipFile(testCase.fileName)
 
 	uncompressedFileAfterGunzip := mockFileSystemDelegater.Files[uncompressedFileName]
 	compressedFileAfterGunzip := mockFileSystemDelegater.Files[compressedFileName]
@@ -534,9 +528,9 @@ func (testCase *GunzipFileTestCase) Run(t *testing.T) {
 		}
 	}
 
-	if testCase.OpenFileError != nil {
+	if testCase.mockFileSystemDelegaterBuilder.UseDefaultOpenFileError {
 
-		expectedError := testCase.OpenFileError
+		expectedError := utiltest.DefaultOpenFileError
 		assert.Exactly(t, expectedError, actualError)
 
 		if compressedFileBeforeGunzip != nil {
@@ -553,9 +547,9 @@ func (testCase *GunzipFileTestCase) Run(t *testing.T) {
 			assert.Nil(t, uncompressedFileAfterGunzip)
 		}
 
-	} else if testCase.CreateFileError != nil {
+	} else if testCase.mockFileSystemDelegaterBuilder.UseDefaultCreateFileError {
 
-		expectedError := testCase.CreateFileError
+		expectedError := utiltest.DefaultCreateFileError
 		assert.Exactly(t, expectedError, actualError)
 
 		if compressedFileBeforeGunzip != nil {
@@ -580,7 +574,7 @@ func (testCase *GunzipFileTestCase) Run(t *testing.T) {
 			assert.Nil(t, compressedFileAfterGunzip)
 			assert.NotNil(t, uncompressedFileAfterGunzip)
 			assert.True(t, uncompressedFileAfterGunzip.WasClosed)
-			assert.Exactly(t, testCase.ExpectedUncompressedFileContents, uncompressedFileContentsAfterGunzip)
+			assert.Exactly(t, testCase.expectedUncompressedFileContents, uncompressedFileContentsAfterGunzip)
 		}
 
 	}
