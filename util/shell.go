@@ -15,6 +15,8 @@ func ExecuteShellCommandAndReturnOutput(commandName string, args ...string) (std
 	return ShellProxy.ExecuteShellCommandAndReturnOutput(commandName, args...)
 }
 
+// ------------------------------------------------------------------------------
+
 type ShellCommandDelegater interface {
 	ExecuteShellCommand(commandName string, args ...string) (err error)
 	ExecuteShellCommandAndReturnOutput(commandName string, args ...string) (stdout string, err error)

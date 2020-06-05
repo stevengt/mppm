@@ -8,6 +8,8 @@ func NewGitManager(repoFilePath string) GitManager {
 	return GitManagerFactory.NewGitManager(repoFilePath)
 }
 
+// ------------------------------------------------------------------------------
+
 type GitManagerCreator interface {
 	NewGitManager(repoFilePath string) GitManager
 }
@@ -19,6 +21,8 @@ func (proxyCreator *gitShellCommandProxyCreator) NewGitManager(repoFilePath stri
 		RepositoryDirectoryPath: repoFilePath,
 	}
 }
+
+// ------------------------------------------------------------------------------
 
 type GitManager interface {
 	Init() (err error)

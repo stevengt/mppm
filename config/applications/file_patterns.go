@@ -6,13 +6,6 @@ import (
 	"strings"
 )
 
-type FilePatternsConfig struct {
-	Name                     string
-	GitIgnorePatterns        []string
-	GitLfsTrackPatterns      []string
-	GzippedXmlFileExtensions []string // List of file extensions that represent Gzipped XML files.
-}
-
 // Returns a list of *FilePatternsConfig, including all non-application-specific configs
 // and all supported application-specific configs.
 func GetFilePatternsConfigList() (filePatternsConfigList []*FilePatternsConfig) {
@@ -33,6 +26,24 @@ func GetAllFilePatternsConfig() (allFilePatternsConfig *FilePatternsConfig) {
 	return
 }
 
+// ------------------------------------------------------------------------------
+
+type FilePatternsConfig struct {
+	Name                     string
+	GitIgnorePatterns        []string
+	GitLfsTrackPatterns      []string
+	GzippedXmlFileExtensions []string // List of file extensions that represent Gzipped XML files.
+}
+
+func NewFilePatternsConfig() (filePatternsConfig *FilePatternsConfig) {
+	return &FilePatternsConfig{
+		Name:                     "",
+		GitIgnorePatterns:        make([]string, 0),
+		GitLfsTrackPatterns:      make([]string, 0),
+		GzippedXmlFileExtensions: make([]string, 0),
+	}
+}
+
 func (config *FilePatternsConfig) Print() {
 	fmt.Print(config.Name + "\n\n")
 	fmt.Print("\tGit Ignore Patterns \n\t\t")
@@ -49,15 +60,6 @@ func (config *FilePatternsConfig) SortAllLists() {
 	sort.Strings(config.GzippedXmlFileExtensions)
 }
 
-func NewFilePatternsConfig() (filePatternsConfig *FilePatternsConfig) {
-	return &FilePatternsConfig{
-		Name:                     "",
-		GitIgnorePatterns:        make([]string, 0),
-		GitLfsTrackPatterns:      make([]string, 0),
-		GzippedXmlFileExtensions: make([]string, 0),
-	}
-}
-
 func (config1 *FilePatternsConfig) AppendAll(config2 *FilePatternsConfig) (filePatternsConfig *FilePatternsConfig) {
 	config1.GitIgnorePatterns = appendUnique(config1.GitIgnorePatterns, config2.GitIgnorePatterns)
 	config1.GitLfsTrackPatterns = appendUnique(config1.GitLfsTrackPatterns, config2.GitLfsTrackPatterns)
@@ -65,6 +67,8 @@ func (config1 *FilePatternsConfig) AppendAll(config2 *FilePatternsConfig) (fileP
 	filePatternsConfig = config1
 	return
 }
+
+// ------------------------------------------------------------------------------
 
 func appendUnique(list1 []string, list2 []string) (newList []string) {
 	newList = make([]string, 0)

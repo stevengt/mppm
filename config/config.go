@@ -15,14 +15,66 @@ var Version = "1.2.1"
 
 var MppmConfigFileName = ".mppm.json"
 
+// ------------------------------------------------------------------------------
+
+// Returns a list of *applications.FilePatternsConfig, including all non-application-specific configs
+// and any supported application-specific configs specified in the project config file.
+func GetFilePatternsConfigListFromProjectConfig() (filePatternsConfigList []*applications.FilePatternsConfig, err error) {
+
+	configManager := MppmConfigFileManager
+
+	projectConfig, err := configManager.GetProjectConfig()
+	if err != nil {
+		return
+	}
+	projectApplicationConfigs := projectConfig.Applications
+
+	filePatternsConfigList = applications.GetNonApplicationSpecificFilePatternsConfigList()
+
+	for _, projectApplicationConfig := range projectApplicationConfigs {
+		for _, supportedApplication := range applications.SupportedApplications {
+			if supportedApplication.Name == projectApplicationConfig.Name {
+				if filePatternsConfig, ok := supportedApplication.FilePatternConfigs[projectApplicationConfig.Version]; ok {
+					filePatternsConfigList = append(filePatternsConfigList, filePatternsConfig)
+				}
+			}
+		}
+	}
+
+	return
+
+}
+
+// Returns a single *applications.FilePatternsConfig containing the aggregate of all file patterns,
+// including all non-application-specific configs and any supported application-specific configs
+// specified in the project config file.
+func GetAllFilePatternsConfigFromProjectConfig() (allFilePatternsConfig *applications.FilePatternsConfig, err error) {
+
+	filePatternsConfigList, err := GetFilePatternsConfigListFromProjectConfig()
+	if err != nil {
+		return
+	}
+
+	allFilePatternsConfig = applications.NewFilePatternsConfig()
+
+	for _, filePatternsConfig := range filePatternsConfigList {
+		allFilePatternsConfig = allFilePatternsConfig.AppendAll(filePatternsConfig)
+	}
+
+	return
+
+}
+
+func GetCurrentlyInstalledMajorVersion() string {
+	return strings.Split(Version, ".")[0]
+}
+
+// ------------------------------------------------------------------------------
+
 type MppmConfigInfo struct {
 	Version      string                            `json:"version"`
 	Applications []*applications.ApplicationConfig `json:"applications"`
 	Libraries    []*LibraryConfig                  `json:"libraries"`
-}
-
-func (config *MppmConfigInfo) AsJson() (configAsJson []byte, err error) {
-	return json.Marshal(config)
 }
 
 func NewMppmConfigInfoFromJsonReader(jsonReader io.Reader) (mppmConfig *MppmConfigInfo, err error) {
@@ -39,6 +91,10 @@ func NewMppmConfigInfoFromJsonReader(jsonReader io.Reader) (mppmConfig *MppmConf
 		return
 	}
 	return
+}
+
+func (config *MppmConfigInfo) AsJson() (configAsJson []byte, err error) {
+	return json.Marshal(config)
 }
 
 func (config *MppmConfigInfo) save(filePath string) (err error) {
@@ -108,56 +164,4 @@ func (config *MppmConfigInfo) checkIfCompatibleWithSupportedApplications() (err 
 
 func (config *MppmConfigInfo) getMajorVersion() string {
 	return strings.Split(config.Version, ".")[0]
-}
-
-// Returns a list of *applications.FilePatternsConfig, including all non-application-specific configs
-// and any supported application-specific configs specified in the project config file.
-func GetFilePatternsConfigListFromProjectConfig() (filePatternsConfigList []*applications.FilePatternsConfig, err error) {
-
-	configManager := MppmConfigFileManager
-
-	projectConfig, err := configManager.GetProjectConfig()
-	if err != nil {
-		return
-	}
-	projectApplicationConfigs := projectConfig.Applications
-
-	filePatternsConfigList = applications.GetNonApplicationSpecificFilePatternsConfigList()
-
-	for _, projectApplicationConfig := range projectApplicationConfigs {
-		for _, supportedApplication := range applications.SupportedApplications {
-			if supportedApplication.Name == projectApplicationConfig.Name {
-				if filePatternsConfig, ok := supportedApplication.FilePatternConfigs[projectApplicationConfig.Version]; ok {
-					filePatternsConfigList = append(filePatternsConfigList, filePatternsConfig)
-				}
-			}
-		}
-	}
-
-	return
-
-}
-
-// Returns a single *applications.FilePatternsConfig containing the aggregate of all file patterns,
-// including all non-application-specific configs and any supported application-specific configs
-// specified in the project config file.
-func GetAllFilePatternsConfigFromProjectConfig() (allFilePatternsConfig *applications.FilePatternsConfig, err error) {
-
-	filePatternsConfigList, err := GetFilePatternsConfigListFromProjectConfig()
-	if err != nil {
-		return
-	}
-
-	allFilePatternsConfig = applications.NewFilePatternsConfig()
-
-	for _, filePatternsConfig := range filePatternsConfigList {
-		allFilePatternsConfig = allFilePatternsConfig.AppendAll(filePatternsConfig)
-	}
-
-	return
-
-}
-
-func GetCurrentlyInstalledMajorVersion() string {
-	return strings.Split(Version, ".")[0]
 }

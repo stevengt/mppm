@@ -92,6 +92,8 @@ func (mockGitManagerCreator *MockGitManagerCreator) NewGitManager(repoFilePath s
 	return mockGitManagerCreator.MockGitManager
 }
 
+// ------------------------------------------------------------------------------
+
 type MockGitManager struct {
 	InitError            error
 	AddError             error

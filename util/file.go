@@ -134,6 +134,8 @@ func GetAllFileNamesWithExtension(extension string) (fileNames []string, err err
 
 }
 
+// ------------------------------------------------------------------------------
+
 type FileSystemDelegater interface {
 	OpenFile(fileName string) (file io.ReadWriteCloser, err error)
 	CreateFile(fileName string) (file io.ReadWriteCloser, err error)
