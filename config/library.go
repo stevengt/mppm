@@ -26,7 +26,7 @@ func (libraryConfig *LibraryConfig) Print() {
 		libraryConfig.CurrentGitCommitId,
 	)
 
-	fmt.Println(libraryConfigAsString)
+	util.Println(libraryConfigAsString)
 }
 
 func (libraryConfig *LibraryConfig) UpdateCurrentGitCommitId() (err error) {

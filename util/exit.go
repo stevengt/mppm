@@ -1,7 +1,6 @@
 package util
 
 import (
-	"fmt"
 	"os"
 )
 
@@ -27,6 +26,6 @@ func (exiter *currentProcessExiter) ExitWithError(err error) {
 }
 
 func (exiter *currentProcessExiter) ExitWithErrorMessage(errorMessage string) {
-	fmt.Println("ERROR: " + errorMessage)
+	Println("ERROR: " + errorMessage)
 	os.Exit(1)
 }

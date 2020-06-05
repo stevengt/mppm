@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 	"github.com/stevengt/mppm/config"
 	"github.com/stevengt/mppm/config/applications"
@@ -94,5 +92,5 @@ func extractAllGzippedXmlFilesWithExtension(fileExtension string) (err error) {
 }
 
 func printExtractPreviewMessage(originalFileName string, newFileName string) {
-	fmt.Println(originalFileName + " will be extracted to " + newFileName)
+	util.Println(originalFileName + " will be extracted to " + newFileName)
 }

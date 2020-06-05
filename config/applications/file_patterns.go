@@ -1,9 +1,10 @@
 package applications
 
 import (
-	"fmt"
 	"sort"
 	"strings"
+
+	"github.com/stevengt/mppm/util"
 )
 
 // Returns a list of *FilePatternsConfig, including all non-application-specific configs
@@ -45,13 +46,13 @@ func NewFilePatternsConfig() (filePatternsConfig *FilePatternsConfig) {
 }
 
 func (config *FilePatternsConfig) Print() {
-	fmt.Print(config.Name + "\n\n")
-	fmt.Print("\tGit Ignore Patterns \n\t\t")
-	fmt.Println(strings.Join(config.GitIgnorePatterns, "\n\t\t"))
-	fmt.Print("\tGit LFS Track Patterns \n\t\t")
-	fmt.Println(strings.Join(config.GitLfsTrackPatterns, "\n\t\t"))
-	fmt.Print("\tGzipped XML File Types \n\t\t")
-	fmt.Println(strings.Join(config.GzippedXmlFileExtensions, "\n\t\t"))
+	util.Print(config.Name + "\n\n")
+	util.Print("\tGit Ignore Patterns \n\t\t")
+	util.Println(strings.Join(config.GitIgnorePatterns, "\n\t\t"))
+	util.Print("\tGit LFS Track Patterns \n\t\t")
+	util.Println(strings.Join(config.GitLfsTrackPatterns, "\n\t\t"))
+	util.Print("\tGzipped XML File Types \n\t\t")
+	util.Println(strings.Join(config.GzippedXmlFileExtensions, "\n\t\t"))
 }
 
 func (config *FilePatternsConfig) SortAllLists() {

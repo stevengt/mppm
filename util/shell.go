@@ -1,7 +1,6 @@
 package util
 
 import (
-	"fmt"
 	"os/exec"
 )
 
@@ -27,7 +26,7 @@ type shellProxy struct{}
 func (proxy *shellProxy) ExecuteShellCommand(commandName string, args ...string) (err error) {
 	stdout, err := proxy.ExecuteShellCommandAndReturnOutput(commandName, args...)
 	if len(stdout) > 0 {
-		fmt.Println(stdout)
+		Println(stdout)
 	}
 	return
 }

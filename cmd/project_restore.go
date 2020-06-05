@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 	"strings"
 
@@ -101,5 +100,5 @@ func restoreAllGzippedXmlFilesWithExtension(fileExtension string) (err error) {
 }
 
 func printRestorePreviewMessage(originalFileName string, newFileName string) {
-	fmt.Println(newFileName + " will be restored from " + originalFileName)
+	util.Println(newFileName + " will be restored from " + originalFileName)
 }

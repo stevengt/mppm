@@ -1,7 +1,5 @@
 package util
 
-import "fmt"
-
 var GitManagerFactory GitManagerCreator = &gitShellCommandProxyCreator{}
 
 func NewGitManager(repoFilePath string) GitManager {
@@ -100,7 +98,7 @@ func (proxy *gitShellCommandProxy) AddAllAndCommit(commitMessage string) (err er
 func (proxy *gitShellCommandProxy) executeGitShellCommand(gitCommandName string, args ...string) (err error) {
 	stdout, err := proxy.executeGitShellCommandAndReturnOutput(gitCommandName, args...)
 	if len(stdout) > 0 {
-		fmt.Println(stdout)
+		Println(stdout)
 	}
 	return
 }
