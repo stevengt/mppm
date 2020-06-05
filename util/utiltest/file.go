@@ -122,6 +122,15 @@ func (mockFileSystemDelegater *MockFileSystemDelegater) InitFiles(fileNamesAndCo
 	mockFileSystemDelegater.Files = files
 }
 
+func (mockFileSystemDelegater *MockFileSystemDelegater) GetMockFileAndContentsIfFileExistsElseReturnNil(fileName string) (file *MockFile, contents []byte) {
+	if mockFileSystemDelegater.DoesFileExist(fileName) {
+		file = mockFileSystemDelegater.Files[fileName]
+		contents = file.Contents
+		return
+	}
+	return nil, nil
+}
+
 func (mockFileSystemDelegater *MockFileSystemDelegater) OpenFile(fileName string) (file io.ReadWriteCloser, err error) {
 	err = mockFileSystemDelegater.OpenFileError
 	if err == nil {

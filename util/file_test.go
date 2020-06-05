@@ -280,16 +280,8 @@ func (testCase *CopyFileTestCase) Run(t *testing.T) {
 	mockFileSystemDelegater := utiltest.GetMockFileSystemDelegaterFromBuilderOrNil(testCase.mockFileSystemDelegaterBuilder)
 	util.FileSystemProxy = mockFileSystemDelegater
 
-	sourceFileBeforeCopy := mockFileSystemDelegater.Files[testCase.sourceFileName]
-	targetFileBeforeCopy := mockFileSystemDelegater.Files[testCase.targetFileName]
-
-	var sourceFileContentsBeforeCopy, targetFileContentsBeforeCopy []byte
-	if sourceFileBeforeCopy != nil {
-		sourceFileContentsBeforeCopy = sourceFileBeforeCopy.Contents
-	}
-	if targetFileBeforeCopy != nil {
-		targetFileContentsBeforeCopy = targetFileBeforeCopy.Contents
-	}
+	sourceFileBeforeCopy, sourceFileContentsBeforeCopy := mockFileSystemDelegater.GetMockFileAndContentsIfFileExistsElseReturnNil(testCase.sourceFileName)
+	targetFileBeforeCopy, targetFileContentsBeforeCopy := mockFileSystemDelegater.GetMockFileAndContentsIfFileExistsElseReturnNil(testCase.targetFileName)
 
 	actualError := util.CopyFile(testCase.sourceFileName, testCase.targetFileName)
 
@@ -298,16 +290,8 @@ func (testCase *CopyFileTestCase) Run(t *testing.T) {
 		return
 	}
 
-	sourceFileAfterCopy := mockFileSystemDelegater.Files[testCase.sourceFileName]
-	targetFileAfterCopy := mockFileSystemDelegater.Files[testCase.targetFileName]
-
-	var sourceFileContentsAfterCopy, targetFileContentsAfterCopy []byte
-	if sourceFileAfterCopy != nil {
-		sourceFileContentsAfterCopy = sourceFileAfterCopy.Contents
-	}
-	if targetFileAfterCopy != nil {
-		targetFileContentsAfterCopy = targetFileAfterCopy.Contents
-	}
+	sourceFileAfterCopy, sourceFileContentsAfterCopy := mockFileSystemDelegater.GetMockFileAndContentsIfFileExistsElseReturnNil(testCase.sourceFileName)
+	targetFileAfterCopy, targetFileContentsAfterCopy := mockFileSystemDelegater.GetMockFileAndContentsIfFileExistsElseReturnNil(testCase.targetFileName)
 
 	if testCase.mockFileSystemDelegaterBuilder.UseDefaultOpenFileError {
 
@@ -380,29 +364,13 @@ func (testCase *GzipFileTestCase) Run(t *testing.T) {
 	uncompressedFileName := testCase.fileName
 	compressedFileName := uncompressedFileName + ".gz"
 
-	uncompressedFileBeforeGzip := mockFileSystemDelegater.Files[uncompressedFileName]
-	compressedFileBeforeGzip := mockFileSystemDelegater.Files[compressedFileName]
-
-	var uncompressedFileContentsBeforeGzip, compressedFileContentsBeforeGzip []byte
-	if uncompressedFileBeforeGzip != nil {
-		uncompressedFileContentsBeforeGzip = uncompressedFileBeforeGzip.Contents
-	}
-	if compressedFileBeforeGzip != nil {
-		compressedFileContentsBeforeGzip = compressedFileBeforeGzip.Contents
-	}
+	uncompressedFileBeforeGzip, uncompressedFileContentsBeforeGzip := mockFileSystemDelegater.GetMockFileAndContentsIfFileExistsElseReturnNil(uncompressedFileName)
+	compressedFileBeforeGzip, compressedFileContentsBeforeGzip := mockFileSystemDelegater.GetMockFileAndContentsIfFileExistsElseReturnNil(compressedFileName)
 
 	actualError := util.GzipFile(testCase.fileName)
 
-	uncompressedFileAfterGzip := mockFileSystemDelegater.Files[uncompressedFileName]
-	compressedFileAfterGzip := mockFileSystemDelegater.Files[compressedFileName]
-
-	var uncompressedFileContentsAfterGzip, compressedFileContentsAfterGzip []byte
-	if uncompressedFileAfterGzip != nil {
-		uncompressedFileContentsAfterGzip = uncompressedFileAfterGzip.Contents
-	}
-	if compressedFileAfterGzip != nil {
-		compressedFileContentsAfterGzip = compressedFileAfterGzip.Contents
-	}
+	uncompressedFileAfterGzip, uncompressedFileContentsAfterGzip := mockFileSystemDelegater.GetMockFileAndContentsIfFileExistsElseReturnNil(uncompressedFileName)
+	compressedFileAfterGzip, compressedFileContentsAfterGzip := mockFileSystemDelegater.GetMockFileAndContentsIfFileExistsElseReturnNil(compressedFileName)
 
 	if uncompressedFileBeforeGzip == nil {
 		assert.NotNil(t, actualError)
@@ -485,29 +453,13 @@ func (testCase *GunzipFileTestCase) Run(t *testing.T) {
 	compressedFileName := testCase.fileName
 	uncompressedFileName := strings.TrimSuffix(compressedFileName, ".gz")
 
-	uncompressedFileBeforeGunzip := mockFileSystemDelegater.Files[uncompressedFileName]
-	compressedFileBeforeGunzip := mockFileSystemDelegater.Files[compressedFileName]
-
-	var uncompressedFileContentsBeforeGunzip, compressedFileContentsBeforeGunzip []byte
-	if uncompressedFileBeforeGunzip != nil {
-		uncompressedFileContentsBeforeGunzip = uncompressedFileBeforeGunzip.Contents
-	}
-	if compressedFileBeforeGunzip != nil {
-		compressedFileContentsBeforeGunzip = compressedFileBeforeGunzip.Contents
-	}
+	uncompressedFileBeforeGunzip, uncompressedFileContentsBeforeGunzip := mockFileSystemDelegater.GetMockFileAndContentsIfFileExistsElseReturnNil(uncompressedFileName)
+	compressedFileBeforeGunzip, compressedFileContentsBeforeGunzip := mockFileSystemDelegater.GetMockFileAndContentsIfFileExistsElseReturnNil(compressedFileName)
 
 	actualError := util.GunzipFile(testCase.fileName)
 
-	uncompressedFileAfterGunzip := mockFileSystemDelegater.Files[uncompressedFileName]
-	compressedFileAfterGunzip := mockFileSystemDelegater.Files[compressedFileName]
-
-	var uncompressedFileContentsAfterGunzip, compressedFileContentsAfterGunzip []byte
-	if uncompressedFileAfterGunzip != nil {
-		uncompressedFileContentsAfterGunzip = uncompressedFileAfterGunzip.Contents
-	}
-	if compressedFileAfterGunzip != nil {
-		compressedFileContentsAfterGunzip = compressedFileAfterGunzip.Contents
-	}
+	uncompressedFileAfterGunzip, uncompressedFileContentsAfterGunzip := mockFileSystemDelegater.GetMockFileAndContentsIfFileExistsElseReturnNil(uncompressedFileName)
+	compressedFileAfterGunzip, compressedFileContentsAfterGunzip := mockFileSystemDelegater.GetMockFileAndContentsIfFileExistsElseReturnNil(compressedFileName)
 
 	if compressedFileBeforeGunzip == nil {
 		assert.NotNil(t, actualError)
