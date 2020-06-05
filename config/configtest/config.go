@@ -2,6 +2,7 @@ package configtest
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/stevengt/mppm/config"
 	"github.com/stevengt/mppm/config/applications"
@@ -12,34 +13,53 @@ import (
 // ------------------------------------------------------------------------------
 
 var ConfigWithValidVersionAndApplicationNameAndApplicationVersion *MppmConfigInfoAndExpectedError = &MppmConfigInfoAndExpectedError{
-	ConfigAsJson:  []byte(`{"version":"1.0.0","applications":[{"name":"Ableton","version":"10"}],"libraries":null}`),
+	ConfigAsJson: []byte(
+		fmt.Sprintf(
+			`{"version":"%s.0.0","applications":[{"name":"Ableton","version":"10"}],"libraries":null}`,
+			config.GetCurrentlyInstalledMajorVersion(),
+		),
+	),
 	ExpectedError: nil,
 }
 
 var ConfigWithValidVersionAndNoApplications *MppmConfigInfoAndExpectedError = &MppmConfigInfoAndExpectedError{
-	ConfigAsJson:  []byte(`{"version":"1.0.0","applications":[],"libraries":null}`),
+	ConfigAsJson: []byte(
+		fmt.Sprintf(
+			`{"version":"%s.0.0","applications":[],"libraries":null}`,
+			config.GetCurrentlyInstalledMajorVersion(),
+		),
+	),
 	ExpectedError: nil,
 }
 
 var ConfigWithInvalidVersionAndNoApplications *MppmConfigInfoAndExpectedError = &MppmConfigInfoAndExpectedError{
-	ConfigAsJson:  []byte(`{"version":"0.0.0","applications":[],"libraries":null}`),
-	ExpectedError: errors.New("Installed mppm version 1.2.1 is not compatible with this project's configured version 0.0.0"),
+	ConfigAsJson: []byte(`{"version":"0.0.0","applications":[],"libraries":null}`),
+	ExpectedError: errors.New(
+		fmt.Sprintf(
+			"Installed mppm version %s is not compatible with this project's configured version 0.0.0",
+			config.Version,
+		),
+	),
 }
 
 var ConfigWithValidVersionAndInvalidApplicationName *MppmConfigInfoAndExpectedError = &MppmConfigInfoAndExpectedError{
-	ConfigAsJson: []byte(`{"version":"1.0.0","applications":[{"name":"Fake Application","version":"1"}],"libraries":null}`),
-	ExpectedError: errors.New(`
-Found unsupported application Fake Application 1 in config file .mppm.json
-To see what applications are supported, please run 'mppm --show-supported'.
-`),
+	ConfigAsJson: []byte(
+		fmt.Sprintf(
+			`{"version":"%s.0.0","applications":[{"name":"Fake Application","version":"1"}],"libraries":null}`,
+			config.GetCurrentlyInstalledMajorVersion(),
+		),
+	),
+	ExpectedError: errors.New("\nFound unsupported application Fake Application 1 in config file .mppm.json\nTo see what applications are supported, please run 'mppm --show-supported'.\n"),
 }
 
 var ConfigWithValidVersionAndApplicationNameAndInvalidApplicationVersion *MppmConfigInfoAndExpectedError = &MppmConfigInfoAndExpectedError{
-	ConfigAsJson: []byte(`{"version":"1.0.0","applications":[{"name":"Ableton","version":"1"}],"libraries":null}`),
-	ExpectedError: errors.New(`
-Found unsupported application Ableton 1 in config file .mppm.json
-To see what applications are supported, please run 'mppm --show-supported'.
-`),
+	ConfigAsJson: []byte(
+		fmt.Sprintf(
+			`{"version":"%s.0.0","applications":[{"name":"Ableton","version":"1"}],"libraries":null}`,
+			config.GetCurrentlyInstalledMajorVersion(),
+		),
+	),
+	ExpectedError: errors.New("\nFound unsupported application Ableton 1 in config file .mppm.json\nTo see what applications are supported, please run 'mppm --show-supported'.\n"),
 }
 
 // ------------------------------------------------------------------------------
@@ -47,7 +67,7 @@ To see what applications are supported, please run 'mppm --show-supported'.
 func GetDefaultTestMppmConfigInfo() (testMppmConfigInfo *config.MppmConfigInfo, configAsJson []byte) {
 
 	testMppmConfigInfo = &config.MppmConfigInfo{
-		Version: "1.0.0",
+		Version: fmt.Sprintf("%s.0.0", config.GetCurrentlyInstalledMajorVersion()),
 		Applications: []*applications.ApplicationConfig{
 			&applications.ApplicationConfig{
 				Name:    "Ableton",
@@ -63,7 +83,12 @@ func GetDefaultTestMppmConfigInfo() (testMppmConfigInfo *config.MppmConfigInfo, 
 		},
 	}
 
-	configAsJson = []byte(`{"version":"1.0.0","applications":[{"name":"Ableton","version":"10"}],"libraries":[{"location":"/home/testuser/library","most-recent-version":"56789","current-version":"01234"}]}`)
+	configAsJson = []byte(
+		fmt.Sprintf(
+			`{"version":"%s.0.0","applications":[{"name":"Ableton","version":"10"}],"libraries":[{"location":"/home/testuser/library","most-recent-version":"56789","current-version":"01234"}]}`,
+			config.GetCurrentlyInstalledMajorVersion(),
+		),
+	)
 
 	return
 

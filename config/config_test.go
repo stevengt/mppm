@@ -60,11 +60,7 @@ func TestGetFilePatternsConfigListFromProjectConfig(t *testing.T) {
 
 		&GetFilePatternsConfigListFromProjectConfigTestCase{
 			mockFileSystemDelegaterBuilder: nil,
-			expectedErrorIfNotConfigError: errors.New(`
-There was a problem while opening the mppm config file.
-If the file doesn't exist, try running 'mppm project init' first.
-Unable to open file .mppm.json
-`),
+			expectedErrorIfNotConfigError:  errors.New("\nThere was a problem while opening the mppm config file.\nIf the file doesn't exist, try running 'mppm project init' first.\nUnable to open file .mppm.json\n"),
 			mppmConfigInfoAndExpectedError: nil,
 			expectedFilePatternsConfigList: nil,
 		},
@@ -73,11 +69,7 @@ Unable to open file .mppm.json
 			mockFileSystemDelegaterBuilder: &utiltest.MockFileSystemDelegaterBuilder{
 				UseDefaultOpenFileError: true,
 			},
-			expectedErrorIfNotConfigError: errors.New(`
-There was a problem while opening the mppm config file.
-If the file doesn't exist, try running 'mppm project init' first.
-There was a problem opening the file.
-`),
+			expectedErrorIfNotConfigError:  errors.New("\nThere was a problem while opening the mppm config file.\nIf the file doesn't exist, try running 'mppm project init' first.\nThere was a problem opening the file.\n"),
 			mppmConfigInfoAndExpectedError: configtest.ConfigWithValidVersionAndApplicationNameAndApplicationVersion,
 			expectedFilePatternsConfigList: nil,
 		},
@@ -153,11 +145,7 @@ func TestGetAllFilePatternsConfigFromProjectConfig(t *testing.T) {
 
 		&GetAllFilePatternsConfigFromProjectConfigTestCase{
 			mockFileSystemDelegaterBuilder: nil,
-			expectedErrorIfNotConfigError: errors.New(`
-There was a problem while opening the mppm config file.
-If the file doesn't exist, try running 'mppm project init' first.
-Unable to open file .mppm.json
-`),
+			expectedErrorIfNotConfigError:  errors.New("\nThere was a problem while opening the mppm config file.\nIf the file doesn't exist, try running 'mppm project init' first.\nUnable to open file .mppm.json\n"),
 			mppmConfigInfoAndExpectedError: nil,
 			expectedFilePatternsConfig:     nil,
 		},
@@ -166,11 +154,7 @@ Unable to open file .mppm.json
 			mockFileSystemDelegaterBuilder: &utiltest.MockFileSystemDelegaterBuilder{
 				UseDefaultOpenFileError: true,
 			},
-			expectedErrorIfNotConfigError: errors.New(`
-There was a problem while opening the mppm config file.
-If the file doesn't exist, try running 'mppm project init' first.
-There was a problem opening the file.
-`),
+			expectedErrorIfNotConfigError:  errors.New("\nThere was a problem while opening the mppm config file.\nIf the file doesn't exist, try running 'mppm project init' first.\nThere was a problem opening the file.\n"),
 			mppmConfigInfoAndExpectedError: configtest.ConfigWithValidVersionAndApplicationNameAndApplicationVersion,
 			expectedFilePatternsConfig:     nil,
 		},

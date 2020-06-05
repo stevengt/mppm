@@ -49,11 +49,7 @@ func TestGetProjectConfig(t *testing.T) {
 
 		&GetProjectConfigTestCase{
 			mockFileSystemDelegaterBuilder: nil,
-			expectedErrorIfNotConfigError: errors.New(`
-There was a problem while opening the mppm config file.
-If the file doesn't exist, try running 'mppm project init' first.
-Unable to open file .mppm.json
-`),
+			expectedErrorIfNotConfigError:  errors.New("\nThere was a problem while opening the mppm config file.\nIf the file doesn't exist, try running 'mppm project init' first.\nUnable to open file .mppm.json\n"),
 			mppmConfigInfoAndExpectedError: nil,
 		},
 
@@ -61,11 +57,7 @@ Unable to open file .mppm.json
 			mockFileSystemDelegaterBuilder: &utiltest.MockFileSystemDelegaterBuilder{
 				UseDefaultOpenFileError: true,
 			},
-			expectedErrorIfNotConfigError: errors.New(`
-There was a problem while opening the mppm config file.
-If the file doesn't exist, try running 'mppm project init' first.
-There was a problem opening the file.
-`),
+			expectedErrorIfNotConfigError:  errors.New("\nThere was a problem while opening the mppm config file.\nIf the file doesn't exist, try running 'mppm project init' first.\nThere was a problem opening the file.\n"),
 			mppmConfigInfoAndExpectedError: configtest.ConfigWithValidVersionAndApplicationNameAndApplicationVersion,
 		},
 	}
@@ -120,11 +112,7 @@ func TestGetGlobalConfig(t *testing.T) {
 			mockFileSystemDelegaterBuilder: &utiltest.MockFileSystemDelegaterBuilder{
 				UseDefaultOpenFileError: true,
 			},
-			expectedErrorIfNotConfigError: errors.New(`
-There was a problem while opening the mppm config file.
-If the file doesn't exist, try running 'mppm project init' first.
-There was a problem opening the file.
-`),
+			expectedErrorIfNotConfigError:  errors.New("\nThere was a problem while opening the mppm config file.\nIf the file doesn't exist, try running 'mppm project init' first.\nThere was a problem opening the file.\n"),
 			mppmConfigInfoAndExpectedError: configtest.ConfigWithValidVersionAndApplicationNameAndApplicationVersion,
 		},
 

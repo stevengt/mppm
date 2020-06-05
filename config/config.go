@@ -65,20 +65,10 @@ func (config *MppmConfigInfo) save(filePath string) (err error) {
 }
 
 func (config *MppmConfigInfo) checkIfCompatibleWithInstalledMppmVersion() (err error) {
-
-	installedVersion := Version
-	configVersion := config.Version
-
-	installedMajorVersion := strings.Split(installedVersion, ".")[0]
-	configMajorVersion := strings.Split(configVersion, ".")[0]
-
-	isCompatible := installedMajorVersion == configMajorVersion
-
-	if !isCompatible {
-		errorMessage := getIncompatibleMppmVersionErrorMessage(installedVersion, configVersion)
+	if GetCurrentlyInstalledMajorVersion() != config.getMajorVersion() {
+		errorMessage := getIncompatibleMppmVersionErrorMessage(Version, config.Version)
 		err = errors.New(errorMessage)
 	}
-
 	return
 }
 
@@ -114,6 +104,10 @@ func (config *MppmConfigInfo) checkIfCompatibleWithSupportedApplications() (err 
 
 	return
 
+}
+
+func (config *MppmConfigInfo) getMajorVersion() string {
+	return strings.Split(config.Version, ".")[0]
 }
 
 // Returns a list of *applications.FilePatternsConfig, including all non-application-specific configs
@@ -162,4 +156,8 @@ func GetAllFilePatternsConfigFromProjectConfig() (allFilePatternsConfig *applica
 
 	return
 
+}
+
+func GetCurrentlyInstalledMajorVersion() string {
+	return strings.Split(Version, ".")[0]
 }
