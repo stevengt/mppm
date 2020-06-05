@@ -47,12 +47,12 @@ func NewFilePatternsConfig() (filePatternsConfig *FilePatternsConfig) {
 
 func (config *FilePatternsConfig) Print() {
 	util.Print(config.Name + "\n\n")
-	util.Print("\tGit Ignore Patterns \n\t\t")
-	util.Println(strings.Join(config.GitIgnorePatterns, "\n\t\t"))
-	util.Print("\tGit LFS Track Patterns \n\t\t")
-	util.Println(strings.Join(config.GitLfsTrackPatterns, "\n\t\t"))
-	util.Print("\tGzipped XML File Types \n\t\t")
-	util.Println(strings.Join(config.GzippedXmlFileExtensions, "\n\t\t"))
+	util.Println("\tGit Ignore Patterns")
+	util.Println("\t\t" + strings.Join(config.GitIgnorePatterns, "\n\t\t"))
+	util.Println("\tGit LFS Track Patterns")
+	util.Println("\t\t" + strings.Join(config.GitLfsTrackPatterns, "\n\t\t"))
+	util.Println("\tGzipped XML File Types")
+	util.Println("\t\t" + strings.Join(config.GzippedXmlFileExtensions, "\n\t\t"))
 }
 
 func (config *FilePatternsConfig) SortAllLists() {
