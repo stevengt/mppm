@@ -11,6 +11,18 @@ import (
 
 // ------------------------------------------------------------------------------
 
+var DefaultOpenFileError error = errors.New("There was a problem opening the file.")
+
+var DefaultCreateFileError error = errors.New("There was a problem creating the file.")
+
+var DefaultRemoveFileError error = errors.New("There was a problem removing the file.")
+
+var DefaultWalkFilePathError error = errors.New("There was a problem walking the file path.")
+
+var DefaultUserHomeDirError error = errors.New("There was a problem getting the user's home directory.")
+
+// ------------------------------------------------------------------------------
+
 func GetTestFileNamesAndContents() map[string][]byte {
 	return map[string][]byte{
 		"file1.txt": []byte("file 1 contents"),
@@ -28,6 +40,14 @@ func GetTestFileNamesAndContents() map[string][]byte {
 			0xcd, 0xcb, 0x2f, 0xd1, 0x4d, 0xad, 0xc8, 0x2c, 0x2e, 0xe1,
 			0x02, 0x00, 0x2a, 0x53, 0xd8, 0x28, 0x0f, 0x00, 0x00, 0x00,
 		},
+	}
+}
+
+func GetMockFileSystemDelegaterFromBuilderOrNil(mockFileSystemDelegaterBuilder *MockFileSystemDelegaterBuilder) *MockFileSystemDelegater {
+	if mockFileSystemDelegaterBuilder != nil {
+		return mockFileSystemDelegaterBuilder.Build()
+	} else {
+		return &MockFileSystemDelegater{}
 	}
 }
 
@@ -53,23 +73,23 @@ func (builder *MockFileSystemDelegaterBuilder) Build() *MockFileSystemDelegater 
 	}
 
 	if builder.UseDefaultOpenFileError {
-		mockFileSystemDelegater.OpenFileError = errors.New("There was a problem opening the file.")
+		mockFileSystemDelegater.OpenFileError = DefaultOpenFileError
 	}
 
 	if builder.UseDefaultCreateFileError {
-		mockFileSystemDelegater.CreateFileError = errors.New("There was a problem creating the file.")
+		mockFileSystemDelegater.CreateFileError = DefaultCreateFileError
 	}
 
 	if builder.UseDefaultRemoveFileError {
-		mockFileSystemDelegater.RemoveFileError = errors.New("There was a problem removing the file.")
+		mockFileSystemDelegater.RemoveFileError = DefaultRemoveFileError
 	}
 
 	if builder.UseDefaultWalkFilePathError {
-		mockFileSystemDelegater.WalkFilePathError = errors.New("There was a problem walking the file path.")
+		mockFileSystemDelegater.WalkFilePathError = DefaultWalkFilePathError
 	}
 
 	if builder.UseDefaultUserHomeDirError {
-		mockFileSystemDelegater.UserHomeDirError = errors.New("There was a problem getting the user's home directory.")
+		mockFileSystemDelegater.UserHomeDirError = DefaultUserHomeDirError
 	}
 
 	return mockFileSystemDelegater
@@ -101,7 +121,7 @@ func (mockFileSystemDelegater *MockFileSystemDelegater) OpenFile(fileName string
 		var doesFileExist bool
 		file, doesFileExist = mockFileSystemDelegater.Files[fileName]
 		if !doesFileExist {
-			err = errors.New("Unable to open file" + fileName)
+			err = errors.New("Unable to open file " + fileName)
 		}
 	}
 	return

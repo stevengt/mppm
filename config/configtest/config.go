@@ -9,140 +9,42 @@ import (
 	"github.com/stevengt/mppm/util/utiltest"
 )
 
-var TestMppmConfigInfoAndExpectedConfigFunctionResponses []*MppmConfigInfoAndExpectedConfigFunctionResponses = []*MppmConfigInfoAndExpectedConfigFunctionResponses{
+// ------------------------------------------------------------------------------
 
-	// valid version, valid application name, valid application version
-	&MppmConfigInfoAndExpectedConfigFunctionResponses{
-		ConfigAsJson: []byte(`{"version":"1.0.0","applications":[{"name":"Ableton","version":"10"}]}`),
-		ConfigInfo: &config.MppmConfigInfo{
-			Version: "1.0.0",
-			Applications: []*applications.ApplicationConfig{
-				&applications.ApplicationConfig{
-					Name:    "Ableton",
-					Version: "10",
-				},
-			},
-			Libraries: nil,
-		},
-		ExpectedError: nil,
-		ExpectedFilePatternsConfigList: []*applications.FilePatternsConfig{
-			applications.AudioFilePatternsConfig,
-			applications.Ableton10FilePatternsConfig,
-		},
-		ExpectedFilePatternsConfig: &applications.FilePatternsConfig{
-			Name:              "",
-			GitIgnorePatterns: []string{"Backup/", "*.als", "*.alc", "*.adv", "*.adg"},
-			GitLfsTrackPatterns: []string{"*.flac", "*.iklax", "*.m4a", "*.alac", "*.au",
-				"*.mpc", "*.ogg", "*.mogg", "*.tta", "*.wma", "*.aax", "*.act", "*.ivs",
-				"*.aa", "*.dvf", "*.m4b", "*.nsf", "*.raw", "*.webm", "*.cda", "*.dct",
-				"*.gsm", "*.dss", "*.msv", "*.nmf", "*.sln", "*.3gp", "*.aac", "*.voc",
-				"*.wv", "*.m4p", "*.rm", "*.ape", "*.awb", "*.mmf", "*.oga", "*.opus",
-				"*.rf64", "*.aiff", "*.amr", "*.vox", "*.wav", "*.8svx", "*.mp3", "*.ra",
-				"*.ams", "*.amxd", "*.alp", "*.asd", "*.agr",
-			},
-			GzippedXmlFileExtensions: []string{"adv", "adg", "als", "alc"},
-		},
-	},
+var ConfigWithValidVersionAndApplicationNameAndApplicationVersion *MppmConfigInfoAndExpectedError = &MppmConfigInfoAndExpectedError{
+	ConfigAsJson:  []byte(`{"version":"1.0.0","applications":[{"name":"Ableton","version":"10"}],"libraries":null}`),
+	ExpectedError: nil,
+}
 
-	// valid version, no applications
-	&MppmConfigInfoAndExpectedConfigFunctionResponses{
-		ConfigAsJson: []byte(`{"version":"1.0.0","applications":[]}`),
-		ConfigInfo: &config.MppmConfigInfo{
-			Version:      "1.0.0",
-			Applications: []*applications.ApplicationConfig{},
-			Libraries:    nil,
-		},
-		ExpectedError: nil,
-		ExpectedFilePatternsConfigList: []*applications.FilePatternsConfig{
-			applications.AudioFilePatternsConfig,
-		},
-		ExpectedFilePatternsConfig: &applications.FilePatternsConfig{
-			Name:              "",
-			GitIgnorePatterns: []string{},
-			GitLfsTrackPatterns: []string{"*.flac", "*.iklax", "*.m4a", "*.alac", "*.au",
-				"*.mpc", "*.ogg", "*.mogg", "*.tta", "*.wma", "*.aax", "*.act", "*.ivs",
-				"*.aa", "*.dvf", "*.m4b", "*.nsf", "*.raw", "*.webm", "*.cda", "*.dct",
-				"*.gsm", "*.dss", "*.msv", "*.nmf", "*.sln", "*.3gp", "*.aac", "*.voc",
-				"*.wv", "*.m4p", "*.rm", "*.ape", "*.awb", "*.mmf", "*.oga", "*.opus",
-				"*.rf64", "*.aiff", "*.amr", "*.vox", "*.wav", "*.8svx", "*.mp3", "*.ra",
-			},
-			GzippedXmlFileExtensions: []string{},
-		},
-	},
+var ConfigWithValidVersionAndNoApplications *MppmConfigInfoAndExpectedError = &MppmConfigInfoAndExpectedError{
+	ConfigAsJson:  []byte(`{"version":"1.0.0","applications":[],"libraries":null}`),
+	ExpectedError: nil,
+}
 
-	// invalid version, no applications
-	&MppmConfigInfoAndExpectedConfigFunctionResponses{
-		ConfigAsJson:                   []byte(`{"version":"0.0.0","applications":[]}`),
-		ConfigInfo:                     nil,
-		ExpectedError:                  errors.New("Installed mppm version 1.2.1 is not compatible with this project's configured version 0.0.0"),
-		ExpectedFilePatternsConfigList: nil,
-		ExpectedFilePatternsConfig:     nil,
-	},
+var ConfigWithInvalidVersionAndNoApplications *MppmConfigInfoAndExpectedError = &MppmConfigInfoAndExpectedError{
+	ConfigAsJson:  []byte(`{"version":"0.0.0","applications":[],"libraries":null}`),
+	ExpectedError: errors.New("Installed mppm version 1.2.1 is not compatible with this project's configured version 0.0.0"),
+}
 
-	// valid version, invalid application name
-	&MppmConfigInfoAndExpectedConfigFunctionResponses{
-		ConfigAsJson: []byte(`{"version":"1.0.0","applications":[{"name":"Fake Application","version":"1"}]}`),
-		ConfigInfo:   nil,
-		ExpectedError: errors.New(`
+var ConfigWithValidVersionAndInvalidApplicationName *MppmConfigInfoAndExpectedError = &MppmConfigInfoAndExpectedError{
+	ConfigAsJson: []byte(`{"version":"1.0.0","applications":[{"name":"Fake Application","version":"1"}],"libraries":null}`),
+	ExpectedError: errors.New(`
 Found unsupported application Fake Application 1 in config file .mppm.json
 To see what applications are supported, please run 'mppm --show-supported'.
 `),
-		ExpectedFilePatternsConfigList: nil,
-		ExpectedFilePatternsConfig:     nil,
-	},
+}
 
-	// valid version, valid application name, invalid application version
-	&MppmConfigInfoAndExpectedConfigFunctionResponses{
-		ConfigAsJson: []byte(`{"version":"1.0.0","applications":[{"name":"Ableton","version":"1"}]}`),
-		ConfigInfo:   nil,
-		ExpectedError: errors.New(`
+var ConfigWithValidVersionAndApplicationNameAndInvalidApplicationVersion *MppmConfigInfoAndExpectedError = &MppmConfigInfoAndExpectedError{
+	ConfigAsJson: []byte(`{"version":"1.0.0","applications":[{"name":"Ableton","version":"1"}],"libraries":null}`),
+	ExpectedError: errors.New(`
 Found unsupported application Ableton 1 in config file .mppm.json
 To see what applications are supported, please run 'mppm --show-supported'.
 `),
-		ExpectedFilePatternsConfigList: nil,
-		ExpectedFilePatternsConfig:     nil,
-	},
 }
 
-func InitAndReturnMockFileSystemDelegaterWithNoConfigFiles() *utiltest.MockFileSystemDelegater {
-	mockFileSystemDelegater := &utiltest.MockFileSystemDelegater{
-		Files: make(map[string]*utiltest.MockFile),
-	}
-	util.FileSystemProxy = mockFileSystemDelegater
-	config.MppmConfigFileManager = config.NewMppmConfigFileManager()
-	return mockFileSystemDelegater
-}
+// ------------------------------------------------------------------------------
 
-func InitAndReturnMockFileSystemDelegaterWithDefaultConfigFiles() *utiltest.MockFileSystemDelegater {
-	_, projectConfigAsJson := GetTestMppmConfigInfo()
-	_, globalConfigAsJson := GetTestMppmConfigInfo()
-	return InitAndReturnMockFileSystemDelegaterWithConfigFiles(projectConfigAsJson, globalConfigAsJson)
-}
-
-func InitAndReturnMockFileSystemDelegaterWithConfigFiles(projectConfigAsJson []byte, globalConfigAsJson []byte) *utiltest.MockFileSystemDelegater {
-
-	mockFileSystemDelegater := &utiltest.MockFileSystemDelegater{}
-
-	projectConfigFilePath := config.MppmConfigFileName
-	userHomeDirectoryFilePath, _ := mockFileSystemDelegater.UserHomeDir()
-	globalConfigFilePath := mockFileSystemDelegater.JoinFilePath(userHomeDirectoryFilePath, config.MppmConfigFileName)
-
-	projectConfigFile := utiltest.NewMockFile(projectConfigAsJson)
-	globalConfigFile := utiltest.NewMockFile(globalConfigAsJson)
-
-	mockFileSystemDelegater.Files = map[string]*utiltest.MockFile{
-		projectConfigFilePath: projectConfigFile,
-		globalConfigFilePath:  globalConfigFile,
-	}
-
-	util.FileSystemProxy = mockFileSystemDelegater
-	config.MppmConfigFileManager = config.NewMppmConfigFileManager()
-
-	return mockFileSystemDelegater
-
-}
-
-func GetTestMppmConfigInfo() (testMppmConfigInfo *config.MppmConfigInfo, configAsJson []byte) {
+func GetDefaultTestMppmConfigInfo() (testMppmConfigInfo *config.MppmConfigInfo, configAsJson []byte) {
 
 	testMppmConfigInfo = &config.MppmConfigInfo{
 		Version: "1.0.0",
@@ -167,12 +69,106 @@ func GetTestMppmConfigInfo() (testMppmConfigInfo *config.MppmConfigInfo, configA
 
 }
 
-// Contains the contents of a config file, and the
-// expected responses for functions that read from the config file.
-type MppmConfigInfoAndExpectedConfigFunctionResponses struct {
-	ConfigAsJson                   []byte
-	ConfigInfo                     *config.MppmConfigInfo
-	ExpectedError                  error
-	ExpectedFilePatternsConfigList []*applications.FilePatternsConfig // Expected response from config.GetFilePatternsConfigListFromProjectConfig().
-	ExpectedFilePatternsConfig     *applications.FilePatternsConfig   // Expected response from config.GetAllFilePatternsConfigFromProjectConfig().
+// ------------------------------------------------------------------------------
+
+// Updates util.FileSystemProxy and config.MppmConfigFileManager so that any
+// previously loaded config files are discarded, and no new config files are available.
+func InitAndReturnMockFileSystemDelegaterWithNoConfigFiles() *utiltest.MockFileSystemDelegater {
+	mockFileSystemDelegater := &utiltest.MockFileSystemDelegater{}
+	InitMockFileSystemDelegaterWithConfigFiles(mockFileSystemDelegater, nil, nil)
+	return mockFileSystemDelegater
+}
+
+// Updates util.FileSystemProxy and config.MppmConfigFileManager so that any
+// previously loaded config files are discarded. Instead, new default config files
+// are available with appropriate file names.
+//
+// The config file contents are the same as the results from calling configtest.GetDefaultTestMppmConfigInfo().
+func InitAndReturnMockFileSystemDelegaterWithDefaultConfigFiles() *utiltest.MockFileSystemDelegater {
+
+	mockFileSystemDelegater := &utiltest.MockFileSystemDelegater{}
+
+	_, projectConfigAsJson := GetDefaultTestMppmConfigInfo()
+	_, globalConfigAsJson := GetDefaultTestMppmConfigInfo()
+
+	InitMockFileSystemDelegaterWithConfigFiles(
+		mockFileSystemDelegater,
+		utiltest.NewMockFile(projectConfigAsJson),
+		utiltest.NewMockFile(globalConfigAsJson),
+	)
+
+	return mockFileSystemDelegater
+
+}
+
+// Adds project and global config files to the mock file system with appropriate file names,
+// and then updates util.FileSystemProxy and config.MppmConfigFileManager so that any
+// previously loaded config files are discarded, and the new ones are used instead.
+//
+// If mockFileSystemDelegater.Files is nil, a new empty set of files will be created
+// before adding the config files.
+func InitMockFileSystemDelegaterWithConfigFiles(mockFileSystemDelegater *utiltest.MockFileSystemDelegater, projectConfigFile *utiltest.MockFile, globalConfigFile *utiltest.MockFile) {
+
+	if mockFileSystemDelegater.Files == nil {
+		mockFileSystemDelegater.Files = make(map[string]*utiltest.MockFile)
+	}
+
+	if projectConfigFile != nil {
+		projectConfigFilePath := config.MppmConfigFileName
+		mockFileSystemDelegater.Files[projectConfigFilePath] = projectConfigFile
+	}
+
+	if globalConfigFile != nil {
+		userHomeDirectoryFilePath, _ := mockFileSystemDelegater.UserHomeDir()
+		globalConfigFilePath := mockFileSystemDelegater.JoinFilePath(userHomeDirectoryFilePath, config.MppmConfigFileName)
+		mockFileSystemDelegater.Files[globalConfigFilePath] = globalConfigFile
+	}
+
+	util.FileSystemProxy = mockFileSystemDelegater
+	config.MppmConfigFileManager = config.NewMppmConfigFileManager()
+
+}
+
+// ------------------------------------------------------------------------------
+
+// Returns expectedError if it is not nil.
+// Otherwise, if mppmConfigInfoAndExpectedError is not nil, returns mppmConfigInfoAndExpectedError.ExpectedError.
+// Otherwise, returns nil.
+func GetExpectedError(expectedError error, mppmConfigInfoAndExpectedError *MppmConfigInfoAndExpectedError) error {
+	if expectedError != nil {
+		return expectedError
+	} else if mppmConfigInfoAndExpectedError != nil {
+		return mppmConfigInfoAndExpectedError.ExpectedError
+	} else {
+		return nil
+	}
+}
+
+func ReturnMppmConfigInfoAsMockFileIfNotNilElseReturnNil(mppmConfigInfoAndExpectedError *MppmConfigInfoAndExpectedError) *utiltest.MockFile {
+	if mppmConfigInfoAndExpectedError != nil {
+		return mppmConfigInfoAndExpectedError.AsMockFile()
+	} else {
+		return nil
+	}
+}
+
+func ReturnMppmConfigInfoAsJsonIfNotNilAndErrorIsNilElseReturnNil(mppmConfigInfoAndExpectedError *MppmConfigInfoAndExpectedError, err error) []byte {
+	if mppmConfigInfoAndExpectedError != nil && err == nil {
+		return mppmConfigInfoAndExpectedError.ConfigAsJson
+	} else {
+		return nil
+	}
+}
+
+// ------------------------------------------------------------------------------
+
+// Contains the contents of a mppm config file as a JSON byte array,
+// and the expected error to receive when attempting to load the config file.
+type MppmConfigInfoAndExpectedError struct {
+	ConfigAsJson  []byte
+	ExpectedError error
+}
+
+func (mppmConfigInfoAndExpectedError *MppmConfigInfoAndExpectedError) AsMockFile() *utiltest.MockFile {
+	return utiltest.NewMockFile(mppmConfigInfoAndExpectedError.ConfigAsJson)
 }

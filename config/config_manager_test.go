@@ -4,7 +4,6 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/stevengt/mppm/util"
 	"github.com/stevengt/mppm/util/utiltest"
 
 	"github.com/stevengt/mppm/config/applications"
@@ -16,81 +15,131 @@ import (
 
 func TestGetProjectConfig(t *testing.T) {
 
-	for _, testCase := range configtest.TestMppmConfigInfoAndExpectedConfigFunctionResponses {
+	testCases := []*GetProjectConfigTestCase{
 
-		configAsJson := testCase.ConfigAsJson
-		mockFileSystemDelegater := configtest.InitAndReturnMockFileSystemDelegaterWithConfigFiles(configAsJson, configAsJson)
-		configManager := config.MppmConfigFileManager
+		&GetProjectConfigTestCase{
+			mockFileSystemDelegaterBuilder: nil,
+			expectedErrorIfNotConfigError:  nil,
+			mppmConfigInfoAndExpectedError: configtest.ConfigWithValidVersionAndApplicationNameAndApplicationVersion,
+		},
 
-		expectedConfigInfo := testCase.ConfigInfo
-		expectedError := testCase.ExpectedError
+		&GetProjectConfigTestCase{
+			mockFileSystemDelegaterBuilder: nil,
+			expectedErrorIfNotConfigError:  nil,
+			mppmConfigInfoAndExpectedError: configtest.ConfigWithValidVersionAndNoApplications,
+		},
 
-		actualConfigInfo, actualError := configManager.GetProjectConfig()
+		&GetProjectConfigTestCase{
+			mockFileSystemDelegaterBuilder: nil,
+			expectedErrorIfNotConfigError:  nil,
+			mppmConfigInfoAndExpectedError: configtest.ConfigWithInvalidVersionAndNoApplications,
+		},
 
-		assert.Exactly(t, expectedConfigInfo, actualConfigInfo)
-		assert.Exactly(t, expectedError, actualError)
-		assert.True(t, mockFileSystemDelegater.Files[".mppm.json"].WasClosed)
+		&GetProjectConfigTestCase{
+			mockFileSystemDelegaterBuilder: nil,
+			expectedErrorIfNotConfigError:  nil,
+			mppmConfigInfoAndExpectedError: configtest.ConfigWithValidVersionAndInvalidApplicationName,
+		},
 
-	}
+		&GetProjectConfigTestCase{
+			mockFileSystemDelegaterBuilder: nil,
+			expectedErrorIfNotConfigError:  nil,
+			mppmConfigInfoAndExpectedError: configtest.ConfigWithValidVersionAndApplicationNameAndInvalidApplicationVersion,
+		},
 
-	_ = configtest.InitAndReturnMockFileSystemDelegaterWithNoConfigFiles()
-	configManager := config.MppmConfigFileManager
-	expectedError := errors.New(`
+		&GetProjectConfigTestCase{
+			mockFileSystemDelegaterBuilder: nil,
+			expectedErrorIfNotConfigError: errors.New(`
 There was a problem while opening the mppm config file.
 If the file doesn't exist, try running 'mppm project init' first.
-Unable to open file.mppm.json
-`)
-	actualConfigInfo, actualError := configManager.GetProjectConfig()
-	assert.Nil(t, actualConfigInfo)
-	assert.Exactly(t, expectedError, actualError)
+Unable to open file .mppm.json
+`),
+			mppmConfigInfoAndExpectedError: nil,
+		},
+
+		&GetProjectConfigTestCase{
+			mockFileSystemDelegaterBuilder: &utiltest.MockFileSystemDelegaterBuilder{
+				UseDefaultOpenFileError: true,
+			},
+			expectedErrorIfNotConfigError: errors.New(`
+There was a problem while opening the mppm config file.
+If the file doesn't exist, try running 'mppm project init' first.
+There was a problem opening the file.
+`),
+			mppmConfigInfoAndExpectedError: configtest.ConfigWithValidVersionAndApplicationNameAndApplicationVersion,
+		},
+	}
+
+	for _, testCase := range testCases {
+		testCase.Run(t)
+	}
 
 }
 
 func TestGetGlobalConfig(t *testing.T) {
 
-	for _, testCase := range configtest.TestMppmConfigInfoAndExpectedConfigFunctionResponses {
+	testCases := []*GetGlobalConfigTestCase{
 
-		configAsJson := testCase.ConfigAsJson
-		mockFileSystemDelegater := configtest.InitAndReturnMockFileSystemDelegaterWithConfigFiles(configAsJson, configAsJson)
-		configManager := config.MppmConfigFileManager
+		&GetGlobalConfigTestCase{
+			mockFileSystemDelegaterBuilder: nil,
+			expectedErrorIfNotConfigError:  nil,
+			mppmConfigInfoAndExpectedError: configtest.ConfigWithValidVersionAndApplicationNameAndApplicationVersion,
+		},
 
-		expectedConfigInfo := testCase.ConfigInfo
-		expectedError := testCase.ExpectedError
+		&GetGlobalConfigTestCase{
+			mockFileSystemDelegaterBuilder: nil,
+			expectedErrorIfNotConfigError:  nil,
+			mppmConfigInfoAndExpectedError: configtest.ConfigWithValidVersionAndNoApplications,
+		},
 
-		actualConfigInfo, actualError := configManager.GetGlobalConfig()
+		&GetGlobalConfigTestCase{
+			mockFileSystemDelegaterBuilder: nil,
+			expectedErrorIfNotConfigError:  nil,
+			mppmConfigInfoAndExpectedError: configtest.ConfigWithInvalidVersionAndNoApplications,
+		},
 
-		assert.Exactly(t, expectedConfigInfo, actualConfigInfo)
-		assert.Exactly(t, expectedError, actualError)
-		assert.True(t, mockFileSystemDelegater.Files["/home/testuser/.mppm.json"].WasClosed)
+		&GetGlobalConfigTestCase{
+			mockFileSystemDelegaterBuilder: nil,
+			expectedErrorIfNotConfigError:  nil,
+			mppmConfigInfoAndExpectedError: configtest.ConfigWithValidVersionAndInvalidApplicationName,
+		},
 
-	}
+		&GetGlobalConfigTestCase{
+			mockFileSystemDelegaterBuilder: nil,
+			expectedErrorIfNotConfigError:  nil,
+			mppmConfigInfoAndExpectedError: configtest.ConfigWithValidVersionAndApplicationNameAndInvalidApplicationVersion,
+		},
 
-	mockFileSystemDelegater := configtest.InitAndReturnMockFileSystemDelegaterWithNoConfigFiles()
-	configManager := config.MppmConfigFileManager
-	expectedConfigInfo := configManager.GetDefaultMppmConfig()
-	actualConfigInfo, actualError := configManager.GetGlobalConfig()
-	assert.Exactly(t, expectedConfigInfo, actualConfigInfo)
-	assert.Nil(t, actualError)
-	assert.True(t, mockFileSystemDelegater.DoesFileExist("/home/testuser/.mppm.json"))
-	assert.True(t, mockFileSystemDelegater.Files["/home/testuser/.mppm.json"].WasClosed)
-	actualConfigInfo, actualError = config.NewMppmConfigInfoFromJsonReader(mockFileSystemDelegater.Files["/home/testuser/.mppm.json"])
-	assert.Exactly(t, expectedConfigInfo, actualConfigInfo)
-	assert.Nil(t, actualError)
+		&GetGlobalConfigTestCase{
+			mockFileSystemDelegaterBuilder: nil,
+			expectedErrorIfNotConfigError:  nil,
+			mppmConfigInfoAndExpectedError: nil,
+		},
 
-	mockFileSystemDelegater = (&utiltest.MockFileSystemDelegaterBuilder{
-		UseDefaultOpenFileError: true,
-	}).Build()
-	util.FileSystemProxy = mockFileSystemDelegater
-	config.MppmConfigFileManager = config.NewMppmConfigFileManager()
-	configManager = config.MppmConfigFileManager
-	expectedError := errors.New(`
+		&GetGlobalConfigTestCase{
+			mockFileSystemDelegaterBuilder: &utiltest.MockFileSystemDelegaterBuilder{
+				UseDefaultOpenFileError: true,
+			},
+			expectedErrorIfNotConfigError: errors.New(`
 There was a problem while opening the mppm config file.
 If the file doesn't exist, try running 'mppm project init' first.
 There was a problem opening the file.
-`)
-	actualConfigInfo, actualError = configManager.GetGlobalConfig()
-	assert.Nil(t, actualConfigInfo)
-	assert.Exactly(t, expectedError, actualError)
+`),
+			mppmConfigInfoAndExpectedError: configtest.ConfigWithValidVersionAndApplicationNameAndApplicationVersion,
+		},
+
+		&GetGlobalConfigTestCase{
+			mockFileSystemDelegaterBuilder: &utiltest.MockFileSystemDelegaterBuilder{
+				UseDefaultCreateFileError: true,
+			},
+			expectedErrorIfNotConfigError:  errors.New("There was a problem creating the file."),
+			mppmConfigInfoAndExpectedError: nil,
+		},
+	}
+
+	for _, testCase := range testCases {
+		testCase.Run(t)
+	}
 
 }
 
@@ -119,7 +168,7 @@ func TestGetMppmGlobalConfigFilePath(t *testing.T) {
 	var expectedError error
 
 	mockFileSystemDelegater := &utiltest.MockFileSystemDelegater{}
-	util.FileSystemProxy = mockFileSystemDelegater
+	configtest.InitMockFileSystemDelegaterWithConfigFiles(mockFileSystemDelegater, nil, nil)
 	configManager := config.MppmConfigFileManager
 	expectedFilePath := "/home/testuser/.mppm.json"
 	expectedError = nil
@@ -130,10 +179,10 @@ func TestGetMppmGlobalConfigFilePath(t *testing.T) {
 	mockFileSystemDelegater = (&utiltest.MockFileSystemDelegaterBuilder{
 		UseDefaultUserHomeDirError: true,
 	}).Build()
-	util.FileSystemProxy = mockFileSystemDelegater
+	configtest.InitMockFileSystemDelegaterWithConfigFiles(mockFileSystemDelegater, nil, nil)
 	configManager = config.MppmConfigFileManager
 	expectedFilePath = ""
-	expectedError = mockFileSystemDelegater.UserHomeDirError
+	expectedError = utiltest.DefaultUserHomeDirError
 	actualFilePath, actualError = configManager.GetMppmGlobalConfigFilePath()
 	assert.Exactly(t, expectedFilePath, actualFilePath)
 	assert.Exactly(t, expectedError, actualError)
@@ -161,8 +210,8 @@ func TestSaveProjectConfig(t *testing.T) {
 	expectedConfigInfo := projectConfig
 	actualConfigInfo, actualError := config.NewMppmConfigInfoFromJsonReader(mockFileSystemDelegater.Files[".mppm.json"])
 	assert.Nil(t, actualError)
-	assert.NotNil(t, projectConfig)
-	assert.Equal(t, "1.9999.9999", projectConfig.Version)
+	assert.NotNil(t, actualConfigInfo)
+	assert.Equal(t, "1.9999.9999", actualConfigInfo.Version)
 	assert.Exactly(t, expectedConfigInfo, actualConfigInfo)
 
 }
@@ -197,10 +246,7 @@ func TestSaveGlobalConfig(t *testing.T) {
 
 func TestSaveDefaultProjectConfig(t *testing.T) {
 
-	mockFileSystemDelegater := &utiltest.MockFileSystemDelegater{
-		Files: make(map[string]*utiltest.MockFile),
-	}
-	util.FileSystemProxy = mockFileSystemDelegater
+	mockFileSystemDelegater := configtest.InitAndReturnMockFileSystemDelegaterWithNoConfigFiles()
 	configManager := config.MppmConfigFileManager
 
 	_, actualError := configManager.GetProjectConfig()
@@ -215,5 +261,106 @@ func TestSaveDefaultProjectConfig(t *testing.T) {
 	actualProjectConfig, actualError := configManager.GetProjectConfig()
 	assert.Exactly(t, expectedProjectConfig, actualProjectConfig)
 	assert.Nil(t, actualError)
+
+	mockFileSystemDelegater = (&utiltest.MockFileSystemDelegaterBuilder{
+		UseDefaultCreateFileError: true,
+	}).Build()
+	configtest.InitMockFileSystemDelegaterWithConfigFiles(mockFileSystemDelegater, nil, nil)
+	configManager = config.MppmConfigFileManager
+	expectedError := utiltest.DefaultCreateFileError
+	actualError = configManager.SaveDefaultProjectConfig()
+	assert.Exactly(t, expectedError, actualError)
+
+}
+
+// ------------------------------------------------------------------------------
+
+type GetProjectConfigTestCase struct {
+	mockFileSystemDelegaterBuilder *utiltest.MockFileSystemDelegaterBuilder
+	expectedErrorIfNotConfigError  error // The expected error, if not mppmConfigInfoAndExpectedError.ExpectedError
+	mppmConfigInfoAndExpectedError *configtest.MppmConfigInfoAndExpectedError
+}
+
+func (testCase *GetProjectConfigTestCase) Run(t *testing.T) {
+
+	mockFileSystemDelegater := utiltest.GetMockFileSystemDelegaterFromBuilderOrNil(testCase.mockFileSystemDelegaterBuilder)
+
+	projectConfigFile := configtest.ReturnMppmConfigInfoAsMockFileIfNotNilElseReturnNil(testCase.mppmConfigInfoAndExpectedError)
+	configtest.InitMockFileSystemDelegaterWithConfigFiles(mockFileSystemDelegater, projectConfigFile, nil)
+
+	expectedError := configtest.GetExpectedError(
+		testCase.expectedErrorIfNotConfigError,
+		testCase.mppmConfigInfoAndExpectedError,
+	)
+
+	configManager := config.MppmConfigFileManager
+
+	expectedConfigInfoAsJson := configtest.ReturnMppmConfigInfoAsJsonIfNotNilAndErrorIsNilElseReturnNil(
+		testCase.mppmConfigInfoAndExpectedError,
+		expectedError,
+	)
+
+	var actualConfigInfoAsJson []byte
+	actualConfigInfo, actualError := configManager.GetProjectConfig()
+	assert.Exactly(t, expectedError, actualError)
+
+	if actualConfigInfo != nil {
+		actualConfigInfoAsJson, actualError = actualConfigInfo.AsJson()
+		assert.Nil(t, actualError)
+	}
+
+	assert.Exactly(t, expectedConfigInfoAsJson, actualConfigInfoAsJson)
+	if expectedError == nil {
+		assert.True(t, mockFileSystemDelegater.Files[".mppm.json"].WasClosed)
+	}
+
+}
+
+// ------------------------------------------------------------------------------
+
+type GetGlobalConfigTestCase struct {
+	mockFileSystemDelegaterBuilder *utiltest.MockFileSystemDelegaterBuilder
+	expectedErrorIfNotConfigError  error // The expected error, if not mppmConfigInfoAndExpectedError.ExpectedError
+	mppmConfigInfoAndExpectedError *configtest.MppmConfigInfoAndExpectedError
+}
+
+func (testCase *GetGlobalConfigTestCase) Run(t *testing.T) {
+
+	mockFileSystemDelegater := utiltest.GetMockFileSystemDelegaterFromBuilderOrNil(testCase.mockFileSystemDelegaterBuilder)
+
+	globalConfigFile := configtest.ReturnMppmConfigInfoAsMockFileIfNotNilElseReturnNil(testCase.mppmConfigInfoAndExpectedError)
+	configtest.InitMockFileSystemDelegaterWithConfigFiles(mockFileSystemDelegater, nil, globalConfigFile)
+
+	var actualError error
+	expectedError := configtest.GetExpectedError(
+		testCase.expectedErrorIfNotConfigError,
+		testCase.mppmConfigInfoAndExpectedError,
+	)
+
+	configManager := config.MppmConfigFileManager
+
+	expectedConfigInfoAsJson := configtest.ReturnMppmConfigInfoAsJsonIfNotNilAndErrorIsNilElseReturnNil(
+		testCase.mppmConfigInfoAndExpectedError,
+		expectedError,
+	)
+	if expectedConfigInfoAsJson == nil {
+		expectedConfigInfoAsJson, actualError = configManager.GetDefaultMppmConfig().AsJson()
+		assert.Nil(t, actualError)
+	}
+
+	var actualConfigInfoAsJson []byte
+	actualConfigInfo, actualError := configManager.GetGlobalConfig()
+	assert.Exactly(t, expectedError, actualError)
+
+	if actualConfigInfo != nil {
+		actualConfigInfoAsJson, actualError = actualConfigInfo.AsJson()
+		assert.Nil(t, actualError)
+	}
+
+	if expectedError == nil {
+		assert.Exactly(t, expectedConfigInfoAsJson, actualConfigInfoAsJson)
+		assert.True(t, mockFileSystemDelegater.DoesFileExist("/home/testuser/.mppm.json"))
+		assert.True(t, mockFileSystemDelegater.Files["/home/testuser/.mppm.json"].WasClosed)
+	}
 
 }
