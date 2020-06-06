@@ -71,7 +71,7 @@ var projectCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		isCommandValid := isCommitAllCommand || shouldUpdateLibraries
 		if !isCommandValid {
-			cmd.Help()
+			util.Println(cmd.UsageString())
 		} else if isCommitAllCommand {
 			if len(args) == 0 {
 				util.ExitWithErrorMessage("Please provide a commit message.")

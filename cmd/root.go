@@ -45,7 +45,7 @@ var rootCmd = &cobra.Command{
 		if isShowSupportedFileTypesCommand {
 			showSupportedFileTypes()
 		} else {
-			cmd.Help()
+			util.Println(cmd.UsageString())
 		}
 	},
 }
