@@ -9,13 +9,13 @@ func init() {
 
 	cobra.OnInitialize(
 		func() {
-			isPreviewCommand, _ = projectCmd.PersistentFlags().GetBool("preview")
-			isCommitAllCommand, _ = projectCmd.Flags().GetBool("commit-all")
-			shouldUpdateLibraries, _ = projectCmd.Flags().GetBool("update-libraries")
+			isPreviewCommand, _ = ProjectCmd.PersistentFlags().GetBool("preview")
+			isCommitAllCommand, _ = ProjectCmd.Flags().GetBool("commit-all")
+			shouldUpdateLibraries, _ = ProjectCmd.Flags().GetBool("update-libraries")
 		},
 	)
 
-	projectCmd.PersistentFlags().BoolVarP(
+	ProjectCmd.PersistentFlags().BoolVarP(
 		&isPreviewCommand,
 		"preview",
 		"p",
@@ -23,7 +23,7 @@ func init() {
 		"Shows what files will be affected without actually making changes.",
 	)
 
-	projectCmd.Flags().BoolVarP(
+	ProjectCmd.Flags().BoolVarP(
 		&isCommitAllCommand,
 		"commit-all",
 		"c",
@@ -31,7 +31,7 @@ func init() {
 		"Equivalent to running 'mppm project extract; git add . -A; git commit -m '<commit message>'.",
 	)
 
-	projectCmd.Flags().BoolVarP(
+	ProjectCmd.Flags().BoolVarP(
 		&shouldUpdateLibraries,
 		"update-libraries",
 		"u",
@@ -41,7 +41,7 @@ current versions in the global config file.
 To see the global current versions, run 'mppm library --list'.`,
 	)
 
-	rootCmd.AddCommand(projectCmd)
+	RootCmd.AddCommand(ProjectCmd)
 
 }
 
@@ -49,7 +49,7 @@ var isPreviewCommand bool
 var isCommitAllCommand bool
 var shouldUpdateLibraries bool
 
-var projectCmd = &cobra.Command{
+var ProjectCmd = &cobra.Command{
 
 	Use: "project",
 

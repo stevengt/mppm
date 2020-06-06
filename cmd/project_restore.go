@@ -12,10 +12,10 @@ import (
 )
 
 func init() {
-	projectCmd.AddCommand(restoreCmd)
+	ProjectCmd.AddCommand(RestoreCmd)
 }
 
-var restoreCmd = &cobra.Command{
+var RestoreCmd = &cobra.Command{
 
 	Use: "restore",
 

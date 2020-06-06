@@ -10,12 +10,12 @@ func init() {
 
 	cobra.OnInitialize(
 		func() {
-			isListAllLibrariesCommand, _ = libraryCmd.Flags().GetBool("list")
-			isCommitAllLibrariesCommand, _ = libraryCmd.Flags().GetBool("commit-all")
+			isListAllLibrariesCommand, _ = LibraryCmd.Flags().GetBool("list")
+			isCommitAllLibrariesCommand, _ = LibraryCmd.Flags().GetBool("commit-all")
 		},
 	)
 
-	libraryCmd.Flags().BoolVarP(
+	LibraryCmd.Flags().BoolVarP(
 		&isListAllLibrariesCommand,
 		"list",
 		"l",
@@ -23,7 +23,7 @@ func init() {
 		"Lists all libraries (folders) currently tracked globally on your system.",
 	)
 
-	libraryCmd.Flags().BoolVarP(
+	LibraryCmd.Flags().BoolVarP(
 		&isCommitAllLibrariesCommand,
 		"commit-all",
 		"c",
@@ -31,11 +31,11 @@ func init() {
 		"Commits (snapshots) all changes made to all libraries (folders) currently tracked globally on your system.",
 	)
 
-	rootCmd.AddCommand(libraryCmd)
+	RootCmd.AddCommand(LibraryCmd)
 
 }
 
-var libraryCmd = &cobra.Command{
+var LibraryCmd = &cobra.Command{
 
 	Use: "library",
 

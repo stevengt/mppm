@@ -8,11 +8,11 @@ import (
 
 func init() {
 
-	libraryCmd.AddCommand(libraryRemoveCmd)
+	LibraryCmd.AddCommand(LibraryRemoveCmd)
 
 }
 
-var libraryRemoveCmd = &cobra.Command{
+var LibraryRemoveCmd = &cobra.Command{
 
 	Use: "remove",
 

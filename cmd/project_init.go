@@ -12,10 +12,10 @@ import (
 )
 
 func init() {
-	projectCmd.AddCommand(initCmd)
+	ProjectCmd.AddCommand(InitCmd)
 }
 
-var initCmd = &cobra.Command{
+var InitCmd = &cobra.Command{
 
 	Use: "init",
 

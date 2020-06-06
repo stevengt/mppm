@@ -9,30 +9,30 @@ func init() {
 
 	cobra.OnInitialize(
 		func() {
-			isCheckoutMostRecentLibrariesCommand, _ = libraryCheckoutCmd.Flags().GetBool("recent")
-			isCheckoutProjectSpecifiedLibrariesCommand, _ = libraryCheckoutCmd.Flags().GetBool("project")
+			isCheckoutMostRecentLibrariesCommand, _ = LibraryCheckoutCmd.Flags().GetBool("recent")
+			isCheckoutProjectSpecifiedLibrariesCommand, _ = LibraryCheckoutCmd.Flags().GetBool("project")
 		},
 	)
 
-	libraryCheckoutCmd.Flags().BoolVar(
+	LibraryCheckoutCmd.Flags().BoolVar(
 		&isCheckoutMostRecentLibrariesCommand,
 		"recent",
 		false,
 		"Converts all libraries to their most recent versions.",
 	)
 
-	libraryCheckoutCmd.Flags().BoolVar(
+	LibraryCheckoutCmd.Flags().BoolVar(
 		&isCheckoutProjectSpecifiedLibrariesCommand,
 		"project",
 		false,
 		"Converts all libraries to the versions specified in the current project's config file.",
 	)
 
-	libraryCmd.AddCommand(libraryCheckoutCmd)
+	LibraryCmd.AddCommand(LibraryCheckoutCmd)
 
 }
 
-var libraryCheckoutCmd = &cobra.Command{
+var LibraryCheckoutCmd = &cobra.Command{
 
 	Use: "checkout",
 

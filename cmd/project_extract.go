@@ -8,10 +8,10 @@ import (
 )
 
 func init() {
-	projectCmd.AddCommand(extractCmd)
+	ProjectCmd.AddCommand(ExtractCmd)
 }
 
-var extractCmd = &cobra.Command{
+var ExtractCmd = &cobra.Command{
 
 	Use: "extract",
 

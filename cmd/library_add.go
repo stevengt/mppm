@@ -8,11 +8,11 @@ import (
 
 func init() {
 
-	libraryCmd.AddCommand(libraryAddCmd)
+	LibraryCmd.AddCommand(LibraryAddCmd)
 
 }
 
-var libraryAddCmd = &cobra.Command{
+var LibraryAddCmd = &cobra.Command{
 
 	Use: "add",
 

@@ -12,11 +12,11 @@ func init() {
 	cobra.OnInitialize(
 		func() {
 			configManager = config.MppmConfigFileManager
-			isShowSupportedFileTypesCommand, _ = rootCmd.Flags().GetBool("show-supported")
+			isShowSupportedFileTypesCommand, _ = RootCmd.Flags().GetBool("show-supported")
 		},
 	)
 
-	rootCmd.Flags().BoolVarP(
+	RootCmd.Flags().BoolVarP(
 		&isShowSupportedFileTypesCommand,
 		"show-supported",
 		"s",
@@ -26,7 +26,7 @@ func init() {
 
 }
 
-var rootCmd = &cobra.Command{
+var RootCmd = &cobra.Command{
 
 	Version: config.Version,
 
@@ -54,7 +54,7 @@ var configManager config.MppmConfigManager
 var isShowSupportedFileTypesCommand bool
 
 func Execute() {
-	if err := rootCmd.Execute(); err != nil {
+	if err := RootCmd.Execute(); err != nil {
 		util.ExitWithError(err)
 	}
 }
