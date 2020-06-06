@@ -26,6 +26,16 @@ var DefaultAddAllAndCommitError error = errors.New("There was a problem trying t
 
 // ------------------------------------------------------------------------------
 
+func GetMockGitManagerCreatorFromBuilderOrNil(mockGitManagerCreatorBuilder *MockGitManagerCreatorBuilder) *MockGitManagerCreator {
+	if mockGitManagerCreatorBuilder != nil {
+		return mockGitManagerCreatorBuilder.Build()
+	} else {
+		return NewDefaultMockGitManagerCreatorBuilder().Build()
+	}
+}
+
+// ------------------------------------------------------------------------------
+
 type MockGitManagerCreatorBuilder struct {
 	RevParseStdout                 string
 	UseDefaultInitError            bool
@@ -36,6 +46,10 @@ type MockGitManagerCreatorBuilder struct {
 	UseDefaultLfsInstallError      bool
 	UseDefaultLfsTrackError        bool
 	UseDefaultAddAllAndCommitError bool
+}
+
+func NewDefaultMockGitManagerCreatorBuilder() *MockGitManagerCreatorBuilder {
+	return &MockGitManagerCreatorBuilder{}
 }
 
 func (builder *MockGitManagerCreatorBuilder) Build() *MockGitManagerCreator {

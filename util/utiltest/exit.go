@@ -2,15 +2,17 @@ package utiltest
 
 import "github.com/stevengt/mppm/util"
 
-type MockExiter struct {
-	WasExited    bool
-	ErrorMessage string
-}
-
 func InitializeAndReturnNewMockExiter() *MockExiter {
 	mockExiter := NewMockExiter()
 	util.CurrentProcessExiter = mockExiter
 	return mockExiter
+}
+
+// ------------------------------------------------------------------------------
+
+type MockExiter struct {
+	WasExited    bool
+	ErrorMessage string
 }
 
 func NewMockExiter() *MockExiter {

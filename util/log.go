@@ -5,7 +5,7 @@ import (
 	"os"
 )
 
-var Logger *log.Logger = getNewDefaultLogger()
+var Logger Printer = newDefaultPrinter()
 
 func Print(v ...interface{}) {
 	Logger.Print(v...)
@@ -19,9 +19,35 @@ func Println(v ...interface{}) {
 	Logger.Println(v...)
 }
 
-func getNewDefaultLogger() *log.Logger {
+// ------------------------------------------------------------------------------
+
+type Printer interface {
+	Print(v ...interface{})
+	Printf(format string, v ...interface{})
+	Println(v ...interface{})
+}
+
+type printer struct {
+	logger *log.Logger
+}
+
+func newDefaultPrinter() *printer {
 	outputDestination := os.Stdout
 	logMessagePrefix := ""
 	loggerFlag := 0 // Do not prefix the date, time, etc. to the beginning of the log messages.
-	return log.New(outputDestination, logMessagePrefix, loggerFlag)
+	return &printer{
+		logger: log.New(outputDestination, logMessagePrefix, loggerFlag),
+	}
+}
+
+func (p *printer) Print(v ...interface{}) {
+	p.logger.Print(v...)
+}
+
+func (p *printer) Printf(format string, v ...interface{}) {
+	p.logger.Printf(format, v...)
+}
+
+func (p *printer) Println(v ...interface{}) {
+	p.logger.Println(v...)
 }
