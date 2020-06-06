@@ -1,11 +1,12 @@
 package util
 
 import (
+	"io"
 	"log"
 	"os"
 )
 
-var Logger Printer = newDefaultPrinter()
+var Logger WritePrinter = newDefaultWritePrinter()
 
 func Print(v ...interface{}) {
 	Logger.Print(v...)
@@ -21,33 +22,43 @@ func Println(v ...interface{}) {
 
 // ------------------------------------------------------------------------------
 
-type Printer interface {
+// Contains common printing methods.
+//
+// The io.Writer interface is extended, as well, so that it
+// can be used to redirect output from cobra commands.
+type WritePrinter interface {
+	io.Writer
 	Print(v ...interface{})
 	Printf(format string, v ...interface{})
 	Println(v ...interface{})
 }
 
-type printer struct {
+type writePrinter struct {
 	logger *log.Logger
 }
 
-func newDefaultPrinter() *printer {
+func newDefaultWritePrinter() *writePrinter {
 	outputDestination := os.Stdout
 	logMessagePrefix := ""
 	loggerFlag := 0 // Do not prefix the date, time, etc. to the beginning of the log messages.
-	return &printer{
+	return &writePrinter{
 		logger: log.New(outputDestination, logMessagePrefix, loggerFlag),
 	}
 }
 
-func (p *printer) Print(v ...interface{}) {
+func (p *writePrinter) Print(v ...interface{}) {
 	p.logger.Print(v...)
 }
 
-func (p *printer) Printf(format string, v ...interface{}) {
+func (p *writePrinter) Printf(format string, v ...interface{}) {
 	p.logger.Printf(format, v...)
 }
 
-func (p *printer) Println(v ...interface{}) {
+func (p *writePrinter) Println(v ...interface{}) {
 	p.logger.Println(v...)
+}
+
+func (printer *writePrinter) Write(p []byte) (n int, err error) {
+	printer.Print(string(p))
+	return len(p), nil
 }

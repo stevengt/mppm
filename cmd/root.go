@@ -41,11 +41,15 @@ var RootCmd = &cobra.Command{
 
 	Args: cobra.OnlyValidArgs,
 
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		cmd.SetOut(util.Logger)
+	},
+
 	Run: func(cmd *cobra.Command, args []string) {
 		if isShowSupportedFileTypesCommand {
 			showSupportedFileTypes()
 		} else {
-			util.Println(cmd.UsageString())
+			cmd.Help()
 		}
 	},
 }

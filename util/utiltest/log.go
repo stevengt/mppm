@@ -1,34 +1,51 @@
 package utiltest
 
-import "fmt"
+import (
+	"fmt"
+)
 
-type MockPrinter struct {
-	OutputHistory []string
+type MockWritePrinter struct {
+	OutputContents []byte
 }
 
-func NewMockPrinter() *MockPrinter {
-	return &MockPrinter{
-		OutputHistory: make([]string, 0),
+func NewMockWritePrinter() *MockWritePrinter {
+	return &MockWritePrinter{
+		OutputContents: make([]byte, 0),
 	}
 }
 
-func (mockPrinter *MockPrinter) Print(v ...interface{}) {
-	mockPrinter.OutputHistory = append(
-		mockPrinter.OutputHistory,
-		fmt.Sprint(v...),
+func (mockWritePrinter *MockWritePrinter) GetOutputContentsAsString() string {
+	return string(mockWritePrinter.OutputContents)
+}
+
+func (mockWritePrinter *MockWritePrinter) Print(v ...interface{}) {
+	outputAsBytes := []byte(fmt.Sprint(v...))
+	mockWritePrinter.OutputContents = append(
+		mockWritePrinter.OutputContents,
+		outputAsBytes...,
 	)
 }
 
-func (mockPrinter *MockPrinter) Printf(format string, v ...interface{}) {
-	mockPrinter.OutputHistory = append(
-		mockPrinter.OutputHistory,
-		fmt.Sprintf(format, v...),
+func (mockWritePrinter *MockWritePrinter) Printf(format string, v ...interface{}) {
+	outputAsBytes := []byte(fmt.Sprintf(format, v...))
+	mockWritePrinter.OutputContents = append(
+		mockWritePrinter.OutputContents,
+		outputAsBytes...,
 	)
 }
 
-func (mockPrinter *MockPrinter) Println(v ...interface{}) {
-	mockPrinter.OutputHistory = append(
-		mockPrinter.OutputHistory,
-		fmt.Sprintln(v...),
+func (mockWritePrinter *MockWritePrinter) Println(v ...interface{}) {
+	outputAsBytes := []byte(fmt.Sprintln(v...))
+	mockWritePrinter.OutputContents = append(
+		mockWritePrinter.OutputContents,
+		outputAsBytes...,
 	)
+}
+
+func (mockWritePrinter *MockWritePrinter) Write(p []byte) (n int, err error) {
+	mockWritePrinter.OutputContents = append(
+		mockWritePrinter.OutputContents,
+		p...,
+	)
+	return len(p), nil
 }

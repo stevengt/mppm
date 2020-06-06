@@ -54,7 +54,7 @@ var LibraryCheckoutCmd = &cobra.Command{
 				util.ExitWithError(err)
 			}
 		} else {
-			util.Println(cmd.UsageString())
+			cmd.Help()
 		}
 	},
 }

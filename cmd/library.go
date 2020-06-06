@@ -68,7 +68,7 @@ Libraries can be any collection of audio samples, plugins, presets, etc. that:
 		} else if isCommitAllLibrariesCommand {
 			err = commitAllLibraries()
 		} else {
-			util.Println(cmd.UsageString())
+			cmd.Help()
 		}
 
 		if err != nil {
