@@ -155,7 +155,7 @@ func TestGetMppmGlobalConfigFilePath(t *testing.T) {
 
 	var expectedError error
 
-	mockFileSystemDelegater := &utiltest.MockFileSystemDelegater{}
+	mockFileSystemDelegater := utiltest.NewDefaultMockFileSystemDelegater()
 	configtest.InitMockFileSystemDelegaterWithConfigFiles(mockFileSystemDelegater, nil, nil)
 	configManager := config.MppmConfigFileManager
 	expectedFilePath := "/home/testuser/.mppm.json"

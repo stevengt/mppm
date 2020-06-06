@@ -99,7 +99,7 @@ func GetDefaultTestMppmConfigInfo() (testMppmConfigInfo *config.MppmConfigInfo, 
 // Updates util.FileSystemProxy and config.MppmConfigFileManager so that any
 // previously loaded config files are discarded, and no new config files are available.
 func InitAndReturnMockFileSystemDelegaterWithNoConfigFiles() *utiltest.MockFileSystemDelegater {
-	mockFileSystemDelegater := &utiltest.MockFileSystemDelegater{}
+	mockFileSystemDelegater := utiltest.NewDefaultMockFileSystemDelegater()
 	InitMockFileSystemDelegaterWithConfigFiles(mockFileSystemDelegater, nil, nil)
 	return mockFileSystemDelegater
 }
@@ -111,7 +111,7 @@ func InitAndReturnMockFileSystemDelegaterWithNoConfigFiles() *utiltest.MockFileS
 // The config file contents are the same as the results from calling configtest.GetDefaultTestMppmConfigInfo().
 func InitAndReturnMockFileSystemDelegaterWithDefaultConfigFiles() *utiltest.MockFileSystemDelegater {
 
-	mockFileSystemDelegater := &utiltest.MockFileSystemDelegater{}
+	mockFileSystemDelegater := utiltest.NewDefaultMockFileSystemDelegater()
 
 	_, projectConfigAsJson := GetDefaultTestMppmConfigInfo()
 	_, globalConfigAsJson := GetDefaultTestMppmConfigInfo()

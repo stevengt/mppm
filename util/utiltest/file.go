@@ -65,12 +65,10 @@ type MockFileSystemDelegaterBuilder struct {
 
 func (builder *MockFileSystemDelegaterBuilder) Build() *MockFileSystemDelegater {
 
-	mockFileSystemDelegater := &MockFileSystemDelegater{}
+	mockFileSystemDelegater := NewDefaultMockFileSystemDelegater()
 
 	if builder.Files != nil {
 		mockFileSystemDelegater.Files = builder.Files
-	} else {
-		mockFileSystemDelegater.Files = make(map[string]*MockFile)
 	}
 
 	if builder.FileNamesAndContentsAsBytes != nil {
@@ -112,6 +110,12 @@ type MockFileSystemDelegater struct {
 	RemoveFileError   error
 	WalkFilePathError error
 	UserHomeDirError  error
+}
+
+func NewDefaultMockFileSystemDelegater() *MockFileSystemDelegater {
+	return &MockFileSystemDelegater{
+		Files: make(map[string]*MockFile),
+	}
 }
 
 func (mockFileSystemDelegater *MockFileSystemDelegater) InitFiles(fileNamesAndContents map[string][]byte) {
