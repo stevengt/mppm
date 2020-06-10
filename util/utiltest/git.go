@@ -52,6 +52,7 @@ func NewDefaultMockGitManagerCreatorBuilder() *MockGitManagerCreatorBuilder {
 func (builder *MockGitManagerCreatorBuilder) Build() *MockGitManagerCreator {
 
 	mockGitManager := &MockGitManager{
+		InputHistory:   make([][]string, 0),
 		RevParseStdout: builder.RevParseStdout,
 	}
 
@@ -84,7 +85,8 @@ func (builder *MockGitManagerCreatorBuilder) Build() *MockGitManagerCreator {
 	}
 
 	return &MockGitManagerCreator{
-		MockGitManager: mockGitManager,
+		MockGitManager:                   mockGitManager,
+		MockGitManagersIndexedByRepoPath: make(map[string]*MockGitManager),
 	}
 
 }

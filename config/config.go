@@ -77,6 +77,11 @@ type MppmConfigInfo struct {
 	Libraries    []*LibraryConfig                  `json:"libraries"`
 }
 
+func NewMppmConfigInfoFromJson(json []byte) (mppmConfig *MppmConfigInfo, err error) {
+	jsonReader := bytes.NewReader(json)
+	return NewMppmConfigInfoFromJsonReader(jsonReader)
+}
+
 func NewMppmConfigInfoFromJsonReader(jsonReader io.Reader) (mppmConfig *MppmConfigInfo, err error) {
 
 	mppmConfig = &MppmConfigInfo{}

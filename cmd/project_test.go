@@ -1,6 +1,7 @@
 package cmd_test
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/stevengt/mppm/cmd"
@@ -48,6 +49,36 @@ func TestProjectCmd(t *testing.T) {
 			),
 			shouldUpdateLibraries: true,
 		},
+
+		&ProjectCmdTestCase{
+			args: []string{"project", "--update-libraries"},
+			executionEnvironmentBuilder: &utiltest.MockExecutionEnvironmentBuilder{
+				MockFileSystemDelegaterBuilder: &utiltest.MockFileSystemDelegaterBuilder{
+					UseDefaultOpenFileError: true,
+				},
+			},
+			projectConfigFile: utiltest.NewMockFile(
+				configtest.ConfigWithAllValidInfoAndPreviousLibraryVersion.ConfigAsJson,
+			),
+			globalConfigFile: utiltest.NewMockFile(
+				configtest.ConfigWithAllValidInfoAndMostRecentLibraryVersion.ConfigAsJson,
+			),
+			shouldUpdateLibraries: true,
+			expectedExitError:     errors.New("\nThere was a problem while opening the mppm config file.\nIf the file doesn't exist, try running 'mppm project init' first.\nThere was a problem opening the file.\n"),
+		},
+
+		&ProjectCmdTestCase{
+			args: []string{"project", "--commit-all", "Made changes"},
+			projectConfigFile: utiltest.NewMockFile(
+				configtest.ConfigWithValidVersionAndApplicationNameAndApplicationVersion.ConfigAsJson,
+			),
+			expectedGitManagerInputHistories: map[string][][]string{
+				".": [][]string{
+					[]string{"add", ".", "-A"},
+					[]string{"commit", "-m", "Made changes"},
+				},
+			},
+		},
 	}
 
 	for _, testCase := range testCases {
@@ -89,29 +120,32 @@ func (testCase *ProjectCmdTestCase) Run(t *testing.T) {
 		assert.Exactly(t, expectedGitManagerInputHistory, actualGitManagerInputHistory)
 	}
 
+	if testCase.shouldUpdateLibraries {
+
+		projectConfigFileOriginalContents := testCase.projectConfigFile.Contents
+		projectConfigFileNewContents := executionEnvironment.MockFileSystemDelegater.Files[".mppm.json"].Contents
+
+		globalConfigFileOriginalContents := testCase.globalConfigFile.Contents
+		globalConfigFileNewContents := executionEnvironment.MockFileSystemDelegater.Files["/home/testuser/.mppm.json"].Contents
+
+		if testCase.expectedExitError != nil {
+			assert.Exactly(t, projectConfigFileOriginalContents, projectConfigFileNewContents)
+			assert.Exactly(t, globalConfigFileOriginalContents, globalConfigFileNewContents)
+		} else {
+			projectConfig, err := config.NewMppmConfigInfoFromJson(projectConfigFileNewContents)
+			assert.Nil(t, err)
+			globalConfig, err := config.NewMppmConfigInfoFromJson(globalConfigFileNewContents)
+			assert.Nil(t, err)
+			assert.Exactly(t, globalConfig.Libraries, projectConfig.Libraries)
+		}
+
+	}
+
 	assert.Exactly(t, testCase.expectedExitError, executionEnvironment.MockExiter.Error)
 	if testCase.expectedExitError != nil {
 		assert.True(t, executionEnvironment.MockExiter.WasExited)
-		return
 	} else {
 		assert.False(t, executionEnvironment.MockExiter.WasExited)
-	}
-
-	if testCase.shouldUpdateLibraries {
-
-		config.MppmConfigFileManager = config.NewMppmConfigFileManager() // Reset the config manager to load updated config files.
-		configManager := config.MppmConfigFileManager
-
-		projectConfig, err := configManager.GetProjectConfig()
-		assert.Nil(t, err)
-		projectLibraries := projectConfig.Libraries
-
-		globalConfig, err := configManager.GetGlobalConfig()
-		assert.Nil(t, err)
-		globalLibraries := globalConfig.Libraries
-
-		assert.Exactly(t, globalLibraries, projectLibraries)
-
 	}
 
 }

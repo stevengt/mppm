@@ -47,7 +47,7 @@ func GetMockFileSystemDelegaterFromBuilderOrNil(mockFileSystemDelegaterBuilder *
 	if mockFileSystemDelegaterBuilder != nil {
 		return mockFileSystemDelegaterBuilder.Build()
 	} else {
-		return &MockFileSystemDelegater{}
+		return NewDefaultMockFileSystemDelegater()
 	}
 }
 
