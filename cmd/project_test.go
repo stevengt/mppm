@@ -7,6 +7,7 @@ import (
 	"github.com/stevengt/mppm/cmd"
 	"github.com/stevengt/mppm/config"
 	"github.com/stevengt/mppm/config/configtest"
+	"github.com/stevengt/mppm/util"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/stevengt/mppm/util/utiltest"
@@ -78,6 +79,45 @@ func TestProjectCmd(t *testing.T) {
 					[]string{"commit", "-m", "Made changes"},
 				},
 			},
+			isCommitAllCommand: true,
+		},
+
+		&ProjectCmdTestCase{
+			args: []string{"project", "--commit-all", "Made changes"},
+			executionEnvironmentBuilder: &utiltest.MockExecutionEnvironmentBuilder{
+				MockGitManagerCreatorBuilder: &utiltest.MockGitManagerCreatorBuilder{
+					UseDefaultAddError: true,
+				},
+			},
+			projectConfigFile: utiltest.NewMockFile(
+				configtest.ConfigWithValidVersionAndApplicationNameAndApplicationVersion.ConfigAsJson,
+			),
+			expectedGitManagerInputHistories: map[string][][]string{
+				".": [][]string{
+					[]string{"add", ".", "-A"},
+				},
+			},
+			isCommitAllCommand: true,
+			expectedExitError:  utiltest.DefaultAddError,
+		},
+
+		&ProjectCmdTestCase{
+			args: []string{"project", "--commit-all", "Made changes"},
+			executionEnvironmentBuilder: &utiltest.MockExecutionEnvironmentBuilder{
+				MockFileSystemDelegaterBuilder: &utiltest.MockFileSystemDelegaterBuilder{
+					FileNamesAndContentsAsBytes: utiltest.GetTestFileNamesAndContents(),
+				},
+			},
+			projectConfigFile: utiltest.NewMockFile(
+				configtest.ConfigWithValidVersionAndApplicationNameAndApplicationVersion.ConfigAsJson,
+			),
+			expectedGitManagerInputHistories: map[string][][]string{
+				".": [][]string{
+					[]string{"add", ".", "-A"},
+					[]string{"commit", "-m", "Made changes"},
+				},
+			},
+			isCommitAllCommand: true,
 		},
 	}
 
@@ -93,6 +133,7 @@ type ProjectCmdTestCase struct {
 	projectConfigFile                *utiltest.MockFile
 	globalConfigFile                 *utiltest.MockFile
 	shouldUpdateLibraries            bool
+	isCommitAllCommand               bool
 	expectedOutput                   string
 	expectedGitManagerInputHistories map[string][][]string // Map of git repo file path -> git manager input history.
 	expectedExitError                error
@@ -137,6 +178,21 @@ func (testCase *ProjectCmdTestCase) Run(t *testing.T) {
 			globalConfig, err := config.NewMppmConfigInfoFromJson(globalConfigFileNewContents)
 			assert.Nil(t, err)
 			assert.Exactly(t, globalConfig.Libraries, projectConfig.Libraries)
+		}
+
+	}
+
+	if testCase.isCommitAllCommand && testCase.expectedExitError == nil {
+
+		filePatternsConfig, _ := config.GetAllFilePatternsConfigFromProjectConfig()
+		gzippedXmlFileExtensions := filePatternsConfig.GzippedXmlFileExtensions
+
+		for _, fileExtension := range gzippedXmlFileExtensions {
+			compressedFileNames, _ := util.GetAllFileNamesWithExtension(fileExtension)
+			for _, compressedFileName := range compressedFileNames {
+				uncompressedFileName := compressedFileName + ".xml"
+				assert.True(t, executionEnvironment.MockFileSystemDelegater.DoesFileExist(uncompressedFileName))
+			}
 		}
 
 	}
