@@ -22,8 +22,6 @@ var DefaultLfsInstallError error = errors.New("There was a problem while setting
 
 var DefaultLfsTrackError error = errors.New("There was a problem trying to track files with git lfs.")
 
-var DefaultAddAllAndCommitError error = errors.New("There was a problem trying to add all and commit.")
-
 // ------------------------------------------------------------------------------
 
 func GetMockGitManagerCreatorFromBuilderOrNil(mockGitManagerCreatorBuilder *MockGitManagerCreatorBuilder) *MockGitManagerCreator {
@@ -37,15 +35,14 @@ func GetMockGitManagerCreatorFromBuilderOrNil(mockGitManagerCreatorBuilder *Mock
 // ------------------------------------------------------------------------------
 
 type MockGitManagerCreatorBuilder struct {
-	RevParseStdout                 string
-	UseDefaultInitError            bool
-	UseDefaultAddError             bool
-	UseDefaultCommitError          bool
-	UseDefaultCheckoutError        bool
-	UseDefaultRevParseError        bool
-	UseDefaultLfsInstallError      bool
-	UseDefaultLfsTrackError        bool
-	UseDefaultAddAllAndCommitError bool
+	RevParseStdout            string
+	UseDefaultInitError       bool
+	UseDefaultAddError        bool
+	UseDefaultCommitError     bool
+	UseDefaultCheckoutError   bool
+	UseDefaultRevParseError   bool
+	UseDefaultLfsInstallError bool
+	UseDefaultLfsTrackError   bool
 }
 
 func NewDefaultMockGitManagerCreatorBuilder() *MockGitManagerCreatorBuilder {
@@ -86,10 +83,6 @@ func (builder *MockGitManagerCreatorBuilder) Build() *MockGitManagerCreator {
 		mockGitManager.LfsTrackError = DefaultLfsTrackError
 	}
 
-	if builder.UseDefaultAddAllAndCommitError {
-		mockGitManager.AddAllAndCommitError = DefaultAddAllAndCommitError
-	}
-
 	return &MockGitManagerCreator{
 		MockGitManager: mockGitManager,
 	}
@@ -99,55 +92,85 @@ func (builder *MockGitManagerCreatorBuilder) Build() *MockGitManagerCreator {
 // ------------------------------------------------------------------------------
 
 type MockGitManagerCreator struct {
-	MockGitManager *MockGitManager
+	MockGitManager                   *MockGitManager
+	MockGitManagersIndexedByRepoPath map[string]*MockGitManager
 }
 
 func (mockGitManagerCreator *MockGitManagerCreator) NewGitManager(repoFilePath string) util.GitManager {
-	return mockGitManagerCreator.MockGitManager
+	mockGitManager := mockGitManagerCreator.MockGitManager
+	mockGitManagerCreator.MockGitManagersIndexedByRepoPath[repoFilePath] = mockGitManager
+	return mockGitManager
 }
 
 // ------------------------------------------------------------------------------
 
 type MockGitManager struct {
-	InitError            error
-	AddError             error
-	CommitError          error
-	CheckoutError        error
-	RevParseStdout       string
-	RevParseError        error
-	LfsInstallError      error
-	LfsTrackError        error
-	AddAllAndCommitError error
+	InputHistory    [][]string
+	InitError       error
+	AddError        error
+	CommitError     error
+	CheckoutError   error
+	RevParseStdout  string
+	RevParseError   error
+	LfsInstallError error
+	LfsTrackError   error
 }
 
 func (mockGitManager *MockGitManager) Init() (err error) {
+	mockGitManager.appendToInputHistory("init")
 	return mockGitManager.InitError
 }
 
 func (mockGitManager *MockGitManager) Add(args ...string) (err error) {
+	mockGitManager.appendToInputHistory("add", args...)
 	return mockGitManager.AddError
 }
 
 func (mockGitManager *MockGitManager) Commit(args ...string) (err error) {
+	mockGitManager.appendToInputHistory("commit", args...)
 	return mockGitManager.CommitError
 }
 
 func (mockGitManager *MockGitManager) Checkout(args ...string) (err error) {
+	mockGitManager.appendToInputHistory("checkout", args...)
 	return mockGitManager.CheckoutError
 }
 
 func (mockGitManager *MockGitManager) RevParse(args ...string) (stdout string, err error) {
+	mockGitManager.appendToInputHistory("rev-parse", args...)
 	return mockGitManager.RevParseStdout, mockGitManager.RevParseError
 }
 
 func (mockGitManager *MockGitManager) LfsInstall() (err error) {
+	mockGitManager.appendToInputHistory("lfs", "install")
 	return mockGitManager.LfsInstallError
 }
 
 func (mockGitManager *MockGitManager) LfsTrack(args ...string) (err error) {
+	gitLfsCommandArgs := append(
+		[]string{"track"},
+		args...,
+	)
+	mockGitManager.appendToInputHistory("lfs", gitLfsCommandArgs...)
 	return mockGitManager.LfsTrackError
 }
 
 func (mockGitManager *MockGitManager) AddAllAndCommit(commitMessage string) (err error) {
-	return mockGitManager.AddAllAndCommitError
+	err = mockGitManager.Add("-A", ".")
+	if err != nil {
+		return
+	}
+	err = mockGitManager.Commit("-m", commitMessage)
+	if err != nil {
+		return
+	}
+	return
+}
+
+func (mockGitManager *MockGitManager) appendToInputHistory(commandName string, args ...string) {
+	input := append(
+		[]string{commandName},
+		args...,
+	)
+	mockGitManager.InputHistory = append(mockGitManager.InputHistory, input)
 }

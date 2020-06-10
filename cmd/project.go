@@ -60,6 +60,7 @@ var ProjectCmd = &cobra.Command{
 	Args: cobra.OnlyValidArgs,
 
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		RootCmd.PersistentPreRun(cmd, args)
 		if shouldUpdateLibraries {
 			err := updateProjectLibraryGitCommitIds()
 			if err != nil {

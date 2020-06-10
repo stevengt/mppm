@@ -1,6 +1,10 @@
 package utiltest
 
-import "github.com/stevengt/mppm/util"
+import (
+	"errors"
+
+	"github.com/stevengt/mppm/util"
+)
 
 func InitializeAndReturnNewMockExiter() *MockExiter {
 	mockExiter := NewMockExiter()
@@ -11,8 +15,8 @@ func InitializeAndReturnNewMockExiter() *MockExiter {
 // ------------------------------------------------------------------------------
 
 type MockExiter struct {
-	WasExited    bool
-	ErrorMessage string
+	WasExited bool
+	Error     error
 }
 
 func NewMockExiter() *MockExiter {
@@ -23,12 +27,12 @@ func NewMockExiter() *MockExiter {
 
 func (mockExiter *MockExiter) ExitWithError(err error) {
 	mockExiter.WasExited = true
-	mockExiter.ErrorMessage = err.Error()
+	mockExiter.Error = err
 	return
 }
 
 func (mockExiter *MockExiter) ExitWithErrorMessage(errorMessage string) {
 	mockExiter.WasExited = true
-	mockExiter.ErrorMessage = errorMessage
+	mockExiter.Error = errors.New(errorMessage)
 	return
 }
