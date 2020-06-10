@@ -62,6 +62,26 @@ var ConfigWithValidVersionAndApplicationNameAndInvalidApplicationVersion *MppmCo
 	ExpectedError: errors.New("\nFound unsupported application Ableton 1 in config file .mppm.json\nTo see what applications are supported, please run 'mppm --show-supported'.\n"),
 }
 
+var ConfigWithAllValidInfoAndMostRecentLibraryVersion *MppmConfigInfoAndExpectedError = &MppmConfigInfoAndExpectedError{
+	ConfigAsJson: []byte(
+		fmt.Sprintf(
+			`{"version":"%s.0.0","applications":[{"name":"Ableton","version":"10"}],"libraries":[{"location":"/home/testuser/library","most-recent-version":"56789","current-version":"56789"}]}`,
+			config.GetCurrentlyInstalledMajorVersion(),
+		),
+	),
+	ExpectedError: nil,
+}
+
+var ConfigWithAllValidInfoAndPreviousLibraryVersion *MppmConfigInfoAndExpectedError = &MppmConfigInfoAndExpectedError{
+	ConfigAsJson: []byte(
+		fmt.Sprintf(
+			`{"version":"%s.0.0","applications":[{"name":"Ableton","version":"10"}],"libraries":[{"location":"/home/testuser/library","most-recent-version":"56789","current-version":"01234"}]}`,
+			config.GetCurrentlyInstalledMajorVersion(),
+		),
+	),
+	ExpectedError: nil,
+}
+
 // ------------------------------------------------------------------------------
 
 func GetDefaultTestMppmConfigInfo() (testMppmConfigInfo *config.MppmConfigInfo, configAsJson []byte) {
