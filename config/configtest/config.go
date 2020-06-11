@@ -133,13 +133,16 @@ func InitAndReturnMockFileSystemDelegaterWithDefaultConfigFiles() *utiltest.Mock
 
 	mockFileSystemDelegater := utiltest.NewDefaultMockFileSystemDelegater()
 
+	projectConfigFilePath := ".mppm.json"
 	_, projectConfigAsJson := GetDefaultTestMppmConfigInfo()
+
+	globalConfigFilePath := "/home/testuser/.mppm.json"
 	_, globalConfigAsJson := GetDefaultTestMppmConfigInfo()
 
 	InitMockFileSystemDelegaterWithConfigFiles(
 		mockFileSystemDelegater,
-		utiltest.NewMockFile(projectConfigAsJson),
-		utiltest.NewMockFile(globalConfigAsJson),
+		utiltest.NewMockFileFromBytes(projectConfigFilePath, projectConfigAsJson),
+		utiltest.NewMockFileFromBytes(globalConfigFilePath, globalConfigAsJson),
 	)
 
 	return mockFileSystemDelegater
@@ -215,5 +218,5 @@ type MppmConfigInfoAndExpectedError struct {
 }
 
 func (mppmConfigInfoAndExpectedError *MppmConfigInfoAndExpectedError) AsMockFile() *utiltest.MockFile {
-	return utiltest.NewMockFile(mppmConfigInfoAndExpectedError.ConfigAsJson)
+	return utiltest.NewMockFileFromBytes("", mppmConfigInfoAndExpectedError.ConfigAsJson)
 }

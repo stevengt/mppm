@@ -16,14 +16,14 @@ func TestCopyFile(t *testing.T) {
 
 	testCases := []*CopyFileTestCase{
 		&CopyFileTestCase{
-			sourceFileName: "file1.txt",
+			sourceFileName: "plain-text-file.txt",
 			targetFileName: "file2.bin",
 			mockFileSystemDelegaterBuilder: &utiltest.MockFileSystemDelegaterBuilder{
 				FileNamesAndContentsAsBytes: utiltest.GetTestFileNamesAndContents(),
 			},
 		},
 		&CopyFileTestCase{
-			sourceFileName: "file1.txt",
+			sourceFileName: "plain-text-file.txt",
 			targetFileName: "file2.bin",
 			mockFileSystemDelegaterBuilder: &utiltest.MockFileSystemDelegaterBuilder{
 				FileNamesAndContentsAsBytes: utiltest.GetTestFileNamesAndContents(),
@@ -31,7 +31,7 @@ func TestCopyFile(t *testing.T) {
 			},
 		},
 		&CopyFileTestCase{
-			sourceFileName: "file1.txt",
+			sourceFileName: "plain-text-file.txt",
 			targetFileName: "file2.bin",
 			mockFileSystemDelegaterBuilder: &utiltest.MockFileSystemDelegaterBuilder{
 				FileNamesAndContentsAsBytes: utiltest.GetTestFileNamesAndContents(),
@@ -39,14 +39,14 @@ func TestCopyFile(t *testing.T) {
 			},
 		},
 		&CopyFileTestCase{
-			sourceFileName: "file1.txt",
+			sourceFileName: "plain-text-file.txt",
 			targetFileName: "new-file",
 			mockFileSystemDelegaterBuilder: &utiltest.MockFileSystemDelegaterBuilder{
 				FileNamesAndContentsAsBytes: utiltest.GetTestFileNamesAndContents(),
 			},
 		},
 		&CopyFileTestCase{
-			sourceFileName: "file1.txt",
+			sourceFileName: "plain-text-file.txt",
 			targetFileName: "new-file",
 			mockFileSystemDelegaterBuilder: &utiltest.MockFileSystemDelegaterBuilder{
 				FileNamesAndContentsAsBytes: utiltest.GetTestFileNamesAndContents(),
@@ -54,7 +54,7 @@ func TestCopyFile(t *testing.T) {
 			},
 		},
 		&CopyFileTestCase{
-			sourceFileName: "file1.txt",
+			sourceFileName: "plain-text-file.txt",
 			targetFileName: "new-file",
 			mockFileSystemDelegaterBuilder: &utiltest.MockFileSystemDelegaterBuilder{
 				FileNamesAndContentsAsBytes: utiltest.GetTestFileNamesAndContents(),
@@ -87,14 +87,14 @@ func TestGzipFile(t *testing.T) {
 
 	testCases := []*GzipFileTestCase{
 		&GzipFileTestCase{
-			fileName:                       "file1.txt",
+			fileName:                       "plain-text-file.txt",
 			expectedCompressedFileContents: []byte{0x4e, 0xb0, 0xa0, 0xe3, 0xf, 0x0, 0x0, 0x0},
 			mockFileSystemDelegaterBuilder: &utiltest.MockFileSystemDelegaterBuilder{
 				FileNamesAndContentsAsBytes: utiltest.GetTestFileNamesAndContents(),
 			},
 		},
 		&GzipFileTestCase{
-			fileName:                       "file1.txt",
+			fileName:                       "plain-text-file.txt",
 			expectedCompressedFileContents: nil,
 			mockFileSystemDelegaterBuilder: &utiltest.MockFileSystemDelegaterBuilder{
 				FileNamesAndContentsAsBytes: utiltest.GetTestFileNamesAndContents(),
@@ -102,7 +102,7 @@ func TestGzipFile(t *testing.T) {
 			},
 		},
 		&GzipFileTestCase{
-			fileName:                       "file1.txt",
+			fileName:                       "plain-text-file.txt",
 			expectedCompressedFileContents: nil,
 			mockFileSystemDelegaterBuilder: &utiltest.MockFileSystemDelegaterBuilder{
 				FileNamesAndContentsAsBytes: utiltest.GetTestFileNamesAndContents(),
@@ -158,14 +158,14 @@ func TestGunzipFile(t *testing.T) {
 
 	testCases := []*GunzipFileTestCase{
 		&GunzipFileTestCase{
-			fileName:                         "file1.txt.gz",
+			fileName:                         "plain-text-file.txt.gz",
 			expectedUncompressedFileContents: append([]byte("file 1 contents"), 0xa),
 			mockFileSystemDelegaterBuilder: &utiltest.MockFileSystemDelegaterBuilder{
 				FileNamesAndContentsAsBytes: utiltest.GetTestFileNamesAndContents(),
 			},
 		},
 		&GunzipFileTestCase{
-			fileName:                         "file1.txt.gz",
+			fileName:                         "plain-text-file.txt.gz",
 			expectedUncompressedFileContents: nil,
 			mockFileSystemDelegaterBuilder: &utiltest.MockFileSystemDelegaterBuilder{
 				FileNamesAndContentsAsBytes: utiltest.GetTestFileNamesAndContents(),
@@ -173,7 +173,7 @@ func TestGunzipFile(t *testing.T) {
 			},
 		},
 		&GunzipFileTestCase{
-			fileName:                         "file1.txt.gz",
+			fileName:                         "plain-text-file.txt.gz",
 			expectedUncompressedFileContents: nil,
 			mockFileSystemDelegaterBuilder: &utiltest.MockFileSystemDelegaterBuilder{
 				FileNamesAndContentsAsBytes: utiltest.GetTestFileNamesAndContents(),
@@ -228,7 +228,7 @@ func TestGunzipFile(t *testing.T) {
 func TestGetAllFileNamesWithExtension(t *testing.T) {
 
 	fileExtensionsAndExpectedFileNames := map[string][]string{
-		"txt":  []string{"file1.txt"},
+		"txt":  []string{"plain-text-file.txt"},
 		"bin":  []string{"file2.bin", "empty-file.bin"},
 		"fake": []string{},
 	}

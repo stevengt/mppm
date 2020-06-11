@@ -31,10 +31,12 @@ func TestProjectCmd(t *testing.T) {
 
 		&ProjectCmdTestCase{
 			args: []string{"project", "--update-libraries"},
-			projectConfigFile: utiltest.NewMockFile(
+			projectConfigFile: utiltest.NewMockFileFromBytes(
+				".mppm.json",
 				configtest.ConfigWithAllValidInfoAndPreviousLibraryVersion.ConfigAsJson,
 			),
-			globalConfigFile: utiltest.NewMockFile(
+			globalConfigFile: utiltest.NewMockFileFromBytes(
+				"/home/testuser/.mppm.json",
 				configtest.ConfigWithAllValidInfoAndMostRecentLibraryVersion.ConfigAsJson,
 			),
 			shouldUpdateLibraries: true,
@@ -42,10 +44,12 @@ func TestProjectCmd(t *testing.T) {
 
 		&ProjectCmdTestCase{
 			args: []string{"project", "--update-libraries"},
-			projectConfigFile: utiltest.NewMockFile(
+			projectConfigFile: utiltest.NewMockFileFromBytes(
+				".mppm.json",
 				configtest.ConfigWithValidVersionAndApplicationNameAndApplicationVersion.ConfigAsJson,
 			),
-			globalConfigFile: utiltest.NewMockFile(
+			globalConfigFile: utiltest.NewMockFileFromBytes(
+				"/home/testuser/.mppm.json",
 				configtest.ConfigWithAllValidInfoAndMostRecentLibraryVersion.ConfigAsJson,
 			),
 			shouldUpdateLibraries: true,
@@ -58,10 +62,12 @@ func TestProjectCmd(t *testing.T) {
 					UseDefaultOpenFileError: true,
 				},
 			},
-			projectConfigFile: utiltest.NewMockFile(
+			projectConfigFile: utiltest.NewMockFileFromBytes(
+				".mppm.json",
 				configtest.ConfigWithAllValidInfoAndPreviousLibraryVersion.ConfigAsJson,
 			),
-			globalConfigFile: utiltest.NewMockFile(
+			globalConfigFile: utiltest.NewMockFileFromBytes(
+				"/global/testuser/.mppm.json",
 				configtest.ConfigWithAllValidInfoAndMostRecentLibraryVersion.ConfigAsJson,
 			),
 			shouldUpdateLibraries: true,
@@ -70,7 +76,8 @@ func TestProjectCmd(t *testing.T) {
 
 		&ProjectCmdTestCase{
 			args: []string{"project", "--commit-all", "Made changes"},
-			projectConfigFile: utiltest.NewMockFile(
+			projectConfigFile: utiltest.NewMockFileFromBytes(
+				".mppm.json",
 				configtest.ConfigWithValidVersionAndApplicationNameAndApplicationVersion.ConfigAsJson,
 			),
 			expectedGitManagerInputHistories: map[string][][]string{
@@ -89,7 +96,8 @@ func TestProjectCmd(t *testing.T) {
 					UseDefaultAddError: true,
 				},
 			},
-			projectConfigFile: utiltest.NewMockFile(
+			projectConfigFile: utiltest.NewMockFileFromBytes(
+				".mppm.json",
 				configtest.ConfigWithValidVersionAndApplicationNameAndApplicationVersion.ConfigAsJson,
 			),
 			expectedGitManagerInputHistories: map[string][][]string{
@@ -108,7 +116,8 @@ func TestProjectCmd(t *testing.T) {
 					FileNamesAndContentsAsBytes: utiltest.GetTestFileNamesAndContents(),
 				},
 			},
-			projectConfigFile: utiltest.NewMockFile(
+			projectConfigFile: utiltest.NewMockFileFromBytes(
+				".mppm.json",
 				configtest.ConfigWithValidVersionAndApplicationNameAndApplicationVersion.ConfigAsJson,
 			),
 			expectedGitManagerInputHistories: map[string][][]string{

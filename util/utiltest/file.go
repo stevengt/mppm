@@ -3,10 +3,13 @@ package utiltest
 import (
 	"bufio"
 	"bytes"
+	"encoding/hex"
 	"errors"
 	"io"
 	"path/filepath"
 	"strings"
+
+	"github.com/stevengt/mppm/util"
 )
 
 // ------------------------------------------------------------------------------
@@ -23,10 +26,52 @@ var DefaultUserHomeDirError error = errors.New("There was a problem getting the 
 
 // ------------------------------------------------------------------------------
 
+var PlainTextFile *MockFile = NewMockFileFromString(
+	"plain-text-file.txt",
+	"file 1 contents",
+)
+
+var GzippedPlainTextFile *MockFile = NewMockFileFromHexString(
+	"plain-text-file.txt.gz",
+	"1f8b08080eace15e000366696c65312e747874004bcbcc4955305448cecf2b49cd2b2906004eb0a0e30f000000",
+)
+
+var BinaryFileContaining0xDEADBEEF *MockFile = NewMockFileFromHexString(
+	"deadbeef.bin",
+	"deadbeef",
+)
+
+var EmptyFile *MockFile = NewMockFileFromBytes(
+	"empty-file.bin",
+	make([]byte, 0),
+)
+
+var FakeAbletonLiveSetFile *MockFile = NewMockFileFromHexString(
+	"fake-ableton-live-set.als",
+	"1f8b08082fabe15e000366616b652e616c732e786d6c00b3714cca492dc9cfb3b3f1c92c4b0d4e2db1b3d147b06092007ceffd5b26000000",
+)
+
+var FakeUncompressedAbletonLiveSetFile *MockFile = NewMockFileFromString(
+	"fake-ableton-live-set.als.xml",
+	"<Ableton><LiveSet></LiveSet></Ableton>",
+)
+
+var FakeAbletonLiveClipFile *MockFile = NewMockFileFromHexString(
+	"fake-ableton-live-clip.alc",
+	"1f8b0808ecb2e15e000366616b652d616c632e786d6c006d8e4b0a803010438f34171806449776552fa075c0c1d26a5b3dbfa2d41f6e42022179587496937784b5acac391136a135632454d2cbe1092b5ec57039b4b217d5ae9ae7859de140585a99b4f5a99698ee44083ff6ecc067015ef3f0f885cc02171d64e00de4b13c5fba000000",
+)
+
+var FakeUncompressedAbletonLiveClipFile *MockFile = NewMockFileFromString(
+	"fake-ableton-live-clip.alc.xml",
+	"<Ableton><LiveSet><Tracks><MidiTrack><DeviceChain><MainSequencer><ClipSlotList><ClipSlot></ClipSlot></ClipSlotList></MainSequencer></DeviceChain></MidiTrack></Tracks></LiveSet></Ableton>",
+)
+
+// ------------------------------------------------------------------------------
+
 func GetTestFileNamesAndContents() map[string][]byte {
 	return map[string][]byte{
-		"file1.txt": []byte("file 1 contents"),
-		"file1.txt.gz": []byte{
+		"plain-text-file.txt": []byte("file 1 contents"),
+		"plain-text-file.txt.gz": []byte{
 			0x1f, 0x8b, 0x08, 0x08, 0x8a, 0xab, 0xd4, 0x5e, 0x00, 0x03,
 			0x74, 0x65, 0x73, 0x74, 0x00, 0x4b, 0xcb, 0xcc, 0x49, 0x55,
 			0x30, 0x54, 0x48, 0xce, 0xcf, 0x2b, 0x49, 0xcd, 0x2b, 0x29,
@@ -62,6 +107,7 @@ func GetMockFileSystemDelegaterFromBuilderOrNil(mockFileSystemDelegaterBuilder *
 type MockFileSystemDelegaterBuilder struct {
 	Files                       map[string]*MockFile
 	FileNamesAndContentsAsBytes map[string][]byte // Use this if you want the builder to create MockFile instances for you.
+	FilesAsList                 []*MockFile
 	UseDefaultOpenFileError     bool
 	UseDefaultCreateFileError   bool
 	UseDefaultRemoveFileError   bool
@@ -79,7 +125,13 @@ func (builder *MockFileSystemDelegaterBuilder) Build() *MockFileSystemDelegater 
 
 	if builder.FileNamesAndContentsAsBytes != nil {
 		for fileName, fileContents := range builder.FileNamesAndContentsAsBytes {
-			mockFileSystemDelegater.Files[fileName] = NewMockFile(fileContents)
+			mockFileSystemDelegater.Files[fileName] = NewMockFileFromBytes(fileName, fileContents)
+		}
+	}
+
+	if builder.FilesAsList != nil {
+		for _, mockFile := range builder.FilesAsList {
+			mockFileSystemDelegater.Files[mockFile.FilePath] = mockFile
 		}
 	}
 
@@ -127,7 +179,7 @@ func NewDefaultMockFileSystemDelegater() *MockFileSystemDelegater {
 func (mockFileSystemDelegater *MockFileSystemDelegater) InitFiles(fileNamesAndContents map[string][]byte) {
 	files := make(map[string]*MockFile)
 	for fileName, fileContents := range fileNamesAndContents {
-		files[fileName] = NewMockFile(fileContents)
+		files[fileName] = NewMockFileFromBytes(fileName, fileContents)
 	}
 	mockFileSystemDelegater.Files = files
 }
@@ -163,7 +215,7 @@ func (mockFileSystemDelegater *MockFileSystemDelegater) CreateFile(fileName stri
 			}
 		}
 		fileContents := make([]byte, 0)
-		mockFileSystemDelegater.Files[fileName] = NewMockFile(fileContents)
+		mockFileSystemDelegater.Files[fileName] = NewMockFileFromBytes(fileName, fileContents)
 		file = mockFileSystemDelegater.Files[fileName]
 	}
 	return
@@ -211,18 +263,32 @@ func (mockFileSystemDelegater *MockFileSystemDelegater) DoesFileExist(filePath s
 // ------------------------------------------------------------------------------
 
 type MockFile struct {
+	FilePath         string
 	Contents         []byte
 	bufferReadWriter *bufio.ReadWriter
 	WasClosed        bool
 }
 
-func NewMockFile(contents []byte) *MockFile {
+func NewMockFileFromBytes(filePath string, contents []byte) *MockFile {
 	mockFile := &MockFile{
+		FilePath:  filePath,
 		Contents:  contents,
 		WasClosed: false,
 	}
 	mockFile.resetBuffer()
 	return mockFile
+}
+
+func NewMockFileFromString(filePath string, contents string) *MockFile {
+	return NewMockFileFromBytes(filePath, []byte(contents))
+}
+
+func NewMockFileFromHexString(filePath string, contents string) *MockFile {
+	contentsAsBytes, err := hex.DecodeString(contents)
+	if err != nil {
+		util.ExitWithError(err)
+	}
+	return NewMockFileFromBytes(filePath, contentsAsBytes)
 }
 
 func (mockFile *MockFile) Read(p []byte) (n int, err error) {
