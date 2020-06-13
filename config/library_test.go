@@ -6,7 +6,6 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/stevengt/mppm/config"
-	"github.com/stevengt/mppm/util"
 	"github.com/stevengt/mppm/util/utiltest"
 )
 
@@ -18,20 +17,21 @@ func TestUpdateCurrentGitCommitId(t *testing.T) {
 		CurrentGitCommitId:    "Git commit = 123",
 	}
 
-	mockGitManagerCreatorBuilder := &utiltest.MockGitManagerCreatorBuilder{
-		RevParseStdout: "Git commit = 456",
-	}
-	util.GitManagerFactory = mockGitManagerCreatorBuilder.Build()
+	// Test that the current library git commit id is correctly updated.
+	utiltest.NewMockGitManagerCreatorBuilder().
+		SetRevParseStdout("Git commit = 456").
+		Build().
+		Init()
 
 	err := libraryConfig.UpdateCurrentGitCommitId()
 	assert.Nil(t, err)
 	assert.Equal(t, "Git commit = 456", libraryConfig.CurrentGitCommitId)
 
-	mockGitManagerCreatorBuilder = &utiltest.MockGitManagerCreatorBuilder{
-		RevParseStdout:          "",
-		UseDefaultRevParseError: true,
-	}
-	util.GitManagerFactory = mockGitManagerCreatorBuilder.Build()
+	// Test that any error from 'git rev-parse' is correctly raised.
+	utiltest.NewMockGitManagerCreatorBuilder().
+		SetUseDefaultRevParseError(true).
+		Build().
+		Init()
 
 	err = libraryConfig.UpdateCurrentGitCommitId()
 	assert.Exactly(t, utiltest.DefaultRevParseError, err)

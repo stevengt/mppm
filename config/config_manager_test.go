@@ -272,6 +272,7 @@ func TestGetMppmGlobalConfigFilePath(t *testing.T) {
 
 	var expectedError error
 
+	// Test that the correct global config file path in the user's home directory is returned.
 	_ = utiltest.NewMockExecutionEnvironmentBuilder().BuildAndInit()
 	expectedFilePath := "/home/testuser/.mppm.json"
 	expectedError = nil
@@ -279,6 +280,7 @@ func TestGetMppmGlobalConfigFilePath(t *testing.T) {
 	assert.Exactly(t, expectedFilePath, actualFilePath)
 	assert.Exactly(t, expectedError, actualError)
 
+	// Test that any error from os.UserHomeDir() is correctly raised.
 	_ = utiltest.NewMockExecutionEnvironmentBuilder().
 		SetMockFileSystemDelegaterBuilder(
 			utiltest.NewMockFileSystemDelegaterBuilder().
@@ -295,12 +297,14 @@ func TestGetMppmGlobalConfigFilePath(t *testing.T) {
 
 func TestSaveProjectConfig(t *testing.T) {
 
+	// Test that an error is raised when trying to save a nil project config.
 	mockFileSystemDelegater := configtest.InitAndReturnMockFileSystemDelegaterWithDefaultConfigFiles()
 	configManager := config.MppmConfigFileManager
 	expectedError := errors.New("Unable to save uninitialized project config.")
 	actualError := configManager.SaveProjectConfig()
 	assert.Exactly(t, expectedError, actualError)
 
+	// Test that changes to a project config file are correctly saved.
 	mockFileSystemDelegater = configtest.InitAndReturnMockFileSystemDelegaterWithDefaultConfigFiles()
 	configManager = config.MppmConfigFileManager
 	projectConfig, actualError := configManager.GetProjectConfig()
@@ -322,12 +326,14 @@ func TestSaveProjectConfig(t *testing.T) {
 
 func TestSaveGlobalConfig(t *testing.T) {
 
+	// Test that an error is raised when trying to save a nil global config.
 	mockFileSystemDelegater := configtest.InitAndReturnMockFileSystemDelegaterWithDefaultConfigFiles()
 	configManager := config.MppmConfigFileManager
 	expectedError := errors.New("Unable to save uninitialized global config.")
 	actualError := configManager.SaveGlobalConfig()
 	assert.Exactly(t, expectedError, actualError)
 
+	// Test that changes to a global config file are correctly saved.
 	mockFileSystemDelegater = configtest.InitAndReturnMockFileSystemDelegaterWithDefaultConfigFiles()
 	configManager = config.MppmConfigFileManager
 	actualConfigInfo, actualError := configManager.GetGlobalConfig()
@@ -350,29 +356,27 @@ func TestSaveGlobalConfig(t *testing.T) {
 
 func TestSaveDefaultProjectConfig(t *testing.T) {
 
-	mockFileSystemDelegater := configtest.InitAndReturnMockFileSystemDelegaterWithNoConfigFiles()
-	configManager := config.MppmConfigFileManager
+	utiltest.NewMockFileSystemDelegaterBuilder().Build().Init()
 
-	_, actualError := configManager.GetProjectConfig()
-	assert.NotNil(t, actualError)
-	actualError = configManager.SaveDefaultProjectConfig()
+	// Test that the default project config is correctly saved.
+	actualError := config.MppmConfigFileManager.SaveDefaultProjectConfig()
 	assert.Nil(t, actualError)
 
+	// Reset config.MppmConfigFileManager so it loads from the saved config file.
 	config.MppmConfigFileManager = config.NewMppmConfigFileManager()
-	configManager = config.MppmConfigFileManager
 
-	expectedProjectConfig := configManager.GetDefaultMppmConfig()
-	actualProjectConfig, actualError := configManager.GetProjectConfig()
+	expectedProjectConfig := config.MppmConfigFileManager.GetDefaultMppmConfig()
+	actualProjectConfig, actualError := config.MppmConfigFileManager.GetProjectConfig()
 	assert.Exactly(t, expectedProjectConfig, actualProjectConfig)
 	assert.Nil(t, actualError)
 
-	mockFileSystemDelegater = (&utiltest.MockFileSystemDelegaterBuilder{
-		UseDefaultCreateFileError: true,
-	}).Build()
-	configtest.InitMockFileSystemDelegaterWithConfigFiles(mockFileSystemDelegater, nil, nil)
-	configManager = config.MppmConfigFileManager
+	// Test that any error from os.Create() is correctly raised while creating the project config file.
+	utiltest.NewMockFileSystemDelegaterBuilder().
+		SetUseDefaultCreateFileError(true).
+		Build().
+		Init()
 	expectedError := utiltest.DefaultCreateFileError
-	actualError = configManager.SaveDefaultProjectConfig()
+	actualError = config.MppmConfigFileManager.SaveDefaultProjectConfig()
 	assert.Exactly(t, expectedError, actualError)
 
 }
