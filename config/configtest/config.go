@@ -84,6 +84,16 @@ var ConfigWithAllValidInfoAndPreviousLibraryVersion *MppmConfigInfoAndExpectedEr
 
 // ------------------------------------------------------------------------------
 
+// A convenience method that wraps config.MppmConfigFileManager.GetDefaultMppmConfig().AsJson() .
+// The wrapped method returns an error, but this method assumes that it is nil,
+// and simply returns the JSON.
+//
+//This simplifies some test setup functions.
+func GetDefaultMppmConfigAsJson() []byte {
+	defaultMppmConfigAsJson, _ := config.MppmConfigFileManager.GetDefaultMppmConfig().AsJson()
+	return defaultMppmConfigAsJson
+}
+
 func GetDefaultTestMppmConfigInfo() *config.MppmConfigInfo {
 
 	return &config.MppmConfigInfo{

@@ -18,7 +18,7 @@ func TestGetProjectConfig(t *testing.T) {
 	testCases := []*GetProjectConfigTestCase{
 
 		&GetProjectConfigTestCase{
-			description:              "Test that config info is correctly returned from valid project config file.",
+			description:              "Test that the project config info is correctly returned from a valid config file.",
 			expectedConfigInfoAsJson: configtest.ConfigWithValidVersionAndApplicationNameAndApplicationVersion.ConfigAsJson,
 			mockExecutionEnvironmentBuilder: utiltest.NewMockExecutionEnvironmentBuilder().
 				SetMockFileSystemDelegaterBuilder(
@@ -101,7 +101,7 @@ func TestGetProjectConfig(t *testing.T) {
 		},
 
 		&GetProjectConfigTestCase{
-			description:   "Test that any error from os.Open() is correctly raised.",
+			description:   "Test that any error from os.Open() is correctly raised while opening the project config file.",
 			expectedError: errors.New("\nThere was a problem while opening the mppm config file.\nIf the file doesn't exist, try running 'mppm project init' first.\nThere was a problem opening the file.\n"),
 			mockExecutionEnvironmentBuilder: utiltest.NewMockExecutionEnvironmentBuilder().
 				SetMockFileSystemDelegaterBuilder(
@@ -123,55 +123,122 @@ func TestGetGlobalConfig(t *testing.T) {
 	testCases := []*GetGlobalConfigTestCase{
 
 		&GetGlobalConfigTestCase{
-			mockFileSystemDelegaterBuilder: nil,
-			expectedErrorIfNotConfigError:  nil,
-			mppmConfigInfoAndExpectedError: configtest.ConfigWithValidVersionAndApplicationNameAndApplicationVersion,
+			description:              "Test that the global config info is correctly returned from a valid config file.",
+			expectedConfigInfoAsJson: configtest.ConfigWithValidVersionAndApplicationNameAndApplicationVersion.ConfigAsJson,
+			mockExecutionEnvironmentBuilder: utiltest.NewMockExecutionEnvironmentBuilder().
+				SetMockFileSystemDelegaterBuilder(
+					utiltest.NewMockFileSystemDelegaterBuilder().
+						SetMockFileBuilders(
+							configtest.ConfigWithValidVersionAndApplicationNameAndApplicationVersion.AsMockFileBuilder().
+								SetFilePath("/home/testuser/.mppm.json"),
+						),
+				),
+			expectedExecutionEnvironmentStateBuilder: utiltest.NewMockExecutionEnvironmentStateBuilder().
+				SetMockFileBuilders(
+					configtest.ConfigWithValidVersionAndApplicationNameAndApplicationVersion.AsMockFileBuilder().
+						SetFilePath("/home/testuser/.mppm.json").
+						SetWasClosed(true),
+				),
 		},
 
 		&GetGlobalConfigTestCase{
-			mockFileSystemDelegaterBuilder: nil,
-			expectedErrorIfNotConfigError:  nil,
-			mppmConfigInfoAndExpectedError: configtest.ConfigWithValidVersionAndNoApplications,
+			description:                     "Test that a default global config file is created if it does not already exist.",
+			expectedConfigInfoAsJson:        configtest.GetDefaultMppmConfigAsJson(),
+			mockExecutionEnvironmentBuilder: utiltest.NewMockExecutionEnvironmentBuilder(),
+			expectedExecutionEnvironmentStateBuilder: utiltest.NewMockExecutionEnvironmentStateBuilder().
+				SetMockFileBuilders(
+					utiltest.NewMockFileBuilder().
+						SetFilePath("/home/testuser/.mppm.json").
+						SetContentsFromBytes(configtest.GetDefaultMppmConfigAsJson()).
+						SetWasClosed(true),
+				),
 		},
 
 		&GetGlobalConfigTestCase{
-			mockFileSystemDelegaterBuilder: nil,
-			expectedErrorIfNotConfigError:  nil,
-			mppmConfigInfoAndExpectedError: configtest.ConfigWithInvalidVersionAndNoApplications,
+			description:   "Test that an error is correctly raised when the global config file has an invalid mppm version.",
+			expectedError: configtest.ConfigWithInvalidVersionAndNoApplications.ExpectedError,
+			mockExecutionEnvironmentBuilder: utiltest.NewMockExecutionEnvironmentBuilder().
+				SetMockFileSystemDelegaterBuilder(
+					utiltest.NewMockFileSystemDelegaterBuilder().
+						SetMockFileBuilders(
+							configtest.ConfigWithInvalidVersionAndNoApplications.AsMockFileBuilder().
+								SetFilePath("/home/testuser/.mppm.json"),
+						),
+				),
+			expectedExecutionEnvironmentStateBuilder: utiltest.NewMockExecutionEnvironmentStateBuilder().
+				SetMockFileBuilders(
+					configtest.ConfigWithInvalidVersionAndNoApplications.AsMockFileBuilder().
+						SetFilePath("/home/testuser/.mppm.json").
+						SetWasClosed(true),
+				),
 		},
 
 		&GetGlobalConfigTestCase{
-			mockFileSystemDelegaterBuilder: nil,
-			expectedErrorIfNotConfigError:  nil,
-			mppmConfigInfoAndExpectedError: configtest.ConfigWithValidVersionAndInvalidApplicationName,
+			description:   "Test that an error is correctly raised when the global config file has an invalid application name.",
+			expectedError: configtest.ConfigWithValidVersionAndInvalidApplicationName.ExpectedError,
+			mockExecutionEnvironmentBuilder: utiltest.NewMockExecutionEnvironmentBuilder().
+				SetMockFileSystemDelegaterBuilder(
+					utiltest.NewMockFileSystemDelegaterBuilder().
+						SetMockFileBuilders(
+							configtest.ConfigWithValidVersionAndInvalidApplicationName.AsMockFileBuilder().
+								SetFilePath("/home/testuser/.mppm.json"),
+						),
+				),
+			expectedExecutionEnvironmentStateBuilder: utiltest.NewMockExecutionEnvironmentStateBuilder().
+				SetMockFileBuilders(
+					configtest.ConfigWithValidVersionAndInvalidApplicationName.AsMockFileBuilder().
+						SetFilePath("/home/testuser/.mppm.json").
+						SetWasClosed(true),
+				),
 		},
 
 		&GetGlobalConfigTestCase{
-			mockFileSystemDelegaterBuilder: nil,
-			expectedErrorIfNotConfigError:  nil,
-			mppmConfigInfoAndExpectedError: configtest.ConfigWithValidVersionAndApplicationNameAndInvalidApplicationVersion,
+			description:   "Test that an error is correctly raised when the global config file has an invalid application version.",
+			expectedError: configtest.ConfigWithValidVersionAndApplicationNameAndInvalidApplicationVersion.ExpectedError,
+			mockExecutionEnvironmentBuilder: utiltest.NewMockExecutionEnvironmentBuilder().
+				SetMockFileSystemDelegaterBuilder(
+					utiltest.NewMockFileSystemDelegaterBuilder().
+						SetMockFileBuilders(
+							configtest.ConfigWithValidVersionAndApplicationNameAndInvalidApplicationVersion.AsMockFileBuilder().
+								SetFilePath("/home/testuser/.mppm.json"),
+						),
+				),
+			expectedExecutionEnvironmentStateBuilder: utiltest.NewMockExecutionEnvironmentStateBuilder().
+				SetMockFileBuilders(
+					configtest.ConfigWithValidVersionAndApplicationNameAndInvalidApplicationVersion.AsMockFileBuilder().
+						SetFilePath("/home/testuser/.mppm.json").
+						SetWasClosed(true),
+				),
 		},
 
 		&GetGlobalConfigTestCase{
-			mockFileSystemDelegaterBuilder: nil,
-			expectedErrorIfNotConfigError:  nil,
-			mppmConfigInfoAndExpectedError: nil,
+			description:   "Test that any error from os.Open() is correctly raised while opening the global config file.",
+			expectedError: errors.New("\nThere was a problem while opening the mppm config file.\nIf the file doesn't exist, try running 'mppm project init' first.\nThere was a problem opening the file.\n"),
+			mockExecutionEnvironmentBuilder: utiltest.NewMockExecutionEnvironmentBuilder().
+				SetMockFileSystemDelegaterBuilder(
+					utiltest.NewMockFileSystemDelegaterBuilder().
+						SetMockFileBuilders(
+							configtest.ConfigWithValidVersionAndApplicationNameAndApplicationVersion.AsMockFileBuilder().
+								SetFilePath("/home/testuser/.mppm.json"),
+						).
+						SetUseDefaultOpenFileError(true),
+				),
+			expectedExecutionEnvironmentStateBuilder: utiltest.NewMockExecutionEnvironmentStateBuilder().
+				SetMockFileBuilders(
+					configtest.ConfigWithValidVersionAndApplicationNameAndApplicationVersion.AsMockFileBuilder().
+						SetFilePath("/home/testuser/.mppm.json"),
+				),
 		},
 
 		&GetGlobalConfigTestCase{
-			mockFileSystemDelegaterBuilder: &utiltest.MockFileSystemDelegaterBuilder{
-				UseDefaultOpenFileError: true,
-			},
-			expectedErrorIfNotConfigError:  errors.New("\nThere was a problem while opening the mppm config file.\nIf the file doesn't exist, try running 'mppm project init' first.\nThere was a problem opening the file.\n"),
-			mppmConfigInfoAndExpectedError: configtest.ConfigWithValidVersionAndApplicationNameAndApplicationVersion,
-		},
-
-		&GetGlobalConfigTestCase{
-			mockFileSystemDelegaterBuilder: &utiltest.MockFileSystemDelegaterBuilder{
-				UseDefaultCreateFileError: true,
-			},
-			expectedErrorIfNotConfigError:  errors.New("There was a problem creating the file."),
-			mppmConfigInfoAndExpectedError: nil,
+			description:   "Test that any error from os.Create() is correctly raised while creating the global config file.",
+			expectedError: utiltest.DefaultCreateFileError,
+			mockExecutionEnvironmentBuilder: utiltest.NewMockExecutionEnvironmentBuilder().
+				SetMockFileSystemDelegaterBuilder(
+					utiltest.NewMockFileSystemDelegaterBuilder().
+						SetUseDefaultCreateFileError(true),
+				),
+			expectedExecutionEnvironmentStateBuilder: utiltest.NewMockExecutionEnvironmentStateBuilder(),
 		},
 	}
 
@@ -343,48 +410,28 @@ func (testCase *GetProjectConfigTestCase) Run(t *testing.T) {
 // ------------------------------------------------------------------------------
 
 type GetGlobalConfigTestCase struct {
-	mockFileSystemDelegaterBuilder *utiltest.MockFileSystemDelegaterBuilder
-	expectedErrorIfNotConfigError  error // The expected error, if not mppmConfigInfoAndExpectedError.ExpectedError
-	mppmConfigInfoAndExpectedError *configtest.MppmConfigInfoAndExpectedError
+	description                              string
+	expectedConfigInfoAsJson                 []byte
+	expectedError                            error
+	mockExecutionEnvironmentBuilder          *utiltest.MockExecutionEnvironmentBuilder
+	expectedExecutionEnvironmentStateBuilder *utiltest.MockExecutionEnvironmentStateBuilder
 }
 
 func (testCase *GetGlobalConfigTestCase) Run(t *testing.T) {
 
-	mockFileSystemDelegater := utiltest.GetMockFileSystemDelegaterFromBuilderOrNil(testCase.mockFileSystemDelegaterBuilder)
+	mockExecutionEnvironment := testCase.mockExecutionEnvironmentBuilder.BuildAndInit()
 
-	globalConfigFile := configtest.ReturnMppmConfigInfoAsMockFileIfNotNilElseReturnNil(testCase.mppmConfigInfoAndExpectedError)
-	configtest.InitMockFileSystemDelegaterWithConfigFiles(mockFileSystemDelegater, nil, globalConfigFile)
-
-	var actualError error
-	expectedError := configtest.GetExpectedError(
-		testCase.expectedErrorIfNotConfigError,
-		testCase.mppmConfigInfoAndExpectedError,
-	)
-
-	configManager := config.MppmConfigFileManager
-
-	expectedConfigInfoAsJson := configtest.ReturnMppmConfigInfoAsJsonIfNotNilAndErrorIsNilElseReturnNil(
-		testCase.mppmConfigInfoAndExpectedError,
-		expectedError,
-	)
-	if expectedConfigInfoAsJson == nil {
-		expectedConfigInfoAsJson, actualError = configManager.GetDefaultMppmConfig().AsJson()
-		assert.Nil(t, actualError)
-	}
+	actualConfigInfo, actualError := config.MppmConfigFileManager.GetGlobalConfig()
+	assert.Exactlyf(t, testCase.expectedError, actualError, testCase.description)
 
 	var actualConfigInfoAsJson []byte
-	actualConfigInfo, actualError := configManager.GetGlobalConfig()
-	assert.Exactly(t, expectedError, actualError)
-
 	if actualConfigInfo != nil {
 		actualConfigInfoAsJson, actualError = actualConfigInfo.AsJson()
-		assert.Nil(t, actualError)
+		assert.Nilf(t, actualError, testCase.description)
 	}
+	assert.Exactlyf(t, testCase.expectedConfigInfoAsJson, actualConfigInfoAsJson, testCase.description)
 
-	if expectedError == nil {
-		assert.Exactly(t, expectedConfigInfoAsJson, actualConfigInfoAsJson)
-		assert.True(t, mockFileSystemDelegater.DoesFileExist("/home/testuser/.mppm.json"))
-		assert.True(t, mockFileSystemDelegater.Files["/home/testuser/.mppm.json"].WasClosed)
-	}
+	expectedExecutionEnvironmentState := testCase.expectedExecutionEnvironmentStateBuilder.Build()
+	mockExecutionEnvironment.GetCurrentState().AssertEquals(t, expectedExecutionEnvironmentState, testCase.description)
 
 }
