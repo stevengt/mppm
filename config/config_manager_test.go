@@ -272,23 +272,22 @@ func TestGetMppmGlobalConfigFilePath(t *testing.T) {
 
 	var expectedError error
 
-	mockFileSystemDelegater := utiltest.NewMockFileSystemDelegater()
-	configtest.InitMockFileSystemDelegaterWithConfigFiles(mockFileSystemDelegater, nil, nil)
-	configManager := config.MppmConfigFileManager
+	_ = utiltest.NewMockExecutionEnvironmentBuilder().BuildAndInit()
 	expectedFilePath := "/home/testuser/.mppm.json"
 	expectedError = nil
-	actualFilePath, actualError := configManager.GetMppmGlobalConfigFilePath()
+	actualFilePath, actualError := config.MppmConfigFileManager.GetMppmGlobalConfigFilePath()
 	assert.Exactly(t, expectedFilePath, actualFilePath)
 	assert.Exactly(t, expectedError, actualError)
 
-	mockFileSystemDelegater = (&utiltest.MockFileSystemDelegaterBuilder{
-		UseDefaultUserHomeDirError: true,
-	}).Build()
-	configtest.InitMockFileSystemDelegaterWithConfigFiles(mockFileSystemDelegater, nil, nil)
-	configManager = config.MppmConfigFileManager
+	_ = utiltest.NewMockExecutionEnvironmentBuilder().
+		SetMockFileSystemDelegaterBuilder(
+			utiltest.NewMockFileSystemDelegaterBuilder().
+				SetUseDefaultUserHomeDirError(true),
+		).
+		BuildAndInit()
 	expectedFilePath = ""
 	expectedError = utiltest.DefaultUserHomeDirError
-	actualFilePath, actualError = configManager.GetMppmGlobalConfigFilePath()
+	actualFilePath, actualError = config.MppmConfigFileManager.GetMppmGlobalConfigFilePath()
 	assert.Exactly(t, expectedFilePath, actualFilePath)
 	assert.Exactly(t, expectedError, actualError)
 
