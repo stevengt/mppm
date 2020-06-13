@@ -211,3 +211,8 @@ type MppmConfigInfoAndExpectedError struct {
 func (mppmConfigInfoAndExpectedError *MppmConfigInfoAndExpectedError) AsMockFile() *utiltest.MockFile {
 	return utiltest.NewMockFileFromBytes("", mppmConfigInfoAndExpectedError.ConfigAsJson)
 }
+
+func (mppmConfigInfoAndExpectedError *MppmConfigInfoAndExpectedError) AsMockFileBuilder() *utiltest.MockFileBuilder {
+	return utiltest.NewMockFileBuilder().
+		SetContentsFromBytes(mppmConfigInfoAndExpectedError.ConfigAsJson)
+}

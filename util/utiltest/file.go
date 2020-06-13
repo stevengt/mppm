@@ -113,9 +113,7 @@ func GetMockFileSystemDelegaterFromBuilderOrNil(mockFileSystemDelegaterBuilder *
 // ------------------------------------------------------------------------------
 
 type MockFileSystemDelegaterBuilder struct {
-	Files                       map[string]*MockFile
-	FileNamesAndContentsAsBytes map[string][]byte // Use this if you want the builder to create MockFile instances for you.
-	FilesAsList                 []*MockFile       // A list of files with non-empty FilePath fields.
+	FilesAsList                 []*MockFile // A list of files with non-empty FilePath fields.
 	MockFileBuilders            []*MockFileBuilder
 	UseDefaultOpenFileError     bool
 	UseDefaultCreateFileError   bool
@@ -126,25 +124,13 @@ type MockFileSystemDelegaterBuilder struct {
 
 func NewMockFileSystemDelegaterBuilder() *MockFileSystemDelegaterBuilder {
 	return &MockFileSystemDelegaterBuilder{
-		Files:                       make(map[string]*MockFile),
-		FileNamesAndContentsAsBytes: make(map[string][]byte),
-		FilesAsList:                 make([]*MockFile, 0),
-		MockFileBuilders:            make([]*MockFileBuilder, 0),
+		FilesAsList:      make([]*MockFile, 0),
+		MockFileBuilders: make([]*MockFileBuilder, 0),
 	}
 }
 
-func (builder *MockFileSystemDelegaterBuilder) SetFiles(files map[string]*MockFile) *MockFileSystemDelegaterBuilder {
-	builder.Files = files
-	return builder
-}
-
-func (builder *MockFileSystemDelegaterBuilder) SetFileNamesAndContentsAsBytes(fileNamesAndContentsAsBytes map[string][]byte) *MockFileSystemDelegaterBuilder {
-	builder.FileNamesAndContentsAsBytes = fileNamesAndContentsAsBytes
-	return builder
-}
-
-func (builder *MockFileSystemDelegaterBuilder) SetFilesAsList(filesAsList []*MockFile) *MockFileSystemDelegaterBuilder {
-	builder.FilesAsList = filesAsList
+func (builder *MockFileSystemDelegaterBuilder) SetFilesAsList(files ...*MockFile) *MockFileSystemDelegaterBuilder {
+	builder.FilesAsList = files
 	return builder
 }
 
@@ -181,16 +167,6 @@ func (builder *MockFileSystemDelegaterBuilder) SetUseDefaultUserHomeDirError(use
 func (builder *MockFileSystemDelegaterBuilder) Build() *MockFileSystemDelegater {
 
 	mockFileSystemDelegater := NewMockFileSystemDelegater()
-
-	if builder.Files != nil {
-		mockFileSystemDelegater.Files = builder.Files
-	}
-
-	if builder.FileNamesAndContentsAsBytes != nil {
-		for fileName, fileContents := range builder.FileNamesAndContentsAsBytes {
-			mockFileSystemDelegater.Files[fileName] = NewMockFileFromBytes(fileName, fileContents)
-		}
-	}
 
 	if builder.FilesAsList != nil {
 		for _, mockFile := range builder.FilesAsList {

@@ -3,6 +3,7 @@ package utiltest
 import (
 	"testing"
 
+	"github.com/stevengt/mppm/config"
 	"github.com/stevengt/mppm/util"
 	"github.com/stretchr/testify/assert"
 )
@@ -75,6 +76,8 @@ type MockExecutionEnvironment struct {
 	MockGitManagerCreator     *MockGitManagerCreator
 }
 
+// Initializes all mock environment structures, and resets config.MppmConfigFileManager
+// to clear any previously loaded config settings.
 func (environment *MockExecutionEnvironment) Init() {
 
 	environment.MockExiter.Init()
@@ -87,6 +90,8 @@ func (environment *MockExecutionEnvironment) Init() {
 	} else {
 		util.GitManagerFactory = util.NewGitShellCommandProxyCreator()
 	}
+
+	config.MppmConfigFileManager = config.NewMppmConfigFileManager()
 
 }
 
