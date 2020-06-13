@@ -83,6 +83,14 @@ var ProjectCmd = &cobra.Command{
 			}
 		}
 	},
+
+	// Clear any session variables between unit tests.
+	PersistentPostRun: func(cmd *cobra.Command, args []string) {
+		RootCmd.PersistentPostRun(cmd, args)
+		isPreviewCommand = false
+		isCommitAllCommand = false
+		shouldUpdateLibraries = false
+	},
 }
 
 func commitAll(commitMessage string) (err error) {
@@ -95,12 +103,7 @@ func commitAll(commitMessage string) (err error) {
 		return
 	}
 
-	err = gitManager.Add(".", "-A")
-	if err != nil {
-		return
-	}
-
-	err = gitManager.Commit("-m", commitMessage)
+	err = gitManager.AddAllAndCommit(commitMessage)
 	if err != nil {
 		return
 	}

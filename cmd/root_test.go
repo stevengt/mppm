@@ -3,8 +3,6 @@ package cmd_test
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-
 	"github.com/stevengt/mppm/cmd"
 	"github.com/stevengt/mppm/util/utiltest"
 )
@@ -16,18 +14,30 @@ func TestRootCmd(t *testing.T) {
 	testCases := []*RootCmdTestCase{
 
 		&RootCmdTestCase{
-			args:           nil,
-			expectedOutput: rootCmdHelpMessage,
+			description: "Test that the root help message is displayed if no args are given.",
+			args:        nil,
+			expectedExecutionEnvironmentStateBuilder: utiltest.NewMockExecutionEnvironmentStateBuilder().
+				SetWritePrinterOutputContents(
+					[]byte(rootCmdHelpMessage),
+				),
 		},
 
 		&RootCmdTestCase{
-			args:           []string{"invalid", "args"},
-			expectedOutput: rootCmdHelpMessage,
+			description: "Test that the help message is displayed if invalid args are given.",
+			args:        []string{"invalid", "args"},
+			expectedExecutionEnvironmentStateBuilder: utiltest.NewMockExecutionEnvironmentStateBuilder().
+				SetWritePrinterOutputContents(
+					[]byte(rootCmdHelpMessage),
+				),
 		},
 
 		&RootCmdTestCase{
-			args:           []string{"--show-supported"},
-			expectedOutput: "Audio\n\n\tGit Ignore Patterns\n\t\t\n\tGit LFS Track Patterns\n\t\t*.3gp\n\t\t*.aa\n\t\t*.aac\n\t\t*.aax\n\t\t*.act\n\t\t*.aiff\n\t\t*.alac\n\t\t*.amr\n\t\t*.ape\n\t\t*.au\n\t\t*.awb\n\t\t*.dct\n\t\t*.dss\n\t\t*.dvf\n\t\t*.flac\n\t\t*.gsm\n\t\t*.iklax\n\t\t*.ivs\n\t\t*.m4a\n\t\t*.m4b\n\t\t*.m4p\n\t\t*.mmf\n\t\t*.mp3\n\t\t*.mpc\n\t\t*.msv\n\t\t*.nmf\n\t\t*.nsf\n\t\t*.ogg\n\t\t*.oga\n\t\t*.mogg\n\t\t*.opus\n\t\t*.ra\n\t\t*.rm\n\t\t*.raw\n\t\t*.rf64\n\t\t*.sln\n\t\t*.tta\n\t\t*.voc\n\t\t*.vox\n\t\t*.wav\n\t\t*.wma\n\t\t*.wv\n\t\t*.webm\n\t\t*.8svx\n\t\t*.cda\n\tGzipped XML File Types\n\t\t\nAbleton 10\n\n\tGit Ignore Patterns\n\t\tBackup/\n\t\t*.als\n\t\t*.alc\n\t\t*.adv\n\t\t*.adg\n\tGit LFS Track Patterns\n\t\t*.alp\n\t\t*.asd\n\t\t*.agr\n\t\t*.ams\n\t\t*.amxd\n\tGzipped XML File Types\n\t\tals\n\t\talc\n\t\tadv\n\t\tadg\n",
+			description: "Test that the --show-supported flag correctly prints all supported file types.",
+			args:        []string{"--show-supported"},
+			expectedExecutionEnvironmentStateBuilder: utiltest.NewMockExecutionEnvironmentStateBuilder().
+				SetWritePrinterOutputContents(
+					[]byte("Audio\n\n\tGit Ignore Patterns\n\t\t\n\tGit LFS Track Patterns\n\t\t*.3gp\n\t\t*.aa\n\t\t*.aac\n\t\t*.aax\n\t\t*.act\n\t\t*.aiff\n\t\t*.alac\n\t\t*.amr\n\t\t*.ape\n\t\t*.au\n\t\t*.awb\n\t\t*.dct\n\t\t*.dss\n\t\t*.dvf\n\t\t*.flac\n\t\t*.gsm\n\t\t*.iklax\n\t\t*.ivs\n\t\t*.m4a\n\t\t*.m4b\n\t\t*.m4p\n\t\t*.mmf\n\t\t*.mp3\n\t\t*.mpc\n\t\t*.msv\n\t\t*.nmf\n\t\t*.nsf\n\t\t*.ogg\n\t\t*.oga\n\t\t*.mogg\n\t\t*.opus\n\t\t*.ra\n\t\t*.rm\n\t\t*.raw\n\t\t*.rf64\n\t\t*.sln\n\t\t*.tta\n\t\t*.voc\n\t\t*.vox\n\t\t*.wav\n\t\t*.wma\n\t\t*.wv\n\t\t*.webm\n\t\t*.8svx\n\t\t*.cda\n\tGzipped XML File Types\n\t\t\nAbleton 10\n\n\tGit Ignore Patterns\n\t\tBackup/\n\t\t*.als\n\t\t*.alc\n\t\t*.adv\n\t\t*.adg\n\tGit LFS Track Patterns\n\t\t*.alp\n\t\t*.asd\n\t\t*.agr\n\t\t*.ams\n\t\t*.amxd\n\tGzipped XML File Types\n\t\tals\n\t\talc\n\t\tadv\n\t\tadg\n"),
+				),
 		},
 	}
 
@@ -38,18 +48,18 @@ func TestRootCmd(t *testing.T) {
 }
 
 type RootCmdTestCase struct {
-	args           []string
-	expectedOutput string
+	description                              string
+	args                                     []string
+	expectedExecutionEnvironmentStateBuilder *utiltest.MockExecutionEnvironmentStateBuilder
 }
 
 func (testCase *RootCmdTestCase) Run(t *testing.T) {
 
-	executionEnvironment := utiltest.GetAndInitMockExecutionEnvironmentFromBuilderOrNil(nil)
+	mockExecutionEnvironment := utiltest.NewMockExecutionEnvironmentBuilder().BuildAndInit()
 
 	cmd.RootCmd.SetArgs(testCase.args)
 	cmd.RootCmd.Execute()
 
-	actualOutput := executionEnvironment.MockWritePrinter.GetOutputContentsAsString()
-	assert.Equal(t, testCase.expectedOutput, actualOutput)
-
+	expectedExecutionEnvironmentState := testCase.expectedExecutionEnvironmentStateBuilder.Build()
+	mockExecutionEnvironment.GetCurrentState().AssertEquals(t, expectedExecutionEnvironmentState, testCase.description)
 }

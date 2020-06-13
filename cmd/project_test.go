@@ -4,11 +4,10 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/stevengt/mppm/cmd"
 	"github.com/stevengt/mppm/config"
 	"github.com/stevengt/mppm/config/configtest"
-	"github.com/stevengt/mppm/util"
-	"github.com/stretchr/testify/assert"
+
+	"github.com/stevengt/mppm/cmd"
 
 	"github.com/stevengt/mppm/util/utiltest"
 )
@@ -20,113 +19,162 @@ func TestProjectCmd(t *testing.T) {
 	testCases := []*ProjectCmdTestCase{
 
 		&ProjectCmdTestCase{
-			args:           []string{"project"},
-			expectedOutput: projectCmdHelpMessage,
+			description:                     "Test that the project help message is displayed if no args are given.",
+			args:                            []string{"project"},
+			mockExecutionEnvironmentBuilder: utiltest.NewMockExecutionEnvironmentBuilder(),
+			expectedExecutionEnvironmentStateBuilder: utiltest.NewMockExecutionEnvironmentStateBuilder().
+				SetWritePrinterOutputContents(
+					[]byte(projectCmdHelpMessage),
+				),
 		},
 
 		&ProjectCmdTestCase{
-			args:           []string{"project", "invalid", "args"},
-			expectedOutput: projectCmdHelpMessage,
+			description:                     "Test that the project help message is displayed if invalid args are given.",
+			args:                            []string{"project", "invalid", "args"},
+			mockExecutionEnvironmentBuilder: utiltest.NewMockExecutionEnvironmentBuilder(),
+			expectedExecutionEnvironmentStateBuilder: utiltest.NewMockExecutionEnvironmentStateBuilder().
+				SetWritePrinterOutputContents(
+					[]byte(projectCmdHelpMessage),
+				),
 		},
 
 		&ProjectCmdTestCase{
-			args: []string{"project", "--update-libraries"},
-			projectConfigFile: utiltest.NewMockFileFromBytes(
-				".mppm.json",
-				configtest.ConfigWithAllValidInfoAndPreviousLibraryVersion.ConfigAsJson,
-			),
-			globalConfigFile: utiltest.NewMockFileFromBytes(
-				"/home/testuser/.mppm.json",
-				configtest.ConfigWithAllValidInfoAndMostRecentLibraryVersion.ConfigAsJson,
-			),
-			shouldUpdateLibraries: true,
+			description: "Test that the library versions in the project config are updated to match those in the global config.",
+			args:        []string{"project", "--update-libraries"},
+			mockExecutionEnvironmentBuilder: utiltest.NewMockExecutionEnvironmentBuilder().
+				SetMockFileSystemDelegaterBuilder(
+					utiltest.NewMockFileSystemDelegaterBuilder().
+						SetMockFileBuilders(
+							configtest.ConfigWithAllValidInfoAndPreviousLibraryVersion.AsMockFileBuilder().
+								SetFilePath(config.MppmConfigFileName),
+							configtest.ConfigWithAllValidInfoAndMostRecentLibraryVersion.AsMockFileBuilder().
+								SetFilePath("/home/testuser/.mppm.json"),
+						),
+				),
+			expectedExecutionEnvironmentStateBuilder: utiltest.NewMockExecutionEnvironmentStateBuilder().
+				SetMockFileBuilders(
+					configtest.ConfigWithAllValidInfoAndMostRecentLibraryVersion.AsMockFileBuilder().
+						SetFilePath(config.MppmConfigFileName).
+						SetWasClosed(true),
+					configtest.ConfigWithAllValidInfoAndMostRecentLibraryVersion.AsMockFileBuilder().
+						SetFilePath("/home/testuser/.mppm.json").
+						SetWasClosed(true),
+				),
 		},
 
 		&ProjectCmdTestCase{
-			args: []string{"project", "--update-libraries"},
-			projectConfigFile: utiltest.NewMockFileFromBytes(
-				".mppm.json",
-				configtest.ConfigWithValidVersionAndApplicationNameAndApplicationVersion.ConfigAsJson,
-			),
-			globalConfigFile: utiltest.NewMockFileFromBytes(
-				"/home/testuser/.mppm.json",
-				configtest.ConfigWithAllValidInfoAndMostRecentLibraryVersion.ConfigAsJson,
-			),
-			shouldUpdateLibraries: true,
+			description: "Test that any errors from os.Open() are correctly raised and the process is exited.",
+			args:        []string{"project", "--update-libraries"},
+			mockExecutionEnvironmentBuilder: utiltest.NewMockExecutionEnvironmentBuilder().
+				SetMockFileSystemDelegaterBuilder(
+					utiltest.NewMockFileSystemDelegaterBuilder().
+						SetUseDefaultOpenFileError(true),
+				),
+			expectedExecutionEnvironmentStateBuilder: utiltest.NewMockExecutionEnvironmentStateBuilder().
+				SetExiterWasExited(true).
+				SetExiterError(errors.New("\nThere was a problem while opening the mppm config file.\nIf the file doesn't exist, try running 'mppm project init' first.\nThere was a problem opening the file.\n")),
 		},
 
 		&ProjectCmdTestCase{
-			args: []string{"project", "--update-libraries"},
-			executionEnvironmentBuilder: &utiltest.MockExecutionEnvironmentBuilder{
-				MockFileSystemDelegaterBuilder: &utiltest.MockFileSystemDelegaterBuilder{
-					UseDefaultOpenFileError: true,
-				},
-			},
-			projectConfigFile: utiltest.NewMockFileFromBytes(
-				".mppm.json",
-				configtest.ConfigWithAllValidInfoAndPreviousLibraryVersion.ConfigAsJson,
-			),
-			globalConfigFile: utiltest.NewMockFileFromBytes(
-				"/global/testuser/.mppm.json",
-				configtest.ConfigWithAllValidInfoAndMostRecentLibraryVersion.ConfigAsJson,
-			),
-			shouldUpdateLibraries: true,
-			expectedExitError:     errors.New("\nThere was a problem while opening the mppm config file.\nIf the file doesn't exist, try running 'mppm project init' first.\nThere was a problem opening the file.\n"),
+			description: "Test that the process extracts compressed files and invokes 'git add -A . && git commit -m <commit-message>'.",
+			args:        []string{"project", "--commit-all", "Made changes"},
+			mockExecutionEnvironmentBuilder: utiltest.NewMockExecutionEnvironmentBuilder().
+				SetMockFileSystemDelegaterBuilder(
+					utiltest.NewMockFileSystemDelegaterBuilder().
+						SetMockFileBuilders(
+							configtest.ConfigWithValidVersionAndApplicationNameAndApplicationVersion.AsMockFileBuilder().
+								SetFilePath(config.MppmConfigFileName),
+							utiltest.GetFakeAbletonLiveSetFileBuilder(),
+							utiltest.GetFakeAbletonLiveClipFileBuilder(),
+						),
+				),
+			expectedExecutionEnvironmentStateBuilder: utiltest.NewMockExecutionEnvironmentStateBuilder().
+				SetMockFileBuilders(
+					configtest.ConfigWithValidVersionAndApplicationNameAndApplicationVersion.AsMockFileBuilder().
+						SetFilePath(config.MppmConfigFileName).
+						SetWasClosed(true),
+					utiltest.GetFakeAbletonLiveSetFileBuilder().
+						SetWasClosed(true),
+					utiltest.GetFakeUncompressedAbletonLiveSetFileBuilder().
+						SetWasClosed(true),
+					utiltest.GetFakeAbletonLiveClipFileBuilder().
+						SetWasClosed(true),
+					utiltest.GetFakeUncompressedAbletonLiveClipFileBuilder().
+						SetWasClosed(true),
+				).
+				SetGitManagerInputHistoriesIndexedByRepoPath(
+					map[string][][]string{
+						".": [][]string{
+							[]string{"add", "-A", "."},
+							[]string{"commit", "-m", "Made changes"},
+						},
+					},
+				),
 		},
 
 		&ProjectCmdTestCase{
-			args: []string{"project", "--commit-all", "Made changes"},
-			projectConfigFile: utiltest.NewMockFileFromBytes(
-				".mppm.json",
-				configtest.ConfigWithValidVersionAndApplicationNameAndApplicationVersion.ConfigAsJson,
-			),
-			expectedGitManagerInputHistories: map[string][][]string{
-				".": [][]string{
-					[]string{"add", ".", "-A"},
-					[]string{"commit", "-m", "Made changes"},
-				},
-			},
-			isCommitAllCommand: true,
+			description: "Test that any error from 'git add' is properly raised.",
+			args:        []string{"project", "--commit-all", "Made changes"},
+			mockExecutionEnvironmentBuilder: utiltest.NewMockExecutionEnvironmentBuilder().
+				SetMockFileSystemDelegaterBuilder(
+					utiltest.NewMockFileSystemDelegaterBuilder().
+						SetMockFileBuilders(
+							configtest.ConfigWithValidVersionAndApplicationNameAndApplicationVersion.AsMockFileBuilder().
+								SetFilePath(config.MppmConfigFileName),
+						),
+				).
+				SetMockGitManagerCreatorBuilder(
+					utiltest.NewMockGitManagerCreatorBuilder().
+						SetUseDefaultAddError(true),
+				),
+			expectedExecutionEnvironmentStateBuilder: utiltest.NewMockExecutionEnvironmentStateBuilder().
+				SetExiterError(utiltest.DefaultAddError).
+				SetExiterWasExited(true).
+				SetMockFileBuilders(
+					configtest.ConfigWithValidVersionAndApplicationNameAndApplicationVersion.AsMockFileBuilder().
+						SetFilePath(config.MppmConfigFileName).
+						SetWasClosed(true),
+				).
+				SetGitManagerInputHistoriesIndexedByRepoPath(
+					map[string][][]string{
+						".": [][]string{
+							[]string{"add", "-A", "."},
+						},
+					},
+				),
 		},
 
 		&ProjectCmdTestCase{
-			args: []string{"project", "--commit-all", "Made changes"},
-			executionEnvironmentBuilder: &utiltest.MockExecutionEnvironmentBuilder{
-				MockGitManagerCreatorBuilder: &utiltest.MockGitManagerCreatorBuilder{
-					UseDefaultAddError: true,
-				},
-			},
-			projectConfigFile: utiltest.NewMockFileFromBytes(
-				".mppm.json",
-				configtest.ConfigWithValidVersionAndApplicationNameAndApplicationVersion.ConfigAsJson,
-			),
-			expectedGitManagerInputHistories: map[string][][]string{
-				".": [][]string{
-					[]string{"add", ".", "-A"},
-				},
-			},
-			isCommitAllCommand: true,
-			expectedExitError:  utiltest.DefaultAddError,
-		},
-
-		&ProjectCmdTestCase{
-			args: []string{"project", "--commit-all", "Made changes"},
-			executionEnvironmentBuilder: &utiltest.MockExecutionEnvironmentBuilder{
-				MockFileSystemDelegaterBuilder: &utiltest.MockFileSystemDelegaterBuilder{
-					FileNamesAndContentsAsBytes: utiltest.GetTestFileNamesAndContents(),
-				},
-			},
-			projectConfigFile: utiltest.NewMockFileFromBytes(
-				".mppm.json",
-				configtest.ConfigWithValidVersionAndApplicationNameAndApplicationVersion.ConfigAsJson,
-			),
-			expectedGitManagerInputHistories: map[string][][]string{
-				".": [][]string{
-					[]string{"add", ".", "-A"},
-					[]string{"commit", "-m", "Made changes"},
-				},
-			},
-			isCommitAllCommand: true,
+			description: "Test that any error from 'git commit' is properly raised.",
+			args:        []string{"project", "--commit-all", "Made changes"},
+			mockExecutionEnvironmentBuilder: utiltest.NewMockExecutionEnvironmentBuilder().
+				SetMockFileSystemDelegaterBuilder(
+					utiltest.NewMockFileSystemDelegaterBuilder().
+						SetMockFileBuilders(
+							configtest.ConfigWithValidVersionAndApplicationNameAndApplicationVersion.AsMockFileBuilder().
+								SetFilePath(config.MppmConfigFileName),
+						),
+				).
+				SetMockGitManagerCreatorBuilder(
+					utiltest.NewMockGitManagerCreatorBuilder().
+						SetUseDefaultCommitError(true),
+				),
+			expectedExecutionEnvironmentStateBuilder: utiltest.NewMockExecutionEnvironmentStateBuilder().
+				SetExiterError(utiltest.DefaultCommitError).
+				SetExiterWasExited(true).
+				SetMockFileBuilders(
+					configtest.ConfigWithValidVersionAndApplicationNameAndApplicationVersion.AsMockFileBuilder().
+						SetFilePath(config.MppmConfigFileName).
+						SetWasClosed(true),
+				).
+				SetGitManagerInputHistoriesIndexedByRepoPath(
+					map[string][][]string{
+						".": [][]string{
+							[]string{"add", "-A", "."},
+							[]string{"commit", "-m", "Made changes"},
+						},
+					},
+				),
 		},
 	}
 
@@ -137,80 +185,20 @@ func TestProjectCmd(t *testing.T) {
 }
 
 type ProjectCmdTestCase struct {
-	args                             []string
-	executionEnvironmentBuilder      *utiltest.MockExecutionEnvironmentBuilder
-	projectConfigFile                *utiltest.MockFile
-	globalConfigFile                 *utiltest.MockFile
-	shouldUpdateLibraries            bool
-	isCommitAllCommand               bool
-	expectedOutput                   string
-	expectedGitManagerInputHistories map[string][][]string // Map of git repo file path -> git manager input history.
-	expectedExitError                error
+	description                              string
+	args                                     []string
+	mockExecutionEnvironmentBuilder          *utiltest.MockExecutionEnvironmentBuilder
+	expectedExecutionEnvironmentStateBuilder *utiltest.MockExecutionEnvironmentStateBuilder
 }
 
 func (testCase *ProjectCmdTestCase) Run(t *testing.T) {
 
-	executionEnvironment := utiltest.GetAndInitMockExecutionEnvironmentFromBuilderOrNil(testCase.executionEnvironmentBuilder)
-	configtest.InitMockFileSystemDelegaterWithConfigFiles(
-		executionEnvironment.MockFileSystemDelegater,
-		testCase.projectConfigFile,
-		testCase.globalConfigFile,
-	)
+	mockExecutionEnvironment := testCase.mockExecutionEnvironmentBuilder.BuildAndInit()
 
 	cmd.RootCmd.SetArgs(testCase.args)
 	cmd.RootCmd.Execute()
 
-	actualOutput := executionEnvironment.MockWritePrinter.GetOutputContentsAsString()
-	assert.Equal(t, testCase.expectedOutput, actualOutput)
-
-	for repoFilePath, expectedGitManagerInputHistory := range testCase.expectedGitManagerInputHistories {
-		gitManager := executionEnvironment.MockGitManagerCreator.MockGitManagersIndexedByRepoPath[repoFilePath]
-		assert.NotNil(t, gitManager)
-		actualGitManagerInputHistory := gitManager.InputHistory
-		assert.Exactly(t, expectedGitManagerInputHistory, actualGitManagerInputHistory)
-	}
-
-	if testCase.shouldUpdateLibraries {
-
-		projectConfigFileOriginalContents := testCase.projectConfigFile.Contents
-		projectConfigFileNewContents := executionEnvironment.MockFileSystemDelegater.Files[".mppm.json"].Contents
-
-		globalConfigFileOriginalContents := testCase.globalConfigFile.Contents
-		globalConfigFileNewContents := executionEnvironment.MockFileSystemDelegater.Files["/home/testuser/.mppm.json"].Contents
-
-		if testCase.expectedExitError != nil {
-			assert.Exactly(t, projectConfigFileOriginalContents, projectConfigFileNewContents)
-			assert.Exactly(t, globalConfigFileOriginalContents, globalConfigFileNewContents)
-		} else {
-			projectConfig, err := config.NewMppmConfigInfoFromJson(projectConfigFileNewContents)
-			assert.Nil(t, err)
-			globalConfig, err := config.NewMppmConfigInfoFromJson(globalConfigFileNewContents)
-			assert.Nil(t, err)
-			assert.Exactly(t, globalConfig.Libraries, projectConfig.Libraries)
-		}
-
-	}
-
-	if testCase.isCommitAllCommand && testCase.expectedExitError == nil {
-
-		filePatternsConfig, _ := config.GetAllFilePatternsConfigFromProjectConfig()
-		gzippedXmlFileExtensions := filePatternsConfig.GzippedXmlFileExtensions
-
-		for _, fileExtension := range gzippedXmlFileExtensions {
-			compressedFileNames, _ := util.GetAllFileNamesWithExtension(fileExtension)
-			for _, compressedFileName := range compressedFileNames {
-				uncompressedFileName := compressedFileName + ".xml"
-				assert.True(t, executionEnvironment.MockFileSystemDelegater.DoesFileExist(uncompressedFileName))
-			}
-		}
-
-	}
-
-	assert.Exactly(t, testCase.expectedExitError, executionEnvironment.MockExiter.Error)
-	if testCase.expectedExitError != nil {
-		assert.True(t, executionEnvironment.MockExiter.WasExited)
-	} else {
-		assert.False(t, executionEnvironment.MockExiter.WasExited)
-	}
+	expectedExecutionEnvironmentState := testCase.expectedExecutionEnvironmentStateBuilder.Build()
+	mockExecutionEnvironment.GetCurrentState().AssertEquals(t, expectedExecutionEnvironmentState, testCase.description)
 
 }

@@ -52,6 +52,11 @@ var RootCmd = &cobra.Command{
 			cmd.Help()
 		}
 	},
+
+	// Clear any session variables between unit tests.
+	PersistentPostRun: func(cmd *cobra.Command, args []string) {
+		isShowSupportedFileTypesCommand = false
+	},
 }
 
 var configManager config.MppmConfigManager
