@@ -43,8 +43,18 @@ func (builder *MockMppmConfigManagerBuilder) SetProjectConfig(projectConfig *con
 	return builder
 }
 
+func (builder *MockMppmConfigManagerBuilder) SetProjectConfigFromJson(projectConfigAsJson []byte) *MockMppmConfigManagerBuilder {
+	builder.ProjectConfig, _ = config.NewMppmConfigInfoFromJson(projectConfigAsJson)
+	return builder
+}
+
 func (builder *MockMppmConfigManagerBuilder) SetGlobalConfig(globalConfig *config.MppmConfigInfo) *MockMppmConfigManagerBuilder {
 	builder.GlobalConfig = globalConfig
+	return builder
+}
+
+func (builder *MockMppmConfigManagerBuilder) SetGlobalConfigFromJson(globalConfigAsJson []byte) *MockMppmConfigManagerBuilder {
+	builder.GlobalConfig, _ = config.NewMppmConfigInfoFromJson(globalConfigAsJson)
 	return builder
 }
 
@@ -122,6 +132,14 @@ func (builder *MockMppmConfigManagerBuilder) Build() *MockMppmConfigManager {
 
 }
 
+// Builds the MockMppmConfigManager, initializes it with
+// the MockMppmConfigManager.Init() method, and returns the new MockMppmConfigManager.
+func (builder *MockMppmConfigManagerBuilder) BuildAndInit() *MockMppmConfigManager {
+	mockMppmConfigManager := builder.Build()
+	mockMppmConfigManager.Init()
+	return mockMppmConfigManager
+}
+
 // ------------------------------------------------------------------------------
 
 type MockMppmConfigManager struct {
@@ -134,6 +152,10 @@ type MockMppmConfigManager struct {
 	SaveProjectConfigError           error
 	SaveGlobalConfigError            error
 	SaveDefaultProjectConfigError    error
+}
+
+func (mockMppmConfigManager *MockMppmConfigManager) Init() {
+	config.MppmConfigFileManager = mockMppmConfigManager
 }
 
 func (mockMppmConfigManager *MockMppmConfigManager) GetProjectConfig() (projectConfig *config.MppmConfigInfo, err error) {
@@ -162,8 +184,7 @@ func (mockMppmConfigManager *MockMppmConfigManager) GetProjectAndGlobalConfigs()
 }
 
 func (mockMppmConfigManager *MockMppmConfigManager) GetDefaultMppmConfig() (mppmConfig *config.MppmConfigInfo) {
-	mppmConfig, _ = GetDefaultTestMppmConfigInfo()
-	return
+	return GetDefaultTestMppmConfigInfo()
 }
 
 func (mockMppmConfigManager *MockMppmConfigManager) GetMppmGlobalConfigFilePath() (filePath string, err error) {

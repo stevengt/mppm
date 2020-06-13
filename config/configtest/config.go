@@ -84,9 +84,9 @@ var ConfigWithAllValidInfoAndPreviousLibraryVersion *MppmConfigInfoAndExpectedEr
 
 // ------------------------------------------------------------------------------
 
-func GetDefaultTestMppmConfigInfo() (testMppmConfigInfo *config.MppmConfigInfo, configAsJson []byte) {
+func GetDefaultTestMppmConfigInfo() *config.MppmConfigInfo {
 
-	testMppmConfigInfo = &config.MppmConfigInfo{
+	return &config.MppmConfigInfo{
 		Version: fmt.Sprintf("%s.0.0", config.GetCurrentlyInstalledMajorVersion()),
 		Applications: []*applications.ApplicationConfig{
 			&applications.ApplicationConfig{
@@ -102,15 +102,6 @@ func GetDefaultTestMppmConfigInfo() (testMppmConfigInfo *config.MppmConfigInfo, 
 			},
 		},
 	}
-
-	configAsJson = []byte(
-		fmt.Sprintf(
-			`{"version":"%s.0.0","applications":[{"name":"Ableton","version":"10"}],"libraries":[{"location":"/home/testuser/library","most-recent-version":"56789","current-version":"01234"}]}`,
-			config.GetCurrentlyInstalledMajorVersion(),
-		),
-	)
-
-	return
 
 }
 
@@ -134,10 +125,10 @@ func InitAndReturnMockFileSystemDelegaterWithDefaultConfigFiles() *utiltest.Mock
 	mockFileSystemDelegater := utiltest.NewMockFileSystemDelegater()
 
 	projectConfigFilePath := ".mppm.json"
-	_, projectConfigAsJson := GetDefaultTestMppmConfigInfo()
+	projectConfigAsJson, _ := GetDefaultTestMppmConfigInfo().AsJson()
 
 	globalConfigFilePath := "/home/testuser/.mppm.json"
-	_, globalConfigAsJson := GetDefaultTestMppmConfigInfo()
+	globalConfigAsJson, _ := GetDefaultTestMppmConfigInfo().AsJson()
 
 	InitMockFileSystemDelegaterWithConfigFiles(
 		mockFileSystemDelegater,
