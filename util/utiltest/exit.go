@@ -25,6 +25,10 @@ func NewMockExiter() *MockExiter {
 	}
 }
 
+func (mockExiter *MockExiter) Init() {
+	util.CurrentProcessExiter = mockExiter
+}
+
 func (mockExiter *MockExiter) ExitWithError(err error) {
 	mockExiter.WasExited = true
 	mockExiter.Error = err

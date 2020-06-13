@@ -1,6 +1,41 @@
 package utiltest
 
-import "strings"
+import (
+	"strings"
+
+	"github.com/stevengt/mppm/util"
+)
+
+func GetMockShellCommandDelegaterFromBuilderOrNil(mockShellCommandDelegaterBuilder *MockShellCommandDelegaterBuilder) *MockShellCommandDelegater {
+	if mockShellCommandDelegaterBuilder != nil {
+		return mockShellCommandDelegaterBuilder.Build()
+	} else {
+		return NewMockShellCommandDelegaterBuilder().Build()
+	}
+}
+
+// ------------------------------------------------------------------------------
+
+type MockShellCommandDelegaterBuilder struct {
+	OutputSequence []*MockShellCommandOutput
+}
+
+func NewMockShellCommandDelegaterBuilder() *MockShellCommandDelegaterBuilder {
+	return &MockShellCommandDelegaterBuilder{
+		OutputSequence: make([]*MockShellCommandOutput, 0),
+	}
+}
+
+func (builder *MockShellCommandDelegaterBuilder) SetOutputSequence(outputSequence ...*MockShellCommandOutput) *MockShellCommandDelegaterBuilder {
+	builder.OutputSequence = outputSequence
+	return builder
+}
+
+func (builder *MockShellCommandDelegaterBuilder) Build() *MockShellCommandDelegater {
+	return NewMockShellCommandDelegater(builder.OutputSequence)
+}
+
+// ------------------------------------------------------------------------------
 
 type MockShellCommandDelegater struct {
 	OutputSequence         []*MockShellCommandOutput
@@ -21,6 +56,10 @@ func NewMockShellCommandDelegater(outputSequence []*MockShellCommandOutput) *Moc
 		OutputHistory:          make([]*MockShellCommandOutput, 0),
 		curOutputSequenceIndex: 0,
 	}
+}
+
+func (mockShellCommandDelegater *MockShellCommandDelegater) Init() {
+	util.ShellProxy = mockShellCommandDelegater
 }
 
 func (mockShellCommandDelegater *MockShellCommandDelegater) ExecuteShellCommand(commandName string, args ...string) (err error) {

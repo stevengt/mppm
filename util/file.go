@@ -68,9 +68,12 @@ func GzipFile(fileName string) (err error) {
 	defer compressedFile.Close()
 
 	gzipWriter := gzip.NewWriter(compressedFile)
-	defer gzipWriter.Close()
 
+	// Copy the uncompressedFile contents to the gzipWriter, then immediately Close() the gzipWriter.
+	// This flushes all compressed contents and the GZIP footer to the compressedFile without closing
+	// the compressedFile. If gzipWriter.Close() is deferred, the GZIP footer might not be written.
 	_, err = io.Copy(gzipWriter, uncompressedFile)
+	gzipWriter.Close()
 	if err != nil {
 		return
 	}
@@ -127,6 +130,7 @@ func GetAllFileNamesWithExtension(extension string) (fileNames []string, err err
 	})
 
 	if err != nil {
+		fileNames = nil
 		return
 	}
 
@@ -154,11 +158,6 @@ func (proxy *fileSystemProxy) OpenFile(fileName string) (file io.ReadWriteCloser
 }
 
 func (proxy *fileSystemProxy) CreateFile(fileName string) (file io.ReadWriteCloser, err error) {
-
-	err = proxy.RemoveFile(fileName)
-	if err != nil {
-		return
-	}
 
 	file, err = os.Create(fileName)
 	if err != nil {

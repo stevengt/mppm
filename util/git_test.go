@@ -1,301 +1,536 @@
 package util_test
 
 import (
-	"errors"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 
 	"github.com/stevengt/mppm/util"
 	"github.com/stevengt/mppm/util/utiltest"
+	"github.com/stretchr/testify/assert"
+)
+
+type gitManagerMethodType int
+
+const (
+	gitInit gitManagerMethodType = iota
+	add
+	commit
+	checkout
+	revParse
+	lfsInstall
+	lfsTrack
+	addAllAndCommit
 )
 
 func TestInit(t *testing.T) {
 
-	mockShellCommandDelegater := utiltest.NewMockShellCommandDelegater(
-		[]*utiltest.MockShellCommandOutput{
-			&utiltest.MockShellCommandOutput{
-				Stdout: "Initialized git repository.",
-				Err:    nil,
-			},
-			&utiltest.MockShellCommandOutput{
-				Stdout: "Something went wrong.",
-				Err:    errors.New("There was a problem initializing the git repository."),
-			},
+	testCases := []*GitManagerTestCase{
+
+		&GitManagerTestCase{
+			description:            "Test that the correct 'git init' shell command is invoked.",
+			gitManagerRepoFilePath: ".",
+			methodType:             gitInit,
+			mockExecutionEnvironmentBuilder: utiltest.NewMockExecutionEnvironmentBuilder().
+				SetMockShellCommandDelegaterBuilder(
+					utiltest.NewMockShellCommandDelegaterBuilder().
+						SetOutputSequence(
+							&utiltest.MockShellCommandOutput{
+								Stdout: "Initialized git repository.",
+							},
+						),
+				),
+
+			expectedExecutionEnvironmentStateBuilder: utiltest.NewMockExecutionEnvironmentStateBuilder().
+				SetShellCommandDelegaterInputHistory(
+					"git -C . init",
+				).
+				SetShellCommandDelegaterOutputHistory(
+					&utiltest.MockShellCommandOutput{
+						Stdout: "Initialized git repository.",
+					},
+				).
+				SetWritePrinterOutputContents(
+					[]byte("Initialized git repository.\n"),
+				),
 		},
-	)
-	util.ShellProxy = mockShellCommandDelegater
 
-	gitManager := util.NewGitManager(".")
+		&GitManagerTestCase{
+			description:            "Test that any error from running 'git init' is correctly raised.",
+			gitManagerRepoFilePath: ".",
+			methodType:             gitInit,
+			expectedError:          utiltest.DefaultInitError,
+			mockExecutionEnvironmentBuilder: utiltest.NewMockExecutionEnvironmentBuilder().
+				SetMockShellCommandDelegaterBuilder(
+					utiltest.NewMockShellCommandDelegaterBuilder().
+						SetOutputSequence(
+							&utiltest.MockShellCommandOutput{
+								Err: utiltest.DefaultInitError,
+							},
+						),
+				),
 
-	err := gitManager.Init()
-	assert.Equal(t, mockShellCommandDelegater.InputHistory[0], "git -C . init")
-	assert.Equal(t, mockShellCommandDelegater.OutputHistory[0].Stdout, "Initialized git repository.")
-	assert.Nil(t, err)
+			expectedExecutionEnvironmentStateBuilder: utiltest.NewMockExecutionEnvironmentStateBuilder().
+				SetShellCommandDelegaterInputHistory(
+					"git -C . init",
+				).
+				SetShellCommandDelegaterOutputHistory(
+					&utiltest.MockShellCommandOutput{
+						Err: utiltest.DefaultInitError,
+					},
+				),
+		},
+	}
 
-	err = gitManager.Init()
-	assert.Equal(t, mockShellCommandDelegater.InputHistory[1], "git -C . init")
-	assert.Equal(t, mockShellCommandDelegater.OutputHistory[1].Stdout, "Something went wrong.")
-	assert.NotNil(t, err)
-	assert.Equal(t, err.Error(), "There was a problem initializing the git repository.")
+	for _, testCase := range testCases {
+		testCase.Run(t)
+	}
 
 }
 
 func TestAdd(t *testing.T) {
 
-	mockShellCommandDelegater := utiltest.NewMockShellCommandDelegater(
-		[]*utiltest.MockShellCommandOutput{
-			&utiltest.MockShellCommandOutput{
-				Stdout: "Added items to git repository.",
-				Err:    nil,
-			},
-			&utiltest.MockShellCommandOutput{
-				Stdout: "Added items to git repository.",
-				Err:    nil,
-			},
-			&utiltest.MockShellCommandOutput{
-				Stdout: "Something went wrong.",
-				Err:    errors.New("There was a problem adding items to the git repository."),
-			},
+	testCases := []*GitManagerTestCase{
+
+		&GitManagerTestCase{
+			description:            "Test that the correct 'git add' shell command is invoked.",
+			gitManagerRepoFilePath: ".",
+			methodType:             add,
+			gitManagerMethodArgs:   []string{".", "-A"},
+			mockExecutionEnvironmentBuilder: utiltest.NewMockExecutionEnvironmentBuilder().
+				SetMockShellCommandDelegaterBuilder(
+					utiltest.NewMockShellCommandDelegaterBuilder().
+						SetOutputSequence(
+							&utiltest.MockShellCommandOutput{
+								Stdout: "Added items to git repository.",
+							},
+						),
+				),
+
+			expectedExecutionEnvironmentStateBuilder: utiltest.NewMockExecutionEnvironmentStateBuilder().
+				SetShellCommandDelegaterInputHistory(
+					"git -C . add . -A",
+				).
+				SetShellCommandDelegaterOutputHistory(
+					&utiltest.MockShellCommandOutput{
+						Stdout: "Added items to git repository.",
+					},
+				).
+				SetWritePrinterOutputContents(
+					[]byte("Added items to git repository.\n"),
+				),
 		},
-	)
-	util.ShellProxy = mockShellCommandDelegater
 
-	gitManager := util.NewGitManager(".")
+		&GitManagerTestCase{
+			description:            "Test that any error from running 'git add' is correctly raised.",
+			gitManagerRepoFilePath: ".",
+			methodType:             add,
+			gitManagerMethodArgs:   []string{".", "-A"},
+			expectedError:          utiltest.DefaultAddError,
+			mockExecutionEnvironmentBuilder: utiltest.NewMockExecutionEnvironmentBuilder().
+				SetMockShellCommandDelegaterBuilder(
+					utiltest.NewMockShellCommandDelegaterBuilder().
+						SetOutputSequence(
+							&utiltest.MockShellCommandOutput{
+								Err: utiltest.DefaultAddError,
+							},
+						),
+				),
 
-	err := gitManager.Add("-A", ".")
-	assert.Equal(t, mockShellCommandDelegater.InputHistory[0], "git -C . add -A .")
-	assert.Equal(t, mockShellCommandDelegater.OutputHistory[0].Stdout, "Added items to git repository.")
-	assert.Nil(t, err)
+			expectedExecutionEnvironmentStateBuilder: utiltest.NewMockExecutionEnvironmentStateBuilder().
+				SetShellCommandDelegaterInputHistory(
+					"git -C . add . -A",
+				).
+				SetShellCommandDelegaterOutputHistory(
+					&utiltest.MockShellCommandOutput{
+						Err: utiltest.DefaultAddError,
+					},
+				),
+		},
+	}
 
-	err = gitManager.Add("item1", "item2")
-	assert.Equal(t, mockShellCommandDelegater.InputHistory[1], "git -C . add item1 item2")
-	assert.Equal(t, mockShellCommandDelegater.OutputHistory[1].Stdout, "Added items to git repository.")
-	assert.Nil(t, err)
-
-	err = gitManager.Add("-A", ".")
-	assert.Equal(t, mockShellCommandDelegater.InputHistory[2], "git -C . add -A .")
-	assert.Equal(t, mockShellCommandDelegater.OutputHistory[2].Stdout, "Something went wrong.")
-	assert.NotNil(t, err)
-	assert.Equal(t, err.Error(), "There was a problem adding items to the git repository.")
+	for _, testCase := range testCases {
+		testCase.Run(t)
+	}
 
 }
 
 func TestCommit(t *testing.T) {
 
-	mockShellCommandDelegater := utiltest.NewMockShellCommandDelegater(
-		[]*utiltest.MockShellCommandOutput{
-			&utiltest.MockShellCommandOutput{
-				Stdout: "Committed items to git repository.",
-				Err:    nil,
-			},
-			&utiltest.MockShellCommandOutput{
-				Stdout: "Something went wrong.",
-				Err:    errors.New("There was a problem committing items to the git repository."),
-			},
+	testCases := []*GitManagerTestCase{
+
+		&GitManagerTestCase{
+			description:            "Test that the correct 'git commit' shell command is invoked.",
+			gitManagerRepoFilePath: ".",
+			methodType:             commit,
+			gitManagerMethodArgs:   []string{"-m", "fake commit message"},
+			mockExecutionEnvironmentBuilder: utiltest.NewMockExecutionEnvironmentBuilder().
+				SetMockShellCommandDelegaterBuilder(
+					utiltest.NewMockShellCommandDelegaterBuilder().
+						SetOutputSequence(
+							&utiltest.MockShellCommandOutput{
+								Stdout: "Committed items to git repository.",
+							},
+						),
+				),
+
+			expectedExecutionEnvironmentStateBuilder: utiltest.NewMockExecutionEnvironmentStateBuilder().
+				SetShellCommandDelegaterInputHistory(
+					"git -C . commit -m fake commit message",
+				).
+				SetShellCommandDelegaterOutputHistory(
+					&utiltest.MockShellCommandOutput{
+						Stdout: "Committed items to git repository.",
+					},
+				).
+				SetWritePrinterOutputContents(
+					[]byte("Committed items to git repository.\n"),
+				),
 		},
-	)
-	util.ShellProxy = mockShellCommandDelegater
 
-	gitManager := util.NewGitManager(".")
+		&GitManagerTestCase{
+			description:            "Test that any error from running 'git commit' is correctly raised.",
+			gitManagerRepoFilePath: ".",
+			methodType:             commit,
+			gitManagerMethodArgs:   []string{"-m", "fake commit message"},
+			expectedError:          utiltest.DefaultCommitError,
+			mockExecutionEnvironmentBuilder: utiltest.NewMockExecutionEnvironmentBuilder().
+				SetMockShellCommandDelegaterBuilder(
+					utiltest.NewMockShellCommandDelegaterBuilder().
+						SetOutputSequence(
+							&utiltest.MockShellCommandOutput{
+								Err: utiltest.DefaultCommitError,
+							},
+						),
+				),
 
-	err := gitManager.Commit("-m", "commit message")
-	assert.Equal(t, mockShellCommandDelegater.InputHistory[0], "git -C . commit -m commit message")
-	assert.Equal(t, mockShellCommandDelegater.OutputHistory[0].Stdout, "Committed items to git repository.")
-	assert.Nil(t, err)
+			expectedExecutionEnvironmentStateBuilder: utiltest.NewMockExecutionEnvironmentStateBuilder().
+				SetShellCommandDelegaterInputHistory(
+					"git -C . commit -m fake commit message",
+				).
+				SetShellCommandDelegaterOutputHistory(
+					&utiltest.MockShellCommandOutput{
+						Err: utiltest.DefaultCommitError,
+					},
+				),
+		},
+	}
 
-	err = gitManager.Commit("-m", "commit message")
-	assert.Equal(t, mockShellCommandDelegater.InputHistory[1], "git -C . commit -m commit message")
-	assert.Equal(t, mockShellCommandDelegater.OutputHistory[1].Stdout, "Something went wrong.")
-	assert.NotNil(t, err)
-	assert.Equal(t, err.Error(), "There was a problem committing items to the git repository.")
+	for _, testCase := range testCases {
+		testCase.Run(t)
+	}
 
 }
 
 func TestCheckout(t *testing.T) {
 
-	mockShellCommandDelegater := utiltest.NewMockShellCommandDelegater(
-		[]*utiltest.MockShellCommandOutput{
-			&utiltest.MockShellCommandOutput{
-				Stdout: "Checked out git repository.",
-				Err:    nil,
-			},
-			&utiltest.MockShellCommandOutput{
-				Stdout: "Something went wrong.",
-				Err:    errors.New("There was a problem checking out the git repository."),
-			},
+	testCases := []*GitManagerTestCase{
+
+		&GitManagerTestCase{
+			description:            "Test that the correct 'git checkout' shell command is invoked.",
+			gitManagerRepoFilePath: ".",
+			methodType:             checkout,
+			gitManagerMethodArgs:   []string{"master"},
+			mockExecutionEnvironmentBuilder: utiltest.NewMockExecutionEnvironmentBuilder().
+				SetMockShellCommandDelegaterBuilder(
+					utiltest.NewMockShellCommandDelegaterBuilder().
+						SetOutputSequence(
+							&utiltest.MockShellCommandOutput{
+								Stdout: "Checked out master branch.",
+							},
+						),
+				),
+
+			expectedExecutionEnvironmentStateBuilder: utiltest.NewMockExecutionEnvironmentStateBuilder().
+				SetShellCommandDelegaterInputHistory(
+					"git -C . checkout master",
+				).
+				SetShellCommandDelegaterOutputHistory(
+					&utiltest.MockShellCommandOutput{
+						Stdout: "Checked out master branch.",
+					},
+				).
+				SetWritePrinterOutputContents(
+					[]byte("Checked out master branch.\n"),
+				),
 		},
-	)
-	util.ShellProxy = mockShellCommandDelegater
 
-	gitManager := util.NewGitManager(".")
+		&GitManagerTestCase{
+			description:            "Test that any error from running 'git checkout' is correctly raised.",
+			gitManagerRepoFilePath: ".",
+			methodType:             checkout,
+			gitManagerMethodArgs:   []string{"master"},
+			expectedError:          utiltest.DefaultCheckoutError,
+			mockExecutionEnvironmentBuilder: utiltest.NewMockExecutionEnvironmentBuilder().
+				SetMockShellCommandDelegaterBuilder(
+					utiltest.NewMockShellCommandDelegaterBuilder().
+						SetOutputSequence(
+							&utiltest.MockShellCommandOutput{
+								Err: utiltest.DefaultCheckoutError,
+							},
+						),
+				),
 
-	err := gitManager.Checkout("master")
-	assert.Equal(t, mockShellCommandDelegater.InputHistory[0], "git -C . checkout master")
-	assert.Equal(t, mockShellCommandDelegater.OutputHistory[0].Stdout, "Checked out git repository.")
-	assert.Nil(t, err)
+			expectedExecutionEnvironmentStateBuilder: utiltest.NewMockExecutionEnvironmentStateBuilder().
+				SetShellCommandDelegaterInputHistory(
+					"git -C . checkout master",
+				).
+				SetShellCommandDelegaterOutputHistory(
+					&utiltest.MockShellCommandOutput{
+						Err: utiltest.DefaultCheckoutError,
+					},
+				),
+		},
+	}
 
-	err = gitManager.Checkout("master")
-	assert.Equal(t, mockShellCommandDelegater.InputHistory[1], "git -C . checkout master")
-	assert.Equal(t, mockShellCommandDelegater.OutputHistory[1].Stdout, "Something went wrong.")
-	assert.NotNil(t, err)
-	assert.Equal(t, err.Error(), "There was a problem checking out the git repository.")
+	for _, testCase := range testCases {
+		testCase.Run(t)
+	}
 
 }
 
 func TestRevParse(t *testing.T) {
 
-	mockShellCommandDelegater := utiltest.NewMockShellCommandDelegater(
-		[]*utiltest.MockShellCommandOutput{
-			&utiltest.MockShellCommandOutput{
-				Stdout: "",
-				Err:    nil,
-			},
-			&utiltest.MockShellCommandOutput{
-				Stdout: "git commit id = 012345",
-				Err:    nil,
-			},
-			&utiltest.MockShellCommandOutput{
-				Stdout: "",
-				Err:    errors.New("Not a git repository."),
-			},
+	testCases := []*GitManagerTestCase{
+
+		&GitManagerTestCase{
+			description:            "Test that the correct 'git rev-parse' shell command is invoked.",
+			gitManagerRepoFilePath: ".",
+			methodType:             revParse,
+			gitManagerMethodArgs:   []string{"HEAD"},
+			expectedStdout:         "git commit id = 012345",
+			mockExecutionEnvironmentBuilder: utiltest.NewMockExecutionEnvironmentBuilder().
+				SetMockShellCommandDelegaterBuilder(
+					utiltest.NewMockShellCommandDelegaterBuilder().
+						SetOutputSequence(
+							&utiltest.MockShellCommandOutput{
+								Stdout: "git commit id = 012345",
+							},
+						),
+				),
+
+			expectedExecutionEnvironmentStateBuilder: utiltest.NewMockExecutionEnvironmentStateBuilder().
+				SetShellCommandDelegaterInputHistory(
+					"git -C . rev-parse HEAD",
+				).
+				SetShellCommandDelegaterOutputHistory(
+					&utiltest.MockShellCommandOutput{
+						Stdout: "git commit id = 012345",
+					},
+				),
 		},
-	)
-	util.ShellProxy = mockShellCommandDelegater
 
-	gitManager := util.NewGitManager(".")
+		&GitManagerTestCase{
+			description:            "Test that any error from running 'git rev-parse' is correctly raised.",
+			gitManagerRepoFilePath: ".",
+			methodType:             revParse,
+			gitManagerMethodArgs:   []string{"HEAD"},
+			expectedError:          utiltest.DefaultRevParseError,
+			mockExecutionEnvironmentBuilder: utiltest.NewMockExecutionEnvironmentBuilder().
+				SetMockShellCommandDelegaterBuilder(
+					utiltest.NewMockShellCommandDelegaterBuilder().
+						SetOutputSequence(
+							&utiltest.MockShellCommandOutput{
+								Err: utiltest.DefaultRevParseError,
+							},
+						),
+				),
 
-	stdout, err := gitManager.RevParse()
-	assert.Equal(t, mockShellCommandDelegater.InputHistory[0], "git -C . rev-parse")
-	assert.Equal(t, stdout, "")
-	assert.Nil(t, err)
+			expectedExecutionEnvironmentStateBuilder: utiltest.NewMockExecutionEnvironmentStateBuilder().
+				SetShellCommandDelegaterInputHistory(
+					"git -C . rev-parse HEAD",
+				).
+				SetShellCommandDelegaterOutputHistory(
+					&utiltest.MockShellCommandOutput{
+						Err: utiltest.DefaultRevParseError,
+					},
+				),
+		},
+	}
 
-	stdout, err = gitManager.RevParse("HEAD")
-	assert.Equal(t, mockShellCommandDelegater.InputHistory[1], "git -C . rev-parse HEAD")
-	assert.Equal(t, stdout, "git commit id = 012345")
-	assert.Nil(t, err)
-
-	stdout, err = gitManager.RevParse()
-	assert.Equal(t, mockShellCommandDelegater.InputHistory[2], "git -C . rev-parse")
-	assert.Equal(t, stdout, "")
-	assert.NotNil(t, err)
-	assert.Equal(t, err.Error(), "Not a git repository.")
+	for _, testCase := range testCases {
+		testCase.Run(t)
+	}
 
 }
 
 func TestLfsInstall(t *testing.T) {
 
-	mockShellCommandDelegater := utiltest.NewMockShellCommandDelegater(
-		[]*utiltest.MockShellCommandOutput{
-			&utiltest.MockShellCommandOutput{
-				Stdout: "git lfs is now set up.",
-				Err:    nil,
-			},
-			&utiltest.MockShellCommandOutput{
-				Stdout: "",
-				Err:    errors.New("There was a problem while setting up git lfs."),
-			},
+	testCases := []*GitManagerTestCase{
+
+		&GitManagerTestCase{
+			description:            "Test that the correct 'git lfs install' shell command is invoked.",
+			gitManagerRepoFilePath: ".",
+			methodType:             lfsInstall,
+			mockExecutionEnvironmentBuilder: utiltest.NewMockExecutionEnvironmentBuilder().
+				SetMockShellCommandDelegaterBuilder(
+					utiltest.NewMockShellCommandDelegaterBuilder().
+						SetOutputSequence(
+							&utiltest.MockShellCommandOutput{
+								Stdout: "git lfs is now set up.",
+							},
+						),
+				),
+
+			expectedExecutionEnvironmentStateBuilder: utiltest.NewMockExecutionEnvironmentStateBuilder().
+				SetShellCommandDelegaterInputHistory(
+					"git -C . lfs install",
+				).
+				SetShellCommandDelegaterOutputHistory(
+					&utiltest.MockShellCommandOutput{
+						Stdout: "git lfs is now set up.",
+					},
+				).
+				SetWritePrinterOutputContents(
+					[]byte("git lfs is now set up.\n"),
+				),
 		},
-	)
-	util.ShellProxy = mockShellCommandDelegater
 
-	gitManager := util.NewGitManager(".")
+		&GitManagerTestCase{
+			description:            "Test that any error from running 'git lfs install' is correctly raised.",
+			gitManagerRepoFilePath: ".",
+			methodType:             lfsInstall,
+			expectedError:          utiltest.DefaultLfsInstallError,
+			mockExecutionEnvironmentBuilder: utiltest.NewMockExecutionEnvironmentBuilder().
+				SetMockShellCommandDelegaterBuilder(
+					utiltest.NewMockShellCommandDelegaterBuilder().
+						SetOutputSequence(
+							&utiltest.MockShellCommandOutput{
+								Err: utiltest.DefaultLfsInstallError,
+							},
+						),
+				),
 
-	err := gitManager.LfsInstall()
-	assert.Equal(t, mockShellCommandDelegater.InputHistory[0], "git -C . lfs install")
-	assert.Equal(t, mockShellCommandDelegater.OutputHistory[0].Stdout, "git lfs is now set up.")
-	assert.Nil(t, err)
+			expectedExecutionEnvironmentStateBuilder: utiltest.NewMockExecutionEnvironmentStateBuilder().
+				SetShellCommandDelegaterInputHistory(
+					"git -C . lfs install",
+				).
+				SetShellCommandDelegaterOutputHistory(
+					&utiltest.MockShellCommandOutput{
+						Err: utiltest.DefaultLfsInstallError,
+					},
+				),
+		},
+	}
 
-	err = gitManager.LfsInstall()
-	assert.Equal(t, mockShellCommandDelegater.InputHistory[1], "git -C . lfs install")
-	assert.Equal(t, mockShellCommandDelegater.OutputHistory[1].Stdout, "")
-	assert.NotNil(t, err)
-	assert.Equal(t, err.Error(), "There was a problem while setting up git lfs.")
+	for _, testCase := range testCases {
+		testCase.Run(t)
+	}
 
 }
 
 func TestLfsTrack(t *testing.T) {
 
-	mockShellCommandDelegater := utiltest.NewMockShellCommandDelegater(
-		[]*utiltest.MockShellCommandOutput{
-			&utiltest.MockShellCommandOutput{
-				Stdout: "Tracking files with git lfs.",
-				Err:    nil,
-			},
-			&utiltest.MockShellCommandOutput{
-				Stdout: "",
-				Err:    errors.New("There was a problem trying to track files with git lfs."),
-			},
+	testCases := []*GitManagerTestCase{
+
+		&GitManagerTestCase{
+			description:            "Test that the correct 'git lfs track' shell command is invoked.",
+			gitManagerRepoFilePath: ".",
+			methodType:             lfsTrack,
+			gitManagerMethodArgs:   []string{"*.txt", "*.bin"},
+			mockExecutionEnvironmentBuilder: utiltest.NewMockExecutionEnvironmentBuilder().
+				SetMockShellCommandDelegaterBuilder(
+					utiltest.NewMockShellCommandDelegaterBuilder().
+						SetOutputSequence(
+							&utiltest.MockShellCommandOutput{
+								Stdout: "Added items to track with git lfs.",
+							},
+						),
+				),
+
+			expectedExecutionEnvironmentStateBuilder: utiltest.NewMockExecutionEnvironmentStateBuilder().
+				SetShellCommandDelegaterInputHistory(
+					"git -C . lfs track *.txt *.bin",
+				).
+				SetShellCommandDelegaterOutputHistory(
+					&utiltest.MockShellCommandOutput{
+						Stdout: "Added items to track with git lfs.",
+					},
+				).
+				SetWritePrinterOutputContents(
+					[]byte("Added items to track with git lfs.\n"),
+				),
 		},
-	)
-	util.ShellProxy = mockShellCommandDelegater
 
-	gitManager := util.NewGitManager(".")
+		&GitManagerTestCase{
+			description:            "Test that any error from running 'git lfs track' is correctly raised.",
+			gitManagerRepoFilePath: ".",
+			methodType:             lfsTrack,
+			gitManagerMethodArgs:   []string{"*.txt", "*.bin"},
+			expectedError:          utiltest.DefaultLfsTrackError,
+			mockExecutionEnvironmentBuilder: utiltest.NewMockExecutionEnvironmentBuilder().
+				SetMockShellCommandDelegaterBuilder(
+					utiltest.NewMockShellCommandDelegaterBuilder().
+						SetOutputSequence(
+							&utiltest.MockShellCommandOutput{
+								Err: utiltest.DefaultLfsTrackError,
+							},
+						),
+				),
 
-	err := gitManager.LfsTrack("*.txt")
-	assert.Equal(t, mockShellCommandDelegater.InputHistory[0], "git -C . lfs track *.txt")
-	assert.Equal(t, mockShellCommandDelegater.OutputHistory[0].Stdout, "Tracking files with git lfs.")
-	assert.Nil(t, err)
+			expectedExecutionEnvironmentStateBuilder: utiltest.NewMockExecutionEnvironmentStateBuilder().
+				SetShellCommandDelegaterInputHistory(
+					"git -C . lfs track *.txt *.bin",
+				).
+				SetShellCommandDelegaterOutputHistory(
+					&utiltest.MockShellCommandOutput{
+						Err: utiltest.DefaultLfsTrackError,
+					},
+				),
+		},
+	}
 
-	err = gitManager.LfsTrack("*.txt", "big-file.bin")
-	assert.Equal(t, mockShellCommandDelegater.InputHistory[1], "git -C . lfs track *.txt big-file.bin")
-	assert.Equal(t, mockShellCommandDelegater.OutputHistory[1].Stdout, "")
-	assert.NotNil(t, err)
-	assert.Equal(t, err.Error(), "There was a problem trying to track files with git lfs.")
+	for _, testCase := range testCases {
+		testCase.Run(t)
+	}
 
 }
 
-func TestAddAllAndCommit(t *testing.T) {
+type GitManagerTestCase struct {
+	description                              string
+	gitManagerRepoFilePath                   string
+	methodType                               gitManagerMethodType
+	gitManagerMethodArgs                     []string
+	expectedStdout                           string
+	expectedError                            error
+	mockExecutionEnvironmentBuilder          *utiltest.MockExecutionEnvironmentBuilder
+	expectedExecutionEnvironmentStateBuilder *utiltest.MockExecutionEnvironmentStateBuilder
+}
 
-	mockShellCommandDelegater := utiltest.NewMockShellCommandDelegater(
-		[]*utiltest.MockShellCommandOutput{
-			&utiltest.MockShellCommandOutput{
-				Stdout: "Added items to git repository.",
-				Err:    nil,
-			},
-			&utiltest.MockShellCommandOutput{
-				Stdout: "Committed items to git repository.",
-				Err:    nil,
-			},
+func (testCase *GitManagerTestCase) Run(t *testing.T) {
 
-			&utiltest.MockShellCommandOutput{
-				Stdout: "",
-				Err:    errors.New("There was a problem adding items to the git repository."),
-			},
+	// Set up an execution environment without a MockGitManagerCreator. Instead, use the
+	// default GitManagerCreator that delegates shell commands to a MockShellCommandDelegater.
+	mockExecutionEnvironment := testCase.mockExecutionEnvironmentBuilder.Build()
+	mockExecutionEnvironment.MockGitManagerCreator = nil
+	mockExecutionEnvironment.Init()
 
-			&utiltest.MockShellCommandOutput{
-				Stdout: "Added items to git repository.",
-				Err:    nil,
-			},
-			&utiltest.MockShellCommandOutput{
-				Stdout: "",
-				Err:    errors.New("There was a problem committing items to the git repository."),
-			},
-		},
-	)
-	util.ShellProxy = mockShellCommandDelegater
+	gitManager := util.NewGitManager(testCase.gitManagerRepoFilePath)
 
-	gitManager := util.NewGitManager(".")
+	var actualStdout string
+	var actualError error
 
-	err := gitManager.AddAllAndCommit("commit message")
-	assert.Equal(t, mockShellCommandDelegater.InputHistory[0], "git -C . add -A .")
-	assert.Equal(t, mockShellCommandDelegater.OutputHistory[0].Stdout, "Added items to git repository.")
-	assert.Equal(t, mockShellCommandDelegater.InputHistory[1], "git -C . commit -m commit message")
-	assert.Equal(t, mockShellCommandDelegater.OutputHistory[1].Stdout, "Committed items to git repository.")
-	assert.Nil(t, err)
+	switch testCase.methodType {
+	case gitInit:
+		actualError = gitManager.Init()
+	case add:
+		actualError = gitManager.Add(testCase.gitManagerMethodArgs...)
+	case commit:
+		actualError = gitManager.Commit(testCase.gitManagerMethodArgs...)
+	case checkout:
+		actualError = gitManager.Checkout(testCase.gitManagerMethodArgs...)
+	case revParse:
+		actualStdout, actualError = gitManager.RevParse(testCase.gitManagerMethodArgs...)
+	case lfsInstall:
+		actualError = gitManager.LfsInstall()
+	case lfsTrack:
+		actualError = gitManager.LfsTrack(testCase.gitManagerMethodArgs...)
+	case addAllAndCommit:
+		actualError = gitManager.AddAllAndCommit(testCase.gitManagerMethodArgs[0])
+	}
 
-	err = gitManager.AddAllAndCommit("commit message")
-	assert.Equal(t, mockShellCommandDelegater.InputHistory[2], "git -C . add -A .")
-	assert.Equal(t, mockShellCommandDelegater.OutputHistory[2].Stdout, "")
-	assert.NotNil(t, err)
-	assert.Equal(t, err.Error(), "There was a problem adding items to the git repository.")
+	assert.Exactly(t, testCase.expectedStdout, actualStdout)
+	assert.Exactly(t, testCase.expectedError, actualError)
 
-	err = gitManager.AddAllAndCommit("commit message")
-	assert.Equal(t, mockShellCommandDelegater.InputHistory[3], "git -C . add -A .")
-	assert.Equal(t, mockShellCommandDelegater.OutputHistory[3].Stdout, "Added items to git repository.")
-	assert.Equal(t, mockShellCommandDelegater.InputHistory[4], "git -C . commit -m commit message")
-	assert.Equal(t, mockShellCommandDelegater.OutputHistory[4].Stdout, "")
-	assert.NotNil(t, err)
-	assert.Equal(t, err.Error(), "There was a problem committing items to the git repository.")
+	expectedExecutionEnvironmentState := testCase.expectedExecutionEnvironmentStateBuilder.Build()
+	mockExecutionEnvironment.GetCurrentState().AssertEquals(t, expectedExecutionEnvironmentState, testCase.description)
 
 }

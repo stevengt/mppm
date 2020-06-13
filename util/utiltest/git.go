@@ -28,7 +28,7 @@ func GetMockGitManagerCreatorFromBuilderOrNil(mockGitManagerCreatorBuilder *Mock
 	if mockGitManagerCreatorBuilder != nil {
 		return mockGitManagerCreatorBuilder.Build()
 	} else {
-		return NewDefaultMockGitManagerCreatorBuilder().Build()
+		return NewMockGitManagerCreatorBuilder().Build()
 	}
 }
 
@@ -45,8 +45,48 @@ type MockGitManagerCreatorBuilder struct {
 	UseDefaultLfsTrackError   bool
 }
 
-func NewDefaultMockGitManagerCreatorBuilder() *MockGitManagerCreatorBuilder {
+func NewMockGitManagerCreatorBuilder() *MockGitManagerCreatorBuilder {
 	return &MockGitManagerCreatorBuilder{}
+}
+
+func (builder *MockGitManagerCreatorBuilder) SetRevParseStdout(revParseStdout string) *MockGitManagerCreatorBuilder {
+	builder.RevParseStdout = revParseStdout
+	return builder
+}
+
+func (builder *MockGitManagerCreatorBuilder) SetUseDefaultInitError(useDefaultInitError bool) *MockGitManagerCreatorBuilder {
+	builder.UseDefaultInitError = useDefaultInitError
+	return builder
+}
+
+func (builder *MockGitManagerCreatorBuilder) SetUseDefaultAddError(useDefaultAddError bool) *MockGitManagerCreatorBuilder {
+	builder.UseDefaultAddError = useDefaultAddError
+	return builder
+}
+
+func (builder *MockGitManagerCreatorBuilder) SetUseDefaultCommitError(useDefaultCommitError bool) *MockGitManagerCreatorBuilder {
+	builder.UseDefaultCommitError = useDefaultCommitError
+	return builder
+}
+
+func (builder *MockGitManagerCreatorBuilder) SetUseDefaultCheckoutError(useDefaultCheckoutError bool) *MockGitManagerCreatorBuilder {
+	builder.UseDefaultCheckoutError = useDefaultCheckoutError
+	return builder
+}
+
+func (builder *MockGitManagerCreatorBuilder) SetUseDefaultRevParseError(useDefaultRevParseError bool) *MockGitManagerCreatorBuilder {
+	builder.UseDefaultRevParseError = useDefaultRevParseError
+	return builder
+}
+
+func (builder *MockGitManagerCreatorBuilder) SetUseDefaultLfsInstallError(useDefaultLfsInstallError bool) *MockGitManagerCreatorBuilder {
+	builder.UseDefaultLfsInstallError = useDefaultLfsInstallError
+	return builder
+}
+
+func (builder *MockGitManagerCreatorBuilder) SetUseDefaultLfsTrackError(useDefaultLfsTrackError bool) *MockGitManagerCreatorBuilder {
+	builder.UseDefaultLfsTrackError = useDefaultLfsTrackError
+	return builder
 }
 
 func (builder *MockGitManagerCreatorBuilder) Build() *MockGitManagerCreator {
@@ -96,6 +136,10 @@ func (builder *MockGitManagerCreatorBuilder) Build() *MockGitManagerCreator {
 type MockGitManagerCreator struct {
 	MockGitManager                   *MockGitManager
 	MockGitManagersIndexedByRepoPath map[string]*MockGitManager
+}
+
+func (mockGitManagerCreator *MockGitManagerCreator) Init() {
+	util.GitManagerFactory = mockGitManagerCreator
 }
 
 func (mockGitManagerCreator *MockGitManagerCreator) NewGitManager(repoFilePath string) util.GitManager {

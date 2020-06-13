@@ -1,6 +1,6 @@
 package util
 
-var GitManagerFactory GitManagerCreator = &gitShellCommandProxyCreator{}
+var GitManagerFactory GitManagerCreator = NewGitShellCommandProxyCreator()
 
 func NewGitManager(repoFilePath string) GitManager {
 	return GitManagerFactory.NewGitManager(repoFilePath)
@@ -13,6 +13,10 @@ type GitManagerCreator interface {
 }
 
 type gitShellCommandProxyCreator struct{}
+
+func NewGitShellCommandProxyCreator() *gitShellCommandProxyCreator {
+	return &gitShellCommandProxyCreator{}
+}
 
 func (proxyCreator *gitShellCommandProxyCreator) NewGitManager(repoFilePath string) GitManager {
 	return &gitShellCommandProxy{

@@ -2,6 +2,8 @@ package utiltest
 
 import (
 	"fmt"
+
+	"github.com/stevengt/mppm/util"
 )
 
 type MockWritePrinter struct {
@@ -12,6 +14,10 @@ func NewMockWritePrinter() *MockWritePrinter {
 	return &MockWritePrinter{
 		OutputContents: make([]byte, 0),
 	}
+}
+
+func (mockWritePrinter *MockWritePrinter) Init() {
+	util.Logger = mockWritePrinter
 }
 
 func (mockWritePrinter *MockWritePrinter) GetOutputContentsAsString() string {

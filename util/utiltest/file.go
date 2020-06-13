@@ -26,45 +26,53 @@ var DefaultUserHomeDirError error = errors.New("There was a problem getting the 
 
 // ------------------------------------------------------------------------------
 
-var PlainTextFile *MockFile = NewMockFileFromString(
-	"plain-text-file.txt",
-	"file 1 contents",
-)
+func GetPlainTextFileBuilder() *MockFileBuilder {
+	return NewMockFileBuilder().
+		SetFilePath("plain-text-file.txt").
+		SetContentsFromString("file 1 contents")
+}
 
-var GzippedPlainTextFile *MockFile = NewMockFileFromHexString(
-	"plain-text-file.txt.gz",
-	"1f8b08080eace15e000366696c65312e747874004bcbcc4955305448cecf2b49cd2b2906004eb0a0e30f000000",
-)
+func GetGzippedPlainTextFileBuilder() *MockFileBuilder {
+	return NewMockFileBuilder().
+		SetFilePath("plain-text-file.txt.gz").
+		SetContentsFromHexString("1f8b08000000000000ff4acbcc4955305448cecf2b49cd2b2906040000ffff4eb0a0e30f000000")
+}
 
-var BinaryFileContaining0xDEADBEEF *MockFile = NewMockFileFromHexString(
-	"deadbeef.bin",
-	"deadbeef",
-)
+func GetBinaryContaining0xdeadbeefFileBuilder() *MockFileBuilder {
+	return NewMockFileBuilder().
+		SetFilePath("deadbeef.bin").
+		SetContentsFromHexString("deadbeef")
+}
 
-var EmptyFile *MockFile = NewMockFileFromBytes(
-	"empty-file.bin",
-	make([]byte, 0),
-)
+func GetEmptyFileBuilder() *MockFileBuilder {
+	return NewMockFileBuilder().
+		SetFilePath("empty-file.bin").
+		SetContentsFromBytes(make([]byte, 0))
+}
 
-var FakeAbletonLiveSetFile *MockFile = NewMockFileFromHexString(
-	"fake-ableton-live-set.als",
-	"1f8b08082fabe15e000366616b652e616c732e786d6c00b3714cca492dc9cfb3b3f1c92c4b0d4e2db1b3d147b06092007ceffd5b26000000",
-)
+func GetFakeAbletonLiveSetFileBuilder() *MockFileBuilder {
+	return NewMockFileBuilder().
+		SetFilePath("fake-ableton-live-set.als").
+		SetContentsFromHexString("1f8b08082fabe15e000366616b652e616c732e786d6c00b3714cca492dc9cfb3b3f1c92c4b0d4e2db1b3d147b06092007ceffd5b26000000")
+}
 
-var FakeUncompressedAbletonLiveSetFile *MockFile = NewMockFileFromString(
-	"fake-ableton-live-set.als.xml",
-	"<Ableton><LiveSet></LiveSet></Ableton>",
-)
+func GetFakeUncompressedAbletonLiveSetFileBuilder() *MockFileBuilder {
+	return NewMockFileBuilder().
+		SetFilePath("fake-ableton-live-set.als.xml").
+		SetContentsFromString("<Ableton><LiveSet></LiveSet></Ableton>")
+}
 
-var FakeAbletonLiveClipFile *MockFile = NewMockFileFromHexString(
-	"fake-ableton-live-clip.alc",
-	"1f8b0808ecb2e15e000366616b652d616c632e786d6c006d8e4b0a803010438f34171806449776552fa075c0c1d26a5b3dbfa2d41f6e42022179587496937784b5acac391136a135632454d2cbe1092b5ec57039b4b217d5ae9ae7859de140585a99b4f5a99698ee44083ff6ecc067015ef3f0f885cc02171d64e00de4b13c5fba000000",
-)
+func GetFakeAbletonLiveClipFileBuilder() *MockFileBuilder {
+	return NewMockFileBuilder().
+		SetFilePath("fake-ableton-live-clip.alc").
+		SetContentsFromHexString("1f8b0808ecb2e15e000366616b652d616c632e786d6c006d8e4b0a803010438f34171806449776552fa075c0c1d26a5b3dbfa2d41f6e42022179587496937784b5acac391136a135632454d2cbe1092b5ec57039b4b217d5ae9ae7859de140585a99b4f5a99698ee44083ff6ecc067015ef3f0f885cc02171d64e00de4b13c5fba000000")
+}
 
-var FakeUncompressedAbletonLiveClipFile *MockFile = NewMockFileFromString(
-	"fake-ableton-live-clip.alc.xml",
-	"<Ableton><LiveSet><Tracks><MidiTrack><DeviceChain><MainSequencer><ClipSlotList><ClipSlot></ClipSlot></ClipSlotList></MainSequencer></DeviceChain></MidiTrack></Tracks></LiveSet></Ableton>",
-)
+func GetFakeUncompressedAbletonLiveClipFileBuilder() *MockFileBuilder {
+	return NewMockFileBuilder().
+		SetFilePath("fake-ableton-live-clip.alc.xml").
+		SetContentsFromString("<Ableton><LiveSet><Tracks><MidiTrack><DeviceChain><MainSequencer><ClipSlotList><ClipSlot></ClipSlot></ClipSlotList></MainSequencer></DeviceChain></MidiTrack></Tracks></LiveSet></Ableton>")
+}
 
 // ------------------------------------------------------------------------------
 
@@ -98,7 +106,7 @@ func GetMockFileSystemDelegaterFromBuilderOrNil(mockFileSystemDelegaterBuilder *
 	if mockFileSystemDelegaterBuilder != nil {
 		return mockFileSystemDelegaterBuilder.Build()
 	} else {
-		return NewDefaultMockFileSystemDelegater()
+		return NewMockFileSystemDelegater()
 	}
 }
 
@@ -107,7 +115,8 @@ func GetMockFileSystemDelegaterFromBuilderOrNil(mockFileSystemDelegaterBuilder *
 type MockFileSystemDelegaterBuilder struct {
 	Files                       map[string]*MockFile
 	FileNamesAndContentsAsBytes map[string][]byte // Use this if you want the builder to create MockFile instances for you.
-	FilesAsList                 []*MockFile
+	FilesAsList                 []*MockFile       // A list of files with non-empty FilePath fields.
+	MockFileBuilders            []*MockFileBuilder
 	UseDefaultOpenFileError     bool
 	UseDefaultCreateFileError   bool
 	UseDefaultRemoveFileError   bool
@@ -115,9 +124,63 @@ type MockFileSystemDelegaterBuilder struct {
 	UseDefaultUserHomeDirError  bool
 }
 
+func NewMockFileSystemDelegaterBuilder() *MockFileSystemDelegaterBuilder {
+	return &MockFileSystemDelegaterBuilder{
+		Files:                       make(map[string]*MockFile),
+		FileNamesAndContentsAsBytes: make(map[string][]byte),
+		FilesAsList:                 make([]*MockFile, 0),
+		MockFileBuilders:            make([]*MockFileBuilder, 0),
+	}
+}
+
+func (builder *MockFileSystemDelegaterBuilder) SetFiles(files map[string]*MockFile) *MockFileSystemDelegaterBuilder {
+	builder.Files = files
+	return builder
+}
+
+func (builder *MockFileSystemDelegaterBuilder) SetFileNamesAndContentsAsBytes(fileNamesAndContentsAsBytes map[string][]byte) *MockFileSystemDelegaterBuilder {
+	builder.FileNamesAndContentsAsBytes = fileNamesAndContentsAsBytes
+	return builder
+}
+
+func (builder *MockFileSystemDelegaterBuilder) SetFilesAsList(filesAsList []*MockFile) *MockFileSystemDelegaterBuilder {
+	builder.FilesAsList = filesAsList
+	return builder
+}
+
+func (builder *MockFileSystemDelegaterBuilder) SetMockFileBuilders(mockFileBuilders ...*MockFileBuilder) *MockFileSystemDelegaterBuilder {
+	builder.MockFileBuilders = mockFileBuilders
+	return builder
+}
+
+func (builder *MockFileSystemDelegaterBuilder) SetUseDefaultOpenFileError(useDefaultOpenFileError bool) *MockFileSystemDelegaterBuilder {
+	builder.UseDefaultOpenFileError = useDefaultOpenFileError
+	return builder
+}
+
+func (builder *MockFileSystemDelegaterBuilder) SetUseDefaultCreateFileError(useDefaultCreateFileError bool) *MockFileSystemDelegaterBuilder {
+	builder.UseDefaultCreateFileError = useDefaultCreateFileError
+	return builder
+}
+
+func (builder *MockFileSystemDelegaterBuilder) SetUseDefaultRemoveFileError(useDefaultRemoveFileError bool) *MockFileSystemDelegaterBuilder {
+	builder.UseDefaultRemoveFileError = useDefaultRemoveFileError
+	return builder
+}
+
+func (builder *MockFileSystemDelegaterBuilder) SetUseDefaultWalkFilePathError(useDefaultWalkFilePathError bool) *MockFileSystemDelegaterBuilder {
+	builder.UseDefaultWalkFilePathError = useDefaultWalkFilePathError
+	return builder
+}
+
+func (builder *MockFileSystemDelegaterBuilder) SetUseDefaultUserHomeDirError(useDefaultUserHomeDirError bool) *MockFileSystemDelegaterBuilder {
+	builder.UseDefaultUserHomeDirError = useDefaultUserHomeDirError
+	return builder
+}
+
 func (builder *MockFileSystemDelegaterBuilder) Build() *MockFileSystemDelegater {
 
-	mockFileSystemDelegater := NewDefaultMockFileSystemDelegater()
+	mockFileSystemDelegater := NewMockFileSystemDelegater()
 
 	if builder.Files != nil {
 		mockFileSystemDelegater.Files = builder.Files
@@ -131,6 +194,13 @@ func (builder *MockFileSystemDelegaterBuilder) Build() *MockFileSystemDelegater 
 
 	if builder.FilesAsList != nil {
 		for _, mockFile := range builder.FilesAsList {
+			mockFileSystemDelegater.Files[mockFile.FilePath] = mockFile
+		}
+	}
+
+	if builder.MockFileBuilders != nil {
+		for _, mockFileBuilder := range builder.MockFileBuilders {
+			mockFile := mockFileBuilder.Build()
 			mockFileSystemDelegater.Files[mockFile.FilePath] = mockFile
 		}
 	}
@@ -170,10 +240,14 @@ type MockFileSystemDelegater struct {
 	UserHomeDirError  error
 }
 
-func NewDefaultMockFileSystemDelegater() *MockFileSystemDelegater {
+func NewMockFileSystemDelegater() *MockFileSystemDelegater {
 	return &MockFileSystemDelegater{
 		Files: make(map[string]*MockFile),
 	}
+}
+
+func (mockFileSystemDelegater *MockFileSystemDelegater) Init() {
+	util.FileSystemProxy = mockFileSystemDelegater
 }
 
 func (mockFileSystemDelegater *MockFileSystemDelegater) InitFiles(fileNamesAndContents map[string][]byte) {
@@ -262,6 +336,59 @@ func (mockFileSystemDelegater *MockFileSystemDelegater) DoesFileExist(filePath s
 
 // ------------------------------------------------------------------------------
 
+type MockFileBuilder struct {
+	FilePath  string
+	Contents  []byte
+	WasClosed bool
+}
+
+func NewMockFileBuilder() *MockFileBuilder {
+	return &MockFileBuilder{
+		WasClosed: false,
+	}
+}
+
+func (builder *MockFileBuilder) SetFilePath(filePath string) *MockFileBuilder {
+	builder.FilePath = filePath
+	return builder
+}
+
+func (builder *MockFileBuilder) SetContentsFromBytes(contents []byte) *MockFileBuilder {
+	builder.Contents = contents
+	return builder
+}
+
+func (builder *MockFileBuilder) SetContentsFromString(contents string) *MockFileBuilder {
+	builder.Contents = []byte(contents)
+	return builder
+}
+
+func (builder *MockFileBuilder) SetContentsFromHexString(contents string) *MockFileBuilder {
+	contentsAsBytes, err := hex.DecodeString(contents)
+	if err != nil {
+		util.ExitWithError(err)
+	}
+	builder.Contents = contentsAsBytes
+	return builder
+}
+
+func (builder *MockFileBuilder) SetWasClosed(wasClosed bool) *MockFileBuilder {
+	builder.WasClosed = wasClosed
+	return builder
+}
+
+func (builder *MockFileBuilder) Build() *MockFile {
+	mockFile := &MockFile{
+		FilePath:  builder.FilePath,
+		Contents:  builder.Contents,
+		WasClosed: builder.WasClosed,
+	}
+	mockFile.resetBuffer()
+	return mockFile
+}
+
+// ------------------------------------------------------------------------------
+
 type MockFile struct {
 	FilePath         string
 	Contents         []byte
@@ -296,7 +423,7 @@ func (mockFile *MockFile) Read(p []byte) (n int, err error) {
 }
 
 func (mockFile *MockFile) Write(p []byte) (n int, err error) {
-	mockFile.Contents = p
+	mockFile.Contents = append(mockFile.Contents, p...)
 	return mockFile.bufferReadWriter.Write(p)
 }
 
