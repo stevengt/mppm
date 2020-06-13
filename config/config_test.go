@@ -1,11 +1,9 @@
 package config_test
 
 import (
-	"errors"
 	"testing"
 
 	"github.com/stevengt/mppm/config/applications"
-	"github.com/stevengt/mppm/util/utiltest"
 
 	"github.com/stretchr/testify/assert"
 
@@ -61,9 +59,7 @@ func TestGetAllFilePatternsConfigFromProjectConfig(t *testing.T) {
 	testCases := []*GetAllFilePatternsConfigFromProjectConfigTestCase{
 
 		&GetAllFilePatternsConfigFromProjectConfigTestCase{
-			mockFileSystemDelegaterBuilder: nil,
-			expectedErrorIfNotConfigError:  nil,
-			mppmConfigInfoAndExpectedError: configtest.ConfigWithValidVersionAndApplicationNameAndApplicationVersion,
+			description: "Test if all supported project-specific-applications and general file patterns are returned as one applications.FilePatternsConfig instance.",
 			expectedFilePatternsConfig: &applications.FilePatternsConfig{
 				Name:              "",
 				GitIgnorePatterns: []string{"Backup/", "*.als", "*.alc", "*.adv", "*.adg"},
@@ -77,12 +73,14 @@ func TestGetAllFilePatternsConfigFromProjectConfig(t *testing.T) {
 				},
 				GzippedXmlFileExtensions: []string{"adv", "adg", "als", "alc"},
 			},
+			mockMppmConfigManagerBuilder: configtest.NewMockMppmConfigManagerBuilder().
+				SetProjectConfigFromJson(
+					configtest.ConfigWithValidVersionAndApplicationNameAndApplicationVersion.ConfigAsJson,
+				),
 		},
 
 		&GetAllFilePatternsConfigFromProjectConfigTestCase{
-			mockFileSystemDelegaterBuilder: nil,
-			expectedErrorIfNotConfigError:  nil,
-			mppmConfigInfoAndExpectedError: configtest.ConfigWithValidVersionAndNoApplications,
+			description: "Test if only general file patterns are returned as one applications.FilePatternsConfig instance if no applications are specified in the project config file.",
 			expectedFilePatternsConfig: &applications.FilePatternsConfig{
 				Name:              "",
 				GitIgnorePatterns: []string{},
@@ -95,43 +93,18 @@ func TestGetAllFilePatternsConfigFromProjectConfig(t *testing.T) {
 				},
 				GzippedXmlFileExtensions: []string{},
 			},
+			mockMppmConfigManagerBuilder: configtest.NewMockMppmConfigManagerBuilder().
+				SetProjectConfigFromJson(
+					configtest.ConfigWithValidVersionAndNoApplications.ConfigAsJson,
+				),
 		},
 
 		&GetAllFilePatternsConfigFromProjectConfigTestCase{
-			mockFileSystemDelegaterBuilder: nil,
-			expectedErrorIfNotConfigError:  nil,
-			mppmConfigInfoAndExpectedError: configtest.ConfigWithInvalidVersionAndNoApplications,
-			expectedFilePatternsConfig:     nil,
-		},
-
-		&GetAllFilePatternsConfigFromProjectConfigTestCase{
-			mockFileSystemDelegaterBuilder: nil,
-			expectedErrorIfNotConfigError:  nil,
-			mppmConfigInfoAndExpectedError: configtest.ConfigWithValidVersionAndInvalidApplicationName,
-			expectedFilePatternsConfig:     nil,
-		},
-
-		&GetAllFilePatternsConfigFromProjectConfigTestCase{
-			mockFileSystemDelegaterBuilder: nil,
-			expectedErrorIfNotConfigError:  nil,
-			mppmConfigInfoAndExpectedError: configtest.ConfigWithValidVersionAndApplicationNameAndInvalidApplicationVersion,
-			expectedFilePatternsConfig:     nil,
-		},
-
-		&GetAllFilePatternsConfigFromProjectConfigTestCase{
-			mockFileSystemDelegaterBuilder: nil,
-			expectedErrorIfNotConfigError:  errors.New("\nThere was a problem while opening the mppm config file.\nIf the file doesn't exist, try running 'mppm project init' first.\nUnable to open file .mppm.json\n"),
-			mppmConfigInfoAndExpectedError: nil,
-			expectedFilePatternsConfig:     nil,
-		},
-
-		&GetAllFilePatternsConfigFromProjectConfigTestCase{
-			mockFileSystemDelegaterBuilder: &utiltest.MockFileSystemDelegaterBuilder{
-				UseDefaultOpenFileError: true,
-			},
-			expectedErrorIfNotConfigError:  errors.New("\nThere was a problem while opening the mppm config file.\nIf the file doesn't exist, try running 'mppm project init' first.\nThere was a problem opening the file.\n"),
-			mppmConfigInfoAndExpectedError: configtest.ConfigWithValidVersionAndApplicationNameAndApplicationVersion,
-			expectedFilePatternsConfig:     nil,
+			description:                "Test if errors from configManager.GetProjectConfig() are properly raised.",
+			expectedFilePatternsConfig: nil,
+			expectedError:              configtest.DefaultGetProjectConfigError,
+			mockMppmConfigManagerBuilder: configtest.NewMockMppmConfigManagerBuilder().
+				SetUseDefaultGetProjectConfigError(true),
 		},
 	}
 
@@ -187,38 +160,38 @@ func (testCase *GetFilePatternsConfigListFromProjectConfigTestCase) Run(t *testi
 // ------------------------------------------------------------------------------
 
 type GetAllFilePatternsConfigFromProjectConfigTestCase struct {
-	mockFileSystemDelegaterBuilder *utiltest.MockFileSystemDelegaterBuilder
-	expectedErrorIfNotConfigError  error // The expected error, if not mppmConfigInfoAndExpectedError.ExpectedError
-	mppmConfigInfoAndExpectedError *configtest.MppmConfigInfoAndExpectedError
-	expectedFilePatternsConfig     *applications.FilePatternsConfig
+	description                  string
+	expectedError                error
+	expectedFilePatternsConfig   *applications.FilePatternsConfig
+	mockMppmConfigManagerBuilder *configtest.MockMppmConfigManagerBuilder
 }
 
 func (testCase *GetAllFilePatternsConfigFromProjectConfigTestCase) Run(t *testing.T) {
 
-	mockFileSystemDelegater := utiltest.GetMockFileSystemDelegaterFromBuilderOrNil(testCase.mockFileSystemDelegaterBuilder)
+	_ = testCase.mockMppmConfigManagerBuilder.BuildAndInit()
 
-	projectConfigFile := configtest.ReturnMppmConfigInfoAsMockFileIfNotNilElseReturnNil(testCase.mppmConfigInfoAndExpectedError)
-	configtest.InitMockFileSystemDelegaterWithConfigFiles(mockFileSystemDelegater, projectConfigFile, nil)
-
-	expectedError := configtest.GetExpectedError(
-		testCase.expectedErrorIfNotConfigError,
-		testCase.mppmConfigInfoAndExpectedError,
-	)
-
-	expectedFilePatternsConfig := testCase.expectedFilePatternsConfig
-	if expectedFilePatternsConfig != nil {
-		expectedFilePatternsConfig.SortAllLists()
+	if testCase.expectedFilePatternsConfig != nil {
+		testCase.expectedFilePatternsConfig.SortAllLists()
 	}
 
 	actualFilePatternsConfig, actualError := config.GetAllFilePatternsConfigFromProjectConfig()
+
 	if actualFilePatternsConfig != nil {
 		actualFilePatternsConfig.SortAllLists()
 	}
 
-	assert.Exactly(t, expectedFilePatternsConfig, actualFilePatternsConfig)
-	assert.Exactly(t, expectedError, actualError)
-	if expectedError == nil {
-		assert.True(t, mockFileSystemDelegater.Files[".mppm.json"].WasClosed)
-	}
+	assert.Exactlyf(
+		t,
+		testCase.expectedFilePatternsConfig,
+		actualFilePatternsConfig,
+		testCase.description,
+	)
+
+	assert.Exactlyf(
+		t,
+		testCase.expectedError,
+		actualError,
+		testCase.description,
+	)
 
 }
