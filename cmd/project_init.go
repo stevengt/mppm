@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	"io/ioutil"
-	"os"
+	"bytes"
+	"io"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -79,10 +79,19 @@ func initProject() (err error) {
 }
 
 func createGitIgnoreFile(filePatterns ...string) (err error) {
+
 	fileName := ".gitignore"
-	filePermissionsCode := os.FileMode(0644)
 	fileContents := strings.Join(filePatterns, "\n")
-	err = ioutil.WriteFile(fileName, []byte(fileContents), filePermissionsCode)
+	fileContentsAsReader := bytes.NewReader([]byte(fileContents))
+
+	file, err := util.CreateFile(fileName)
+	if err != nil {
+		return
+	}
+	defer file.Close()
+
+	io.Copy(file, fileContentsAsReader)
+
 	return
 }
 

@@ -83,5 +83,6 @@ func appendUnique(list1 []string, list2 []string) (newList []string) {
 	for val, _ := range uniqueVals {
 		newList = append(newList, val)
 	}
+	sort.Strings(newList)
 	return
 }
