@@ -76,6 +76,13 @@ Libraries can be any collection of audio samples, plugins, presets, etc. that:
 		}
 
 	},
+
+	// Clear any session variables between unit tests.
+	PersistentPostRun: func(cmd *cobra.Command, args []string) {
+		RootCmd.PersistentPostRun(cmd, args)
+		isListAllLibrariesCommand = false
+		isCommitAllLibrariesCommand = false
+	},
 }
 
 var isListAllLibrariesCommand bool
