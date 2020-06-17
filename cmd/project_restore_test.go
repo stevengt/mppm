@@ -1,6 +1,7 @@
 package cmd_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stevengt/mppm/config"
@@ -42,6 +43,42 @@ func TestProjectRestoreCmd(t *testing.T) {
 					utiltest.GetFakeAbletonLiveClipFileBuilder().
 						SetWasClosed(true),
 					utiltest.GetPlainTextFileBuilder(),
+				),
+		},
+
+		&ProjectRestoreCmdTestCase{
+			description: "Test that all affected file changes are displayed without actually making the changes.",
+			args:        []string{"project", "restore", "--preview"},
+			mockExecutionEnvironmentBuilder: utiltest.NewMockExecutionEnvironmentBuilder().
+				SetMockFileSystemDelegaterBuilder(
+					utiltest.NewMockFileSystemDelegaterBuilder().
+						SetMockFileBuilders(
+							configtest.ConfigWithValidVersionAndApplicationNameAndApplicationVersion.AsMockFileBuilder().
+								SetFilePath(config.MppmConfigFileName),
+							utiltest.GetFakeUncompressedAbletonLiveSetFileBuilder(),
+							utiltest.GetFakeUncompressedAbletonLiveClipFileBuilder(),
+							utiltest.GetPlainTextFileBuilder(),
+						),
+				),
+			expectedExecutionEnvironmentStateBuilder: utiltest.NewMockExecutionEnvironmentStateBuilder().
+				SetMockFileBuilders(
+					configtest.ConfigWithValidVersionAndApplicationNameAndApplicationVersion.AsMockFileBuilder().
+						SetFilePath(config.MppmConfigFileName).
+						SetWasClosed(true),
+					utiltest.GetFakeUncompressedAbletonLiveSetFileBuilder(),
+					utiltest.GetFakeUncompressedAbletonLiveClipFileBuilder(),
+					utiltest.GetPlainTextFileBuilder(),
+				).
+				SetWritePrinterOutputContents(
+					[]byte(
+						fmt.Sprintf(
+							"%s will be restored from %s\n%s will be restored from %s\n",
+							utiltest.GetFakeAbletonLiveClipFileBuilder().FilePath,
+							utiltest.GetFakeUncompressedAbletonLiveClipFileBuilder().FilePath,
+							utiltest.GetFakeAbletonLiveSetFileBuilder().FilePath,
+							utiltest.GetFakeUncompressedAbletonLiveSetFileBuilder().FilePath,
+						),
+					),
 				),
 		},
 	}
