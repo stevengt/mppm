@@ -81,6 +81,110 @@ func TestProjectRestoreCmd(t *testing.T) {
 					),
 				),
 		},
+
+		&ProjectRestoreCmdTestCase{
+			description: "Test that any error resulting from an invalid config file is properly raised.",
+			args:        []string{"project", "restore"},
+			mockExecutionEnvironmentBuilder: utiltest.NewMockExecutionEnvironmentBuilder().
+				SetMockFileSystemDelegaterBuilder(
+					utiltest.NewMockFileSystemDelegaterBuilder().
+						SetMockFileBuilders(
+							configtest.ConfigWithInvalidVersionAndNoApplications.AsMockFileBuilder().
+								SetFilePath(config.MppmConfigFileName),
+						),
+				),
+			expectedExecutionEnvironmentStateBuilder: utiltest.NewMockExecutionEnvironmentStateBuilder().
+				SetExiterWasExited(true).
+				SetExiterError(configtest.ConfigWithInvalidVersionAndNoApplications.ExpectedError).
+				SetMockFileBuilders(
+					configtest.ConfigWithInvalidVersionAndNoApplications.AsMockFileBuilder().
+						SetFilePath(config.MppmConfigFileName).
+						SetWasClosed(true),
+				),
+		},
+
+		&ProjectRestoreCmdTestCase{
+			description: "Test that any error from filepath.Walk() is properly raised.",
+			args:        []string{"project", "restore"},
+			mockExecutionEnvironmentBuilder: utiltest.NewMockExecutionEnvironmentBuilder().
+				SetMockFileSystemDelegaterBuilder(
+					utiltest.NewMockFileSystemDelegaterBuilder().
+						SetMockFileBuilders(
+							configtest.ConfigWithValidVersionAndApplicationNameAndApplicationVersion.AsMockFileBuilder().
+								SetFilePath(config.MppmConfigFileName),
+							utiltest.GetFakeUncompressedAbletonLiveSetFileBuilder(),
+							utiltest.GetFakeUncompressedAbletonLiveClipFileBuilder(),
+							utiltest.GetPlainTextFileBuilder(),
+						).
+						SetUseDefaultWalkFilePathError(true),
+				),
+			expectedExecutionEnvironmentStateBuilder: utiltest.NewMockExecutionEnvironmentStateBuilder().
+				SetExiterWasExited(true).
+				SetExiterError(utiltest.DefaultWalkFilePathError).
+				SetMockFileBuilders(
+					configtest.ConfigWithValidVersionAndApplicationNameAndApplicationVersion.AsMockFileBuilder().
+						SetFilePath(config.MppmConfigFileName).
+						SetWasClosed(true),
+					utiltest.GetFakeUncompressedAbletonLiveSetFileBuilder(),
+					utiltest.GetFakeUncompressedAbletonLiveClipFileBuilder(),
+					utiltest.GetPlainTextFileBuilder(),
+				),
+		},
+
+		&ProjectRestoreCmdTestCase{
+			description: "Test that any error from os.Create() is properly raised.",
+			args:        []string{"project", "restore"},
+			mockExecutionEnvironmentBuilder: utiltest.NewMockExecutionEnvironmentBuilder().
+				SetMockFileSystemDelegaterBuilder(
+					utiltest.NewMockFileSystemDelegaterBuilder().
+						SetMockFileBuilders(
+							configtest.ConfigWithValidVersionAndApplicationNameAndApplicationVersion.AsMockFileBuilder().
+								SetFilePath(config.MppmConfigFileName),
+							utiltest.GetFakeUncompressedAbletonLiveSetFileBuilder(),
+						).
+						SetUseDefaultCreateFileError(true),
+				),
+			expectedExecutionEnvironmentStateBuilder: utiltest.NewMockExecutionEnvironmentStateBuilder().
+				SetExiterWasExited(true).
+				SetExiterError(utiltest.DefaultCreateFileError).
+				SetMockFileBuilders(
+					configtest.ConfigWithValidVersionAndApplicationNameAndApplicationVersion.AsMockFileBuilder().
+						SetFilePath(config.MppmConfigFileName).
+						SetWasClosed(true),
+					utiltest.GetFakeUncompressedAbletonLiveSetFileBuilder().
+						SetWasClosed(true),
+				),
+		},
+
+		&ProjectRestoreCmdTestCase{
+			description: "Test that any error from os.Rename() is properly raised.",
+			args:        []string{"project", "restore"},
+			mockExecutionEnvironmentBuilder: utiltest.NewMockExecutionEnvironmentBuilder().
+				SetMockFileSystemDelegaterBuilder(
+					utiltest.NewMockFileSystemDelegaterBuilder().
+						SetMockFileBuilders(
+							configtest.ConfigWithValidVersionAndApplicationNameAndApplicationVersion.AsMockFileBuilder().
+								SetFilePath(config.MppmConfigFileName),
+							utiltest.GetFakeUncompressedAbletonLiveSetFileBuilder(),
+						).
+						SetUseDefaultRenameFileError(true),
+				),
+			expectedExecutionEnvironmentStateBuilder: utiltest.NewMockExecutionEnvironmentStateBuilder().
+				SetExiterWasExited(true).
+				SetExiterError(utiltest.DefaultRenameFileError).
+				SetMockFileBuilders(
+					configtest.ConfigWithValidVersionAndApplicationNameAndApplicationVersion.AsMockFileBuilder().
+						SetFilePath(config.MppmConfigFileName).
+						SetWasClosed(true),
+					utiltest.GetFakeUncompressedAbletonLiveSetFileBuilder().
+						SetWasClosed(true),
+					utiltest.GetFakeAbletonLiveSetFileBuilder().
+						SetFilePath(
+							utiltest.GetFakeUncompressedAbletonLiveSetFileBuilder().FilePath+".gz",
+						).
+						SetWasClosed(true),
+				),
+		},
 	}
 
 	for _, testCase := range testCases {

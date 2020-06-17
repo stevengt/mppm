@@ -75,17 +75,12 @@ func restoreAllGzippedXmlFilesWithExtension(fileExtension string) (err error) {
 			printRestorePreviewMessage(originalFileName, newFileName)
 		} else {
 
-			err = util.CopyFile(originalFileName, newFileName)
+			err = util.GzipFile(originalFileName)
 			if err != nil {
 				return
 			}
 
-			err = util.GzipFile(newFileName)
-			if err != nil {
-				return
-			}
-
-			err = util.RenameFile(newFileName+".gz", newFileName)
+			err = util.RenameFile(originalFileName+".gz", newFileName)
 			if err != nil {
 				return
 			}
