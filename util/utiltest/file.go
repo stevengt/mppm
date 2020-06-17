@@ -18,6 +18,8 @@ var DefaultOpenFileError error = errors.New("There was a problem opening the fil
 
 var DefaultCreateFileError error = errors.New("There was a problem creating the file.")
 
+var DefaultRenameFileError error = errors.New("There was a problem renaming the file.")
+
 var DefaultRemoveFileError error = errors.New("There was a problem removing the file.")
 
 var DefaultWalkFilePathError error = errors.New("There was a problem walking the file path.")
@@ -53,7 +55,7 @@ func GetEmptyFileBuilder() *MockFileBuilder {
 func GetFakeAbletonLiveSetFileBuilder() *MockFileBuilder {
 	return NewMockFileBuilder().
 		SetFilePath("fake-ableton-live-set.als").
-		SetContentsFromHexString("1f8b08082fabe15e000366616b652e616c732e786d6c00b3714cca492dc9cfb3b3f1c92c4b0d4e2db1b3d147b06092007ceffd5b26000000")
+		SetContentsFromHexString("1f8b08000000000000ffb2714cca492dc9cfb3b3f1c92c4b0d4e2db1b3d147b0609280000000ffff7ceffd5b26000000")
 }
 
 func GetFakeUncompressedAbletonLiveSetFileBuilder() *MockFileBuilder {
@@ -65,7 +67,7 @@ func GetFakeUncompressedAbletonLiveSetFileBuilder() *MockFileBuilder {
 func GetFakeAbletonLiveClipFileBuilder() *MockFileBuilder {
 	return NewMockFileBuilder().
 		SetFilePath("fake-ableton-live-clip.alc").
-		SetContentsFromHexString("1f8b0808ecb2e15e000366616b652d616c632e786d6c006d8e4b0a803010438f34171806449776552fa075c0c1d26a5b3dbfa2d41f6e42022179587496937784b5acac391136a135632454d2cbe1092b5ec57039b4b217d5ae9ae7859de140585a99b4f5a99698ee44083ff6ecc067015ef3f0f885cc02171d64e00de4b13c5fba000000")
+		SetContentsFromHexString("1f8b08000000000000ff6c8e4b0ac24010448fd417281a242e93d57881712cb0709868d2e6fc82127f64f71a9a570fbb63658ccdd16b6162380e532e97d931e8a4273bf65c54d89db39a63c86a89b73b5be1e4e8aaaea98ed16b8ecfe5b00d7cfdd89fc17ef4f6b56b6b8bbdeb6c0d7e040000ffffe4b13c5fba000000")
 }
 
 func GetFakeUncompressedAbletonLiveClipFileBuilder() *MockFileBuilder {
@@ -117,6 +119,7 @@ type MockFileSystemDelegaterBuilder struct {
 	MockFileBuilders            []*MockFileBuilder
 	UseDefaultOpenFileError     bool
 	UseDefaultCreateFileError   bool
+	UseDefaultRenameFileError   bool
 	UseDefaultRemoveFileError   bool
 	UseDefaultWalkFilePathError bool
 	UseDefaultUserHomeDirError  bool
@@ -146,6 +149,11 @@ func (builder *MockFileSystemDelegaterBuilder) SetUseDefaultOpenFileError(useDef
 
 func (builder *MockFileSystemDelegaterBuilder) SetUseDefaultCreateFileError(useDefaultCreateFileError bool) *MockFileSystemDelegaterBuilder {
 	builder.UseDefaultCreateFileError = useDefaultCreateFileError
+	return builder
+}
+
+func (builder *MockFileSystemDelegaterBuilder) SetUseDefaultRenameFileError(useDefaultRenameFileError bool) *MockFileSystemDelegaterBuilder {
+	builder.UseDefaultRenameFileError = useDefaultRenameFileError
 	return builder
 }
 
@@ -189,6 +197,10 @@ func (builder *MockFileSystemDelegaterBuilder) Build() *MockFileSystemDelegater 
 		mockFileSystemDelegater.CreateFileError = DefaultCreateFileError
 	}
 
+	if builder.UseDefaultRenameFileError {
+		mockFileSystemDelegater.RenameFileError = DefaultRenameFileError
+	}
+
 	if builder.UseDefaultRemoveFileError {
 		mockFileSystemDelegater.RemoveFileError = DefaultRemoveFileError
 	}
@@ -211,6 +223,7 @@ type MockFileSystemDelegater struct {
 	Files             map[string]*MockFile // Map of file names to mocked file instances.
 	OpenFileError     error
 	CreateFileError   error
+	RenameFileError   error
 	RemoveFileError   error
 	WalkFilePathError error
 	UserHomeDirError  error
@@ -267,6 +280,15 @@ func (mockFileSystemDelegater *MockFileSystemDelegater) CreateFile(fileName stri
 		fileContents := make([]byte, 0)
 		mockFileSystemDelegater.Files[fileName] = NewMockFileFromBytes(fileName, fileContents)
 		file = mockFileSystemDelegater.Files[fileName]
+	}
+	return
+}
+
+func (mockFileSystemDelegater *MockFileSystemDelegater) RenameFile(fileName string, newFileName string) (err error) {
+	err = mockFileSystemDelegater.RenameFileError
+	if err == nil {
+		mockFileSystemDelegater.Files[newFileName] = mockFileSystemDelegater.Files[fileName]
+		delete(mockFileSystemDelegater.Files, fileName)
 	}
 	return
 }

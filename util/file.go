@@ -18,6 +18,10 @@ func CreateFile(fileName string) (file io.ReadWriteCloser, err error) {
 	return FileSystemProxy.CreateFile(fileName)
 }
 
+func RenameFile(fileName string, newFileName string) (err error) {
+	return FileSystemProxy.RenameFile(fileName, newFileName)
+}
+
 func RemoveFile(fileName string) (err error) {
 	return FileSystemProxy.RemoveFile(fileName)
 }
@@ -143,6 +147,7 @@ func GetAllFileNamesWithExtension(extension string) (fileNames []string, err err
 type FileSystemDelegater interface {
 	OpenFile(fileName string) (file io.ReadWriteCloser, err error)
 	CreateFile(fileName string) (file io.ReadWriteCloser, err error)
+	RenameFile(fileName string, newFileName string) (err error)
 	RemoveFile(fileName string) (err error)
 	WalkFilePath(root string, walkFn filepath.WalkFunc) (err error)
 	UserHomeDir() (string, error)
@@ -160,6 +165,16 @@ func (proxy *fileSystemProxy) OpenFile(fileName string) (file io.ReadWriteCloser
 func (proxy *fileSystemProxy) CreateFile(fileName string) (file io.ReadWriteCloser, err error) {
 
 	file, err = os.Create(fileName)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
+func (proxy *fileSystemProxy) RenameFile(fileName string, newFileName string) (err error) {
+
+	err = os.Rename(fileName, newFileName)
 	if err != nil {
 		return
 	}

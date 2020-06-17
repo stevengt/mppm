@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"os"
 	"strings"
 
 	"github.com/stevengt/mppm/config"
@@ -86,7 +85,7 @@ func restoreAllGzippedXmlFilesWithExtension(fileExtension string) (err error) {
 				return
 			}
 
-			err = os.Rename(newFileName+".gz", newFileName)
+			err = util.RenameFile(newFileName+".gz", newFileName)
 			if err != nil {
 				return
 			}
