@@ -257,8 +257,7 @@ func (mockFileSystemDelegater *MockFileSystemDelegater) GetMockFileAndContentsIf
 }
 
 func (mockFileSystemDelegater *MockFileSystemDelegater) OpenFile(fileName string) (file io.ReadWriteCloser, err error) {
-	err = mockFileSystemDelegater.OpenFileError
-	if err == nil {
+	if err = mockFileSystemDelegater.OpenFileError; err == nil {
 		var doesFileExist bool
 		file, doesFileExist = mockFileSystemDelegater.Files[fileName]
 		if !doesFileExist {
@@ -269,11 +268,9 @@ func (mockFileSystemDelegater *MockFileSystemDelegater) OpenFile(fileName string
 }
 
 func (mockFileSystemDelegater *MockFileSystemDelegater) CreateFile(fileName string) (file io.ReadWriteCloser, err error) {
-	err = mockFileSystemDelegater.CreateFileError
-	if err == nil {
+	if err = mockFileSystemDelegater.CreateFileError; err == nil {
 		if mockFileSystemDelegater.Files[fileName] != nil {
-			err = mockFileSystemDelegater.RemoveFile(fileName)
-			if err != nil {
+			if err = mockFileSystemDelegater.RemoveFile(fileName); err != nil {
 				return
 			}
 		}
@@ -285,8 +282,7 @@ func (mockFileSystemDelegater *MockFileSystemDelegater) CreateFile(fileName stri
 }
 
 func (mockFileSystemDelegater *MockFileSystemDelegater) RenameFile(fileName string, newFileName string) (err error) {
-	err = mockFileSystemDelegater.RenameFileError
-	if err == nil {
+	if err = mockFileSystemDelegater.RenameFileError; err == nil {
 		mockFileSystemDelegater.Files[newFileName] = mockFileSystemDelegater.Files[fileName]
 		delete(mockFileSystemDelegater.Files, fileName)
 	}
@@ -294,19 +290,16 @@ func (mockFileSystemDelegater *MockFileSystemDelegater) RenameFile(fileName stri
 }
 
 func (mockFileSystemDelegater *MockFileSystemDelegater) RemoveFile(fileName string) (err error) {
-	err = mockFileSystemDelegater.RemoveFileError
-	if err == nil {
+	if err = mockFileSystemDelegater.RemoveFileError; err == nil {
 		delete(mockFileSystemDelegater.Files, fileName)
 	}
 	return
 }
 
 func (mockFileSystemDelegater *MockFileSystemDelegater) WalkFilePath(root string, walkFn filepath.WalkFunc) (err error) {
-	err = mockFileSystemDelegater.WalkFilePathError
-	if err == nil {
+	if err = mockFileSystemDelegater.WalkFilePathError; err == nil {
 		for fileName, _ := range mockFileSystemDelegater.Files {
-			err = walkFn(fileName, nil, nil)
-			if err != nil {
+			if err = walkFn(fileName, nil, nil); err != nil {
 				return
 			}
 		}

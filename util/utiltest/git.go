@@ -202,12 +202,10 @@ func (mockGitManager *MockGitManager) LfsTrack(args ...string) (err error) {
 }
 
 func (mockGitManager *MockGitManager) AddAllAndCommit(commitMessage string) (err error) {
-	err = mockGitManager.Add("-A", ".")
-	if err != nil {
+	if err = mockGitManager.Add("-A", "."); err != nil {
 		return
 	}
-	err = mockGitManager.Commit("-m", commitMessage)
-	if err != nil {
+	if err = mockGitManager.Commit("-m", commitMessage); err != nil {
 		return
 	}
 	return
