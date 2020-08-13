@@ -36,6 +36,7 @@ Flags:
 Use "mppm [command] --help" for more information about a command.
 ```
 
+#### Project Management
 ```
 $ mppm project --help
 
@@ -61,6 +62,7 @@ Flags:
 Use "mppm project [command] --help" for more information about a command.
 ```
 
+#### Library Management
 ```
 $ mppm library --help
 
