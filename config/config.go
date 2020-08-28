@@ -11,7 +11,7 @@ import (
 	"github.com/stevengt/mppm/util"
 )
 
-var Version = "1.3.1"
+var Version = "1.3.2"
 
 var MppmConfigFileName = ".mppm.json"
 

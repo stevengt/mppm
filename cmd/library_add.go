@@ -51,7 +51,7 @@ func addLibrary(libraryFilePath string) (err error) {
 			return
 		}
 
-		err = gitManager.LfsTrack("*")
+		err = gitManager.LfsTrack("[A-Za-z0-9]*") // Do not track hidden files with git-lfs.
 		if err != nil {
 			return
 		}
